@@ -192,7 +192,7 @@ export default function Home() {
           {/* Logo */}
           <a href="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Image
-              src="/logo.png"
+              src="/logo.jpg"
               alt="TIENDAONLINE"
               width={38}
               height={38}

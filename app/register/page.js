@@ -17,11 +17,6 @@ const C = {
   redBorder:  '#fecaca',
 }
 
-export const metadata = {
-  title: 'Crea il tuo negozio — TIENDAONLINE',
-  description: 'Inizia a vendere online in pochi minuti.',
-}
-
 export default function RegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
