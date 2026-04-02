@@ -987,7 +987,7 @@ export default function Home() {
             opacity:        0.5,
             fontSize:       '0.8rem',
           }}>
-            <span>© 2025 TIENDAONLINE · tiendaonline.it</span>
+            <span>© 2026 TIENDAONLINE · tiendaonline.it</span>
             <span>🛍️ {t('footerCredit')}</span>
           </div>
 
