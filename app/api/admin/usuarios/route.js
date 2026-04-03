@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '../../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 // GET — listar todos los usuarios con su tienda
 export async function GET() {
   try {
