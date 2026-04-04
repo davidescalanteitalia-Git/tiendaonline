@@ -1,10 +1,11 @@
-import { supabaseAdmin } from '../../../../lib/supabase-admin'
+import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     // Total usuarios
     const { data: usersData } = await supabaseAdmin.auth.admin.listUsers()
     const totalUsuarios = usersData?.users?.length || 0

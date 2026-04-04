@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../../lib/supabase-admin'
+import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 export async function POST(req) {
   try {
     const { nombre, subdominio, whatsapp, email, password } = await req.json()
+    const supabaseAdmin = getSupabaseAdmin()
 
     // 1. Verificar que el subdominio no esté en uso
     const { data: existingSub } = await supabaseAdmin

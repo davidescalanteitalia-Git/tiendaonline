@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../../../lib/supabase-admin'
+import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 // GET — listar todas las tiendas
 export async function GET() {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { data, error } = await supabaseAdmin
       .from('tiendas')
       .select('*')
@@ -20,6 +21,7 @@ export async function GET() {
 // PATCH — actualizar estado de tienda
 export async function PATCH(req) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { id, estado } = await req.json()
     const { error } = await supabaseAdmin
       .from('tiendas')
@@ -35,6 +37,7 @@ export async function PATCH(req) {
 // DELETE — eliminar tienda
 export async function DELETE(req) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const { id } = await req.json()
     const { error } = await supabaseAdmin
       .from('tiendas')
