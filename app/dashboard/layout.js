@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '../../lib/supabase'
 
 const C = {
-  green:      '#059669',
-  greenDark:  '#047857',
+  green:      '#1a5c2a',
+  greenLight: '#2d8a45',
   greenBg:    '#f0fdf4',
   greenBorder:'#d1fae5',
   white:      '#ffffff',
@@ -15,22 +16,65 @@ const C = {
   grayBg:     '#f8fafc',
 }
 
+async function fetchTienda() {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) return null
+  const res = await fetch('/api/me', {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  })
+  if (!res.ok) return null
+  const json = await res.json()
+  return json.tienda || null
+}
+
 export default function DashboardLayout({ children }) {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const router = useRouter()
+  const [tienda,  setTienda]  = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [activeItem, setActiveItem] = useState(
+    typeof window !== 'undefined' ? window.location.pathname : '/dashboard'
+  )
+
+  useEffect(() => {
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.replace('/login')
+        return
+      }
+      const t = await fetchTienda()
+      setTienda(t)
+      setLoading(false)
+    }
+    init()
+  }, [router])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.replace('/login')
+  }
 
   const menuItems = [
-    { icon: '🏠', label: 'Inicio', href: '/dashboard', active: true },
-    { icon: '📦', label: 'Productos', href: '#' },
-    { icon: '📁', label: 'Categorías', href: '#' },
-    { icon: '🛒', label: 'Pedidos', href: '#' },
-    { icon: '🎨', label: 'Diseño', href: '#' },
-    { icon: '⚙️', label: 'Ajustes', href: '#' },
+    { icon: '🏠', label: 'Inicio',     href: '/dashboard' },
+    { icon: '📦', label: 'Productos',  href: '/dashboard/productos' },
+    { icon: '📁', label: 'Categorías', href: '/dashboard/categorias' },
+    { icon: '🛒', label: 'Pedidos',    href: '/dashboard/pedidos' },
+    { icon: '🎨', label: 'Diseño',     href: '/dashboard/diseno' },
+    { icon: '⚙️', label: 'Ajustes',    href: '/dashboard/ajustes' },
   ]
+
+  const storeUrl = tienda?.subdominio
+    ? `https://${tienda.subdominio}.tiendaonline.it`
+    : null
+
+  const inicial = tienda?.nombre
+    ? tienda.nombre.charAt(0).toUpperCase()
+    : '?'
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: C.grayBg, fontFamily: "'Inter', sans-serif" }}>
-      
-      {/* Sidebar (Desktop) */}
+
+      {/* ───── SIDEBAR ───── */}
       <aside style={{
         width: '260px',
         background: C.white,
@@ -38,66 +82,141 @@ export default function DashboardLayout({ children }) {
         padding: '24px 20px',
         display: 'flex',
         flexDirection: 'column',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        overflowY: 'auto',
+        boxSizing: 'border-box',
       }}>
+        {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
-          <Image src="/logo.png" alt="TIENDAONLINE" width={32} height={32} style={{ borderRadius: '8px' }} />
-          <span style={{ fontWeight: 900, color: C.green, fontSize: '1.2rem', letterSpacing: '-0.5px' }}>TIENDAONLINE</span>
+          <span style={{ fontSize: '1.4rem' }}>🛍️</span>
+          <span style={{ fontWeight: 900, color: C.green, fontSize: '1.05rem', letterSpacing: '-0.5px' }}>TIENDAONLINE</span>
         </div>
 
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {menuItems.map((item, i) => (
-            <a key={i} href={item.href} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              borderRadius: '10px',
-              color: item.active ? C.greenDark : C.text,
-              background: item.active ? C.greenBg : 'transparent',
-              textDecoration: 'none',
-              fontWeight: item.active ? 700 : 500,
-              fontSize: '0.95rem',
-              transition: 'all 0.2s',
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
-              {item.label}
-            </a>
-          ))}
+        {/* Nav */}
+        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {menuItems.map((item) => {
+            const isActive = activeItem === item.href
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                onClick={() => setActiveItem(item.href)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '11px 14px', borderRadius: '10px',
+                  color: isActive ? C.green : C.text,
+                  background: isActive ? C.greenBg : 'transparent',
+                  textDecoration: 'none',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.93rem',
+                  border: isActive ? `1px solid ${C.greenBorder}` : '1px solid transparent',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+                {item.label}
+              </a>
+            )
+          })}
         </nav>
 
+        {/* Bottom: store info + logout */}
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: `1px solid ${C.grayBorder}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.greenBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.green, fontWeight: 'bold' }}>D</div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: C.text }}>Pizzeria Mario</div>
-              <div style={{ fontSize: '0.8rem', color: C.textMuted }}>mario.tiendaonline.it</div>
-            </div>
-          </div>
+          {loading ? (
+            <div style={{ color: C.textMuted, fontSize: '0.85rem', textAlign: 'center' }}>Caricamento...</div>
+          ) : (
+            <>
+              {/* Store card */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <div style={{
+                  width: '38px', height: '38px', borderRadius: '50%',
+                  background: C.greenBg, border: `2px solid ${C.greenBorder}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: C.green, fontWeight: 900, fontSize: '1rem', flexShrink: 0,
+                }}>
+                  {inicial}
+                </div>
+                <div style={{ overflow: 'hidden', flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {tienda?.nombre || '—'}
+                  </div>
+                  {tienda?.subdominio && (
+                    <div style={{ fontSize: '0.72rem', color: C.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {tienda.subdominio}.tiendaonline.it
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Visit store */}
+              {storeUrl && (
+                <a
+                  href={storeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    padding: '8px 12px', borderRadius: '8px', width: '100%',
+                    background: C.greenBg, color: C.green, border: `1px solid ${C.greenBorder}`,
+                    fontWeight: 600, fontSize: '0.8rem', textDecoration: 'none',
+                    marginBottom: '8px', boxSizing: 'border-box',
+                  }}
+                >
+                  🌍 Vedi la tua bottega
+                </a>
+              )}
+
+              {/* Logout */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%', padding: '8px', borderRadius: '8px',
+                  background: 'transparent', color: C.textMuted,
+                  border: `1px solid ${C.grayBorder}`,
+                  fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                🚪 Esci
+              </button>
+            </>
+          )}
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      {/* ───── MAIN ───── */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Topbar */}
         <header style={{
-          height: '64px',
-          background: C.white,
+          height: '64px', background: C.white,
           borderBottom: `1px solid ${C.grayBorder}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 32px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 28px', position: 'sticky', top: 0, zIndex: 10,
         }}>
-          <div style={{ fontWeight: 700, color: C.text, fontSize: '1.1rem' }}>Dashboard</div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{ background: C.greenBg, color: C.greenDark, border: `1px solid ${C.greenBorder}`, padding: '8px 16px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-              🌍 Visualiza Tienda
-            </button>
+          <div style={{ fontWeight: 700, color: C.text, fontSize: '1rem' }}>
+            {loading ? '...' : (tienda?.nombre || 'Dashboard')}
           </div>
+          {storeUrl && (
+            <a
+              href={storeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: C.green, color: C.white,
+                padding: '8px 18px', borderRadius: '8px',
+                fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
+                boxShadow: '0 2px 0 rgba(0,0,0,0.2)',
+              }}
+            >
+              🌍 Apri bottega
+            </a>
+          )}
         </header>
 
-        {/* Content Area */}
-        <div style={{ padding: '32px 40px', flex: 1, overflowY: 'auto' }}>
+        {/* Content */}
+        <div style={{ padding: '32px 36px', flex: 1, overflowY: 'auto' }}>
           {children}
         </div>
       </main>
