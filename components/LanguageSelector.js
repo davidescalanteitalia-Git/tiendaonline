@@ -1,6 +1,11 @@
+'use client'
+
 import { C } from '../lib/theme'
+import { useLang } from './LanguageProvider'
 
 export default function LanguageSelector() {
+  const { lang, changeLang } = useLang()
+
   return (
     <select
       style={{
@@ -13,7 +18,8 @@ export default function LanguageSelector() {
         cursor: 'pointer',
         outline: 'none'
       }}
-      defaultValue="it"
+      value={lang}
+      onChange={(e) => changeLang(e.target.value)}
     >
       <option value="it">🇮🇹 IT</option>
       <option value="es">🇪🇸 ES</option>

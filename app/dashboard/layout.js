@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
 import { C } from '../../lib/theme'
+import { DICTIONARY } from '../../lib/dictionaries'
+import { useLang } from '../../components/LanguageProvider'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
 
@@ -21,6 +23,9 @@ async function fetchTienda() {
 
 export default function DashboardLayout({ children }) {
   const router = useRouter()
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang] || DICTIONARY['it']
+
   const [tienda,  setTienda]  = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeItem, setActiveItem] = useState(
@@ -47,12 +52,12 @@ export default function DashboardLayout({ children }) {
   }
 
   const menuItems = [
-    { icon: '🏠', label: 'Home',         href: '/dashboard' },
-    { icon: '📦', label: 'Prodotti',     href: '/dashboard/productos' },
-    { icon: '📁', label: 'Categorie',    href: '/dashboard/categorias' },
-    { icon: '🛒', label: 'Ordini',       href: '/dashboard/pedidos' },
-    { icon: '🎨', label: 'Design',       href: '/dashboard/diseno' },
-    { icon: '⚙️', label: 'Impostazioni', href: '/dashboard/ajustes' },
+    { icon: '🏠', label: dict.home,         href: '/dashboard' },
+    { icon: '📦', label: dict.prodotti,     href: '/dashboard/productos' },
+    { icon: '📁', label: dict.categorie,    href: '/dashboard/categorias' },
+    { icon: '🛒', label: dict.ordini,       href: '/dashboard/pedidos' },
+    { icon: '🎨', label: dict.design,       href: '/dashboard/diseno' },
+    { icon: '⚙️', label: dict.impostazioni, href: '/dashboard/ajustes' },
   ]
 
   const storeUrl = tienda?.subdominio
@@ -117,7 +122,7 @@ export default function DashboardLayout({ children }) {
         {/* Bottom: store info + logout */}
         <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: `1px solid ${C.grayBorder}` }}>
           {loading ? (
-            <div style={{ color: C.textMuted, fontSize: '0.85rem', textAlign: 'center' }}>Caricamento...</div>
+            <div style={{ color: C.textMuted, fontSize: '0.85rem', textAlign: 'center' }}>{dict.caricamento}</div>
           ) : (
             <>
               {/* Store card */}
@@ -156,7 +161,7 @@ export default function DashboardLayout({ children }) {
                     marginBottom: '8px', boxSizing: 'border-box',
                   }}
                 >
-                  🌍 Vedi la tua bottega
+                  🌍 {dict.vediSito}
                 </a>
               )}
 
@@ -171,7 +176,7 @@ export default function DashboardLayout({ children }) {
                   fontFamily: 'inherit',
                 }}
               >
-                🚪 Esci
+                🚪 {dict.esci}
               </button>
             </>
           )}
@@ -204,7 +209,7 @@ export default function DashboardLayout({ children }) {
                   boxShadow: '0 2px 0 rgba(0,0,0,0.2)',
                 }}
               >
-                🌍 Apri bottega
+                🌍 {dict.apriBottega}
               </a>
             )}
           </div>

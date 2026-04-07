@@ -1,4 +1,5 @@
 import './globals.css'
+import { LanguageProvider } from '../components/LanguageProvider'
 
 export const metadata = {
   title: 'TIENDAONLINE — La tua vetrina online in 10 minuti',
@@ -43,7 +44,11 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   )
 }

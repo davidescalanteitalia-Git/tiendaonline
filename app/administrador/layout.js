@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
-const ADMIN_EMAIL = 'davidescalanteitalia@gmail.com'
-
 import { C as ThemeC } from '../../lib/theme'
+const ADMIN_EMAIL = 'davidescalanteitalia@gmail.com'
+import { DICTIONARY } from '../../lib/dictionaries'
+import { useLang } from '../../components/LanguageProvider'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
 
@@ -21,18 +22,21 @@ const C = {
   border:    ThemeC.grayBorder,
   active:    ThemeC.green,
 }
-const NAV = [
-  { href: '/administrador',          icon: '🏠', label: 'Dashboard'   },
-  { href: '/administrador/usuarios', icon: '👥', label: 'Utenti'      },
-  { href: '/administrador/tiendas',  icon: '🏪', label: 'Negozi'      },
-]
 
 export default function AdminLayout({ children }) {
   const router   = useRouter()
   const pathname = usePathname()
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang] || DICTIONARY['it']
   const [checking, setChecking] = useState(true)
   const [admin,    setAdmin]    = useState(null)
   const [collapsed, setCollapsed] = useState(false)
+
+  const NAV = [
+    { href: '/administrador',          icon: '🏠', label: dict.dashboard },
+    { href: '/administrador/usuarios', icon: '👥', label: dict.utenti    },
+    { href: '/administrador/tiendas',  icon: '🏪', label: dict.negozi    },
+  ]
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -53,7 +57,7 @@ export default function AdminLayout({ children }) {
   if (checking) {
     return (
       <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: C.textMuted, fontSize: '1rem' }}>Verifica dell'accesso...</div>
+        <div style={{ color: C.textMuted, fontSize: '1rem' }}>{dict.verificando}</div>
       </div>
     )
   }
@@ -83,7 +87,7 @@ export default function AdminLayout({ children }) {
           {!collapsed && (
             <div>
               <div style={{ color: C.green, fontWeight: 900, fontSize: '1rem', letterSpacing: '-0.5px' }}>TIENDAONLINE</div>
-              <div style={{ color: C.textMuted, fontSize: '0.7rem', fontWeight: 500 }}>Pannello Admin</div>
+              <div style={{ color: C.textMuted, fontSize: '0.7rem', fontWeight: 500 }}>{dict.pannelloAdmin}</div>
             </div>
           )}
           <button onClick={() => setCollapsed(!collapsed)} style={{ background: 'transparent', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '1.1rem', padding: '4px', borderRadius: '6px', flexShrink: 0 }}>
@@ -130,7 +134,7 @@ export default function AdminLayout({ children }) {
               <div style={{ color: C.text, fontSize: '0.8rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {admin?.email}
               </div>
-              <div style={{ color: C.green, fontSize: '0.7rem', fontWeight: 700 }}>Super Admin</div>
+              <div style={{ color: C.green, fontSize: '0.7rem', fontWeight: 700 }}>{dict.superAdmin}</div>
             </div>
           )}
           <button
@@ -153,7 +157,7 @@ export default function AdminLayout({ children }) {
             }}
           >
             <span>🚪</span>
-            {!collapsed && <span>Esci</span>}
+            {!collapsed && <span>{dict.esci}</span>}
           </button>
         </div>
       </aside>
@@ -179,7 +183,7 @@ export default function AdminLayout({ children }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <LanguageSelector />
             <a href="/" target="_blank" style={{ color: C.textMuted, fontSize: '0.82rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🌐 Vedi sito
+              🌐 {dict.vediSito}
             </a>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: C.green, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.white, fontWeight: 800, fontSize: '0.85rem' }}>
               D
