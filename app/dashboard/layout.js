@@ -1,14 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
-
-import { C } from '../../lib/theme'
-import { DICTIONARY } from '../../lib/dictionaries'
 import { useLang } from '../../components/LanguageProvider'
+import { DICTIONARY } from '../../lib/dictionaries'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag } from 'lucide-react'
 
 async function fetchTienda() {
   const { data: { session } } = await supabase.auth.getSession()
@@ -23,14 +22,12 @@ async function fetchTienda() {
 
 export default function DashboardLayout({ children }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { lang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['it']
 
-  const [tienda,  setTienda]  = useState(null)
+  const [tienda, setTienda] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [activeItem, setActiveItem] = useState(
-    typeof window !== 'undefined' ? window.location.pathname : '/dashboard'
-  )
 
   useEffect(() => {
     async function init() {
@@ -52,95 +49,74 @@ export default function DashboardLayout({ children }) {
   }
 
   const menuItems = [
-    { icon: '🏠', label: dict.home,         href: '/dashboard' },
-    { icon: '📦', label: dict.prodotti,     href: '/dashboard/productos' },
-    { icon: '📁', label: dict.categorie,    href: '/dashboard/categorias' },
-    { icon: '🛒', label: dict.ordini,       href: '/dashboard/pedidos' },
-    { icon: '🎨', label: dict.design,       href: '/dashboard/diseno' },
-    { icon: '⚙️', label: dict.impostazioni, href: '/dashboard/ajustes' },
+    { icon: Home, label: dict.home || 'Inicio', href: '/dashboard' },
+    { icon: Package, label: dict.prodotti || 'Productos', href: '/dashboard/productos' },
+    { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
+    { icon: ShoppingCart, label: dict.ordini || 'Pedidos', href: '/dashboard/pedidos' },
+    { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
+    { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
   ]
 
   const storeUrl = tienda?.subdominio
     ? `https://${tienda.subdominio}.tiendaonline.it`
     : null
 
-  const inicial = tienda?.nombre
-    ? tienda.nombre.charAt(0).toUpperCase()
-    : '?'
+  const inicial = tienda?.nombre ? tienda.nombre.charAt(0).toUpperCase() : '?'
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: C.grayBg, fontFamily: "'Inter', sans-serif" }}>
-
+    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
+      
       {/* ───── SIDEBAR ───── */}
-      <aside style={{
-        width: '260px',
-        background: C.white,
-        borderRight: `1px solid ${C.grayBorder}`,
-        padding: '24px 20px',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        overflowY: 'auto',
-        boxSizing: 'border-box',
-      }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
-          <span style={{ fontSize: '1.4rem' }}>🛍️</span>
-          <span style={{ fontWeight: 900, color: C.green, fontSize: '1.05rem', letterSpacing: '-0.5px' }}>TIENDAONLINE</span>
+      <aside className="w-64 bg-white/60 backdrop-blur-xl border-r border-slate-200/50 flex flex-col sticky top-0 h-screen box-border shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all">
+        <div className="p-6 pb-2">
+          {/* Logo */}
+          <div className="flex items-center gap-3 mb-8 cursor-default">
+            <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30">
+              <ShoppingBag size={20} />
+            </div>
+            <span className="font-bold text-slate-900 tracking-tight text-lg">TIENDAONLINE</span>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex flex-col gap-1.5">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => router.push(item.href)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
+                    ${isActive 
+                      ? 'bg-primary/10 text-primary border border-primary/10 shadow-[0_2px_10px_rgba(37,99,235,0.05)]' 
+                      : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
+                    }`}
+                >
+                  <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                  {item.label}
+                </button>
+              )
+            })}
+          </nav>
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {menuItems.map((item) => {
-            const isActive = activeItem === item.href
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                onClick={() => setActiveItem(item.href)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '11px 14px', borderRadius: '10px',
-                  color: isActive ? C.green : C.text,
-                  background: isActive ? C.greenBg : 'transparent',
-                  textDecoration: 'none',
-                  fontWeight: isActive ? 700 : 500,
-                  fontSize: '0.93rem',
-                  border: isActive ? `1px solid ${C.greenBorder}` : '1px solid transparent',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
-                {item.label}
-              </a>
-            )
-          })}
-        </nav>
-
         {/* Bottom: store info + logout */}
-        <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: `1px solid ${C.grayBorder}` }}>
+        <div className="mt-auto p-4 border-t border-slate-200/50 bg-white/40">
           {loading ? (
-            <div style={{ color: C.textMuted, fontSize: '0.85rem', textAlign: 'center' }}>{dict.caricamento}</div>
+            <div className="text-slate-400 text-sm text-center py-4">Cargando...</div>
           ) : (
             <>
               {/* Store card */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <div style={{
-                  width: '38px', height: '38px', borderRadius: '50%',
-                  background: C.greenBg, border: `2px solid ${C.greenBorder}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: C.green, fontWeight: 900, fontSize: '1rem', flexShrink: 0,
-                }}>
+              <div className="flex items-center gap-3 mb-4 p-2 rounded-xl bg-slate-50/80 border border-slate-100">
+                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
                   {inicial}
                 </div>
-                <div style={{ overflow: 'hidden', flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div className="overflow-hidden flex-1">
+                  <div className="font-semibold text-sm text-slate-800 truncate" title={tienda?.nombre}>
                     {tienda?.nombre || '—'}
                   </div>
                   {tienda?.subdominio && (
-                    <div style={{ fontSize: '0.72rem', color: C.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div className="text-xs text-slate-500 truncate" title={`${tienda.subdominio}.tiendaonline.it`}>
                       {tienda.subdominio}.tiendaonline.it
                     </div>
                   )}
@@ -153,30 +129,18 @@ export default function DashboardLayout({ children }) {
                   href={storeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                    padding: '8px 12px', borderRadius: '8px', width: '100%',
-                    background: C.greenBg, color: C.green, border: `1px solid ${C.greenBorder}`,
-                    fontWeight: 600, fontSize: '0.8rem', textDecoration: 'none',
-                    marginBottom: '8px', boxSizing: 'border-box',
-                  }}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 mb-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
                 >
-                  🌍 {dict.vediSito}
+                  <Globe size={16} /> Visitar sitio
                 </a>
               )}
 
               {/* Logout */}
               <button
                 onClick={handleLogout}
-                style={{
-                  width: '100%', padding: '8px', borderRadius: '8px',
-                  background: 'transparent', color: C.textMuted,
-                  border: `1px solid ${C.grayBorder}`,
-                  fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-                  fontFamily: 'inherit',
-                }}
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-100 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer"
               >
-                🚪 {dict.esci}
+                <LogOut size={16} /> Salir
               </button>
             </>
           )}
@@ -184,48 +148,28 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* ───── MAIN ───── */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-50">
         {/* Topbar */}
-        <header style={{
-          height: '64px', background: C.white,
-          borderBottom: `1px solid ${C.grayBorder}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 28px', position: 'sticky', top: 0, zIndex: 10,
-        }}>
-          <div style={{ fontWeight: 700, color: C.text, fontSize: '1rem' }}>
+        <header className="h-16 bg-white/70 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-8 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
+          <div className="font-semibold text-slate-800 flex items-center gap-2">
+            <Store size={18} className="text-slate-400" />
             {loading ? '...' : (tienda?.nombre || 'Dashboard')}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="flex items-center gap-4">
             <LanguageSelector />
-            {storeUrl && (
-              <a
-                href={storeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  background: C.green, color: C.white,
-                  padding: '8px 18px', borderRadius: '8px',
-                  fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
-                  boxShadow: '0 2px 0 rgba(0,0,0,0.2)',
-                }}
-              >
-                🌍 {dict.apriBottega}
-              </a>
-            )}
           </div>
         </header>
 
         {/* Content */}
-        <div style={{ padding: '32px 36px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1 }}>
+        <div className="flex-1 p-8 overflow-y-auto flex flex-col">
+          <div className="flex-1 max-w-5xl w-full mx-auto">
             {children}
           </div>
-          <div style={{ marginTop: '40px' }}>
+          <div className="mt-12 max-w-5xl w-full mx-auto">
             <UniversalFooter />
           </div>
         </div>
       </main>
-
     </div>
   )
 }
