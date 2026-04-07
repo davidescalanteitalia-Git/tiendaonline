@@ -35,7 +35,7 @@ async function getStoreData(domain) {
 }
 
 export default async function StoreFrontPage({ params }) {
-  const { domain } = await params
+  const { domain } = params;
   const data = await getStoreData(domain)
 
   if (!data) {
