@@ -5,33 +5,41 @@ import StoreClient from '../../../components/StoreClient'
 export const dynamic = 'force-dynamic'
 
 async function getStoreData(domain) {
-  const supabase = getSupabaseAdmin()
-  
-  // 1. Fetch Tienda
-  const { data: tienda } = await supabase
-    .from('tiendas')
-    .select('*')
-    .eq('subdominio', domain)
-    .single()
+  try {
+    const supabase = getSupabaseAdmin()
+    
+    // 1. Fetch Tienda
+    const { data: tienda, error: tiendaError } = await supabase
+      .from('tiendas')
+      .select('*')
+      .eq('subdominio', domain)
+      .single()
 
-  if (!tienda) return null
+    if (tiendaError || !tienda) {
+      console.error('Store not found or error:', tiendaError)
+      return null
+    }
 
-  // 2. Fetch Categories
-  const { data: categorias } = await supabase
-    .from('categorias')
-    .select('*')
-    .eq('tienda_id', tienda.id)
-    .order('orden', { ascending: true })
+    // 2. Fetch Categories
+    const { data: categorias } = await supabase
+      .from('categorias')
+      .select('*')
+      .eq('tienda_id', tienda.id)
+      .order('orden', { ascending: true })
 
-  // 3. Fetch Products
-  const { data: productos } = await supabase
-    .from('productos')
-    .select('*')
-    .eq('tienda_id', tienda.id)
-    .eq('estado', 'activo')
-    .order('orden', { ascending: true })
+    // 3. Fetch Products
+    const { data: productos } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('tienda_id', tienda.id)
+      .eq('estado', 'activo')
+      .order('orden', { ascending: true })
 
-  return { tienda, categorias: categorias || [], productos: productos || [] }
+    return { tienda, categorias: categorias || [], productos: productos || [] }
+  } catch (err) {
+    console.error('Error in getStoreData:', err)
+    return null
+  }
 }
 
 export default async function StoreFrontPage({ params }) {
