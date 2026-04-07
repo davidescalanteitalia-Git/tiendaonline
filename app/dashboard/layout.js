@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
 import { C } from '../../lib/theme'
+import LanguageSelector from '../../components/LanguageSelector'
+import UniversalFooter from '../../components/UniversalFooter'
 
 async function fetchTienda() {
   const { data: { session } } = await supabase.auth.getSession()
@@ -188,26 +190,34 @@ export default function DashboardLayout({ children }) {
           <div style={{ fontWeight: 700, color: C.text, fontSize: '1rem' }}>
             {loading ? '...' : (tienda?.nombre || 'Dashboard')}
           </div>
-          {storeUrl && (
-            <a
-              href={storeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: C.green, color: C.white,
-                padding: '8px 18px', borderRadius: '8px',
-                fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
-                boxShadow: '0 2px 0 rgba(0,0,0,0.2)',
-              }}
-            >
-              🌍 Apri bottega
-            </a>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <LanguageSelector />
+            {storeUrl && (
+              <a
+                href={storeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: C.green, color: C.white,
+                  padding: '8px 18px', borderRadius: '8px',
+                  fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none',
+                  boxShadow: '0 2px 0 rgba(0,0,0,0.2)',
+                }}
+              >
+                🌍 Apri bottega
+              </a>
+            )}
+          </div>
         </header>
 
         {/* Content */}
-        <div style={{ padding: '32px 36px', flex: 1, overflowY: 'auto' }}>
-          {children}
+        <div style={{ padding: '32px 36px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1 }}>
+            {children}
+          </div>
+          <div style={{ marginTop: '40px' }}>
+            <UniversalFooter />
+          </div>
         </div>
       </main>
 

@@ -7,6 +7,8 @@ import { supabase } from '../../lib/supabase'
 const ADMIN_EMAIL = 'davidescalanteitalia@gmail.com'
 
 import { C as ThemeC } from '../../lib/theme'
+import LanguageSelector from '../../components/LanguageSelector'
+import UniversalFooter from '../../components/UniversalFooter'
 
 const C = {
   bg:        ThemeC.grayBg,
@@ -175,6 +177,7 @@ export default function AdminLayout({ children }) {
             {NAV.find(n => n.href === pathname)?.icon} {NAV.find(n => n.href === pathname)?.label || 'Admin'}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <LanguageSelector />
             <a href="/" target="_blank" style={{ color: C.textMuted, fontSize: '0.82rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
               🌐 Ver sitio
             </a>
@@ -185,8 +188,13 @@ export default function AdminLayout({ children }) {
         </div>
 
         {/* Page content */}
-        <div style={{ padding: '28px 24px', flex: 1 }}>
-          {children}
+        <div style={{ padding: '28px 24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1 }}>
+            {children}
+          </div>
+          <div style={{ marginTop: '40px' }}>
+            <UniversalFooter />
+          </div>
         </div>
       </main>
     </div>

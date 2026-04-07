@@ -1,0 +1,38 @@
+import Image from 'next/image'
+import { C } from '../lib/theme'
+
+export default function UniversalFooter() {
+  return (
+    <footer style={{ background: C.greenDark, padding: '40px 20px 28px', color: C.white, width: '100%', marginTop: 'auto' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Image src="/logo.jpg" alt="TIENDAONLINE" width={32} height={32} style={{ borderRadius: '6px' }} />
+              <span style={{ fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.5px' }}>TIENDAONLINE</span>
+            </div>
+            <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', marginTop: '4px' }}>
+              La tua vetrina online in 10 minuti
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', marginTop: '8px' }}>
+            {[
+              { label: 'Privacy Policy',      href: '/privacy'   },
+              { label: 'Termini di servizio', href: '/terms'     },
+              { label: 'Contatti',            href: '/contatti'  },
+            ].map((link, i) => (
+              <a key={i} href={link.href} style={{ color: 'rgba(255,255,255,0.7)', textDecoration: 'none', fontSize: '0.88rem', fontWeight: 500 }}>
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+        <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.15)', margin: '16px 0' }} />
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '8px', opacity: 0.5, fontSize: '0.8rem' }}>
+          <span>© 2026 TIENDAONLINE · tiendaonline.it</span>
+          <span>🛍️ Sviluppato da David Escalante</span>
+        </div>
+      </div>
+    </footer>
+  )
+}
