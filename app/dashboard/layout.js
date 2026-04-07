@@ -4,17 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 
-const C = {
-  green:      '#1a5c2a',
-  greenLight: '#2d8a45',
-  greenBg:    '#f0fdf4',
-  greenBorder:'#d1fae5',
-  white:      '#ffffff',
-  text:       '#0f172a',
-  textMuted:  '#64748b',
-  grayBorder: '#e2e8f0',
-  grayBg:     '#f8fafc',
-}
+import { C } from '../../lib/theme'
 
 async function fetchTienda() {
   const { data: { session } } = await supabase.auth.getSession()

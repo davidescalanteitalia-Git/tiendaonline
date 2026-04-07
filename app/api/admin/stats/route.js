@@ -1,10 +1,14 @@
-import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
+import { getSupabaseAdmin, verifyAdmin } from '../../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req) {
   try {
+    if (!(await verifyAdmin(req))) {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
     // Total usuarios
     const { data: usersData } = await supabaseAdmin.auth.admin.listUsers()

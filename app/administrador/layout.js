@@ -6,18 +6,19 @@ import { supabase } from '../../lib/supabase'
 
 const ADMIN_EMAIL = 'davidescalanteitalia@gmail.com'
 
-const C = {
-  bg:        '#0f172a',
-  sidebar:   '#1e293b',
-  green:     '#059669',
-  greenHover:'#047857',
-  white:     '#ffffff',
-  text:      '#f1f5f9',
-  textMuted: '#94a3b8',
-  border:    '#334155',
-  active:    '#059669',
-}
+import { C as ThemeC } from '../../lib/theme'
 
+const C = {
+  bg:        ThemeC.grayBg,
+  sidebar:   ThemeC.white,
+  green:     ThemeC.green,
+  greenHover:ThemeC.greenDark,
+  white:     ThemeC.white,
+  text:      ThemeC.text,
+  textMuted: ThemeC.textMuted,
+  border:    ThemeC.grayBorder,
+  active:    ThemeC.green,
+}
 const NAV = [
   { href: '/administrador',          icon: '🏠', label: 'Dashboard'   },
   { href: '/administrador/usuarios', icon: '👥', label: 'Usuarios'    },

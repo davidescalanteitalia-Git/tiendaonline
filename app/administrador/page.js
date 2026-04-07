@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from 'react'
 
+import { C as ThemeC } from '../../lib/theme'
+
 const C = {
-  bg:       '#0f172a',
-  card:     '#1e293b',
-  green:    '#059669',
-  white:    '#ffffff',
-  text:     '#f1f5f9',
-  textMuted:'#94a3b8',
-  border:   '#334155',
-  amber:    '#f59e0b',
-  red:      '#ef4444',
-  blue:     '#3b82f6',
+  bg:       ThemeC.grayBg,
+  card:     ThemeC.white,
+  green:    ThemeC.green,
+  white:    ThemeC.white,
+  text:     ThemeC.text,
+  textMuted:ThemeC.textMuted,
+  border:   ThemeC.grayBorder,
+  amber:    ThemeC.amber,
+  red:      ThemeC.error,
+  blue:     ThemeC.blue,
 }
 
 function StatCard({ icon, label, value, sub, color }) {
@@ -110,7 +112,7 @@ export default function AdminDashboard() {
               </div>
             </div>
           ))}
-          <div style={{ marginTop: '20px', padding: '12px', background: '#0f172a', borderRadius: '10px' }}>
+          <div style={{ marginTop: '20px', padding: '12px', background: C.bg, borderRadius: '10px' }}>
             <div style={{ color: C.textMuted, fontSize: '0.75rem', marginBottom: '4px' }}>Tasa de activación</div>
             <div style={{ color: C.green, fontWeight: 900, fontSize: '1.4rem' }}>
               {stats?.totalTiendas ? Math.round((stats.tiendasActivas / stats.totalTiendas) * 100) : 0}%
@@ -143,7 +145,7 @@ export default function AdminDashboard() {
                 borderBottom:  i < stats.recientes.length - 1 ? `1px solid ${C.border}` : 'none',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🏪</div>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🏪</div>
                   <div>
                     <div style={{ color: C.text, fontWeight: 600, fontSize: '0.88rem' }}>{t.nombre}</div>
                     <div style={{ color: C.textMuted, fontSize: '0.75rem' }}>{t.subdominio}.tiendaonline.it</div>

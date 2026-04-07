@@ -2,23 +2,7 @@
 
 import Image from 'next/image'
 
-const C = {
-  green:      '#059669',
-  greenLight: '#10b981',
-  greenDark:  '#047857',
-  greenBg:    '#f0fdf4',
-  greenBorder:'#d1fae5',
-  white:      '#ffffff',
-  text:       '#0f172a',
-  textMuted:  '#64748b',
-  amber:      '#f59e0b',
-  amberBg:    '#fffbeb',
-  amberText:  '#92400e',
-  grayBorder: '#e2e8f0',
-  grayBg:     '#f8fafc',
-  grayText:   '#94a3b8',
-}
-
+import { C } from '../lib/theme'
 export default function PageShell({ children }) {
   return (
     <div style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: '#111827', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
