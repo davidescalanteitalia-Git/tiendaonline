@@ -19,21 +19,21 @@ export default function UniversalFooter() {
               <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', fontWeight: 900, letterSpacing: '-0.5px' }}>TIENDAONLINE</h3>
             </div>
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>
-              {dict.vetrinaSlogan}
+              {dict.footerTagline}
             </p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', marginTop: '8px' }}>
-            <a href="/privacy" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.privacy}</a>
-            <a href="/terms" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.termini}</a>
-            <a href="/contatti" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.contatti}</a>
+            <a href="/privacy" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.footerPrivacy}</a>
+            <a href="/terms" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.footerTerms}</a>
+            <a href="/contatti" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.footerContact}</a>
           </div>
         </div>
 
         {/* Bottom */}
         <div style={{ marginTop: '32px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-          <div>{dict.diritti}</div>
+          <div>© {new Date().getFullYear()} TIENDAONLINE</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>{dict.sviluppatoDa}</span>
+            <span>{dict.footerCredit}</span>
           </div>
         </div>
       </div>

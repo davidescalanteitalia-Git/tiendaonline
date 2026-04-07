@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { translations } from '../lib/translations'
+import { useLang } from '../components/LanguageProvider'
+import { DICTIONARY } from '../lib/dictionaries'
 
 // ─── PALETA DE COLORES ────────────────────────────────────────────────────────
 import { C } from '../lib/theme'
@@ -11,7 +12,7 @@ import { C } from '../lib/theme'
 const DEMO_TABS = [
   {
     icon: '🥖',
-    label: { it: 'Panetteria', es: 'Panadería', en: 'Bakery' },
+    labelKey: 'tabPanetteria',
     store: 'Panetteria Rossi',
     products: [
       { name: 'Pane casereccio',      price: '2.50', seed: 'bread1'      },
@@ -22,7 +23,7 @@ const DEMO_TABS = [
   },
   {
     icon: '🍊',
-    label: { it: 'Fruttivendolo', es: 'Frutería', en: 'Greengrocer' },
+    labelKey: 'tabFruttivendolo',
     store: "Frutta e Verdura da Mario",
     products: [
       { name: 'Fragole biologiche',   price: '3.90', seed: 'berries1'    },
@@ -33,7 +34,7 @@ const DEMO_TABS = [
   },
   {
     icon: '☕',
-    label: { it: 'Bar', es: 'Bar', en: 'Café' },
+    labelKey: 'tabBar',
     store: 'Bar Centrale',
     products: [
       { name: 'Caffè espresso',       price: '1.20', seed: 'coffee1'     },
@@ -44,7 +45,7 @@ const DEMO_TABS = [
   },
   {
     icon: '🏪',
-    label: { it: 'Negozio locale', es: 'Local', en: 'Local shop' },
+    labelKey: 'tabNegozioLocale',
     store: 'Alimentari da Lucia',
     products: [
       { name: 'Olio extravergine',    price: '8.50', seed: 'olive1'      },
@@ -57,13 +58,14 @@ const DEMO_TABS = [
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function Home() {
-  const [lang,        setLang]        = useState('it')
+  const { lang, setLang } = useLang()
+  const dict = DICTIONARY[lang]
   const [storeCount,  setStoreCount]  = useState(0)
   const [activeDemo,  setActiveDemo]  = useState(0)
   const [openFaq,     setOpenFaq]     = useState(null)
 
-  // Función de traducción
-  const t = (key) => translations[key]?.[lang] ?? translations[key]?.it ?? key
+  // Función de traducción conectada al diccionario global
+  const t = (key) => dict[key] || key
 
   // Carga el contador de tiendas
   useEffect(() => {
@@ -410,7 +412,7 @@ export default function Home() {
                   transition:   'all 0.2s',
                 }}
               >
-                {tab.icon} {tab.label[lang]}
+                {tab.icon} {t(tab.labelKey)}
               </button>
             ))}
           </div>

@@ -49,7 +49,7 @@ export default function PageShell({ children }) {
               fontWeight:    700,
               boxShadow:     `0 4px 10px rgba(5, 150, 105, 0.25)`,
             }}>
-              {dict.iniziaGratis}
+              {dict.registrati}
             </a>
           </div>
         </div>

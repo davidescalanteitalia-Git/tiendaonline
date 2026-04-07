@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLang } from '../../../components/LanguageProvider'
+import { DICTIONARY } from '../../../lib/dictionaries'
 
 const C = {
   card:     '#1e293b',
@@ -16,6 +18,9 @@ const C = {
 }
 
 export default function TiendasPage() {
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang] || DICTIONARY['it']
+
   const [tiendas,  setTiendas]  = useState([])
   const [loading,  setLoading]  = useState(true)
   const [search,   setSearch]   = useState('')
@@ -71,9 +76,9 @@ export default function TiendasPage() {
 
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px' }}>🏪 Gestión de Tiendas</h1>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px' }}>🏪 {dict.gestioneNegozi}</h1>
         <p style={{ color: C.textMuted, margin: 0, fontSize: '0.9rem' }}>
-          {tiendas.length} tiendas registradas · {tiendas.filter(t => t.estado === 'activo').length} activas
+          {tiendas.length} {dict.negoziRegistrati} · {tiendas.filter(t => t.estado === 'activo').length} {dict.negoziAttiviLabel}
         </p>
       </div>
 
@@ -81,7 +86,7 @@ export default function TiendasPage() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', alignItems: 'center' }}>
         <input
           type="text"
-          placeholder="🔍 Buscar por nombre, subdominio, WhatsApp..."
+          placeholder={dict.cercaNegoziPlaceholder}
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{
@@ -91,27 +96,30 @@ export default function TiendasPage() {
           }}
         />
         <div style={{ display: 'flex', gap: '8px' }}>
-          {['todas', 'activas', 'bloqueadas'].map(f => (
-            <button key={f} onClick={() => setFiltro(f)} style={{
-              padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-              background: filtro === f ? C.green : C.card,
-              color: filtro === f ? C.white : C.textMuted,
-              fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
-              textTransform: 'capitalize',
-            }}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+          {['todas', 'activas', 'bloqueadas'].map((f, i) => {
+            const label = f === 'todas' ? dict.filtroTutte : f === 'activas' ? dict.filtroAttive : dict.filtroBloccate
+            return (
+              <button key={f} onClick={() => setFiltro(f)} style={{
+                padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                background: filtro === f ? C.green : C.card,
+                color: filtro === f ? C.white : C.textMuted,
+                fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
+                textTransform: 'capitalize',
+              }}>
+                {label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Cards grid */}
       {loading ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: C.textMuted }}>Cargando tiendas...</div>
+        <div style={{ padding: '40px', textAlign: 'center', color: C.textMuted }}>{dict.caricandoNegozi}</div>
       ) : filtradas.length === 0 ? (
         <div style={{ padding: '60px', textAlign: 'center', color: C.textMuted }}>
           <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🏪</div>
-          No se encontraron tiendas.
+          {dict.nessunNegozioTrovato}
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
@@ -139,7 +147,7 @@ export default function TiendasPage() {
                   background: t.estado === 'activo' ? '#05966922' : '#ef444422',
                   color: t.estado === 'activo' ? C.green : C.red,
                 }}>
-                  {t.estado === 'activo' ? '● Activo' : '● Bloqueado'}
+                  {t.estado === 'activo' ? dict.adminAttivo : dict.adminBloccato}
                 </span>
               </div>
 
@@ -152,7 +160,7 @@ export default function TiendasPage() {
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.8rem' }}>📅</span>
                   <span style={{ color: C.textMuted, fontSize: '0.82rem' }}>
-                    Registrada {new Date(t.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {dict.registrataIl} {new Date(t.created_at).toLocaleDateString(lang === 'it' ? 'it-IT' : lang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </span>
                 </div>
               </div>
@@ -165,7 +173,7 @@ export default function TiendasPage() {
                   color: t.estado === 'activo' ? C.amber : C.green,
                   fontSize: '0.8rem', fontWeight: 700, fontFamily: 'inherit',
                 }}>
-                  {t.estado === 'activo' ? '🔒 Bloquear' : '✅ Activar'}
+                  {t.estado === 'activo' ? '🔒 ' + dict.blocca : '✅ ' + dict.attiva}
                 </button>
                 <button onClick={() => setConfirm({ type: 'delete', tienda: t })} style={{
                   padding: '8px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer',
@@ -185,17 +193,17 @@ export default function TiendasPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '32px', maxWidth: '400px', width: '90%' }}>
             <h3 style={{ margin: '0 0 12px', color: C.text, fontSize: '1.1rem' }}>
-              {confirm.type === 'delete' ? '🗑️ Eliminar tienda' : confirm.tienda.estado === 'activo' ? '🔒 Bloquear tienda' : '✅ Activar tienda'}
+              {confirm.type === 'delete' ? '🗑️ ' + dict.eliminaNegoziConfirm : confirm.tienda.estado === 'activo' ? '🔒 ' + dict.blocca + ' ' + dict.perfilTienda : '✅ ' + dict.attiva + ' ' + dict.perfilTienda}
             </h3>
             <p style={{ color: C.textMuted, margin: '0 0 24px', fontSize: '0.9rem', lineHeight: 1.6 }}>
               {confirm.type === 'delete'
-                ? `¿Eliminar permanentemente "${confirm.tienda.nombre}"? Esta acción no se puede deshacer.`
-                : `¿${confirm.tienda.estado === 'activo' ? 'Bloquear' : 'Activar'} la tienda "${confirm.tienda.nombre}"?`
+                ? dict.eliminaNegoziConfirm.replace('?', '') + ` "${confirm.tienda.nombre}"?`
+                : `${confirm.tienda.estado === 'activo' ? dict.blocca : dict.attiva} "${confirm.tienda.nombre}"?`
               }
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button onClick={() => setConfirm(null)} style={{ padding: '9px 18px', borderRadius: '8px', border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                Cancelar
+                {dict.annulla}
               </button>
               <button
                 onClick={() => confirm.type === 'delete' ? eliminar(confirm.tienda) : toggleEstado(confirm.tienda)}
@@ -205,7 +213,7 @@ export default function TiendasPage() {
                   color: C.white,
                 }}
               >
-                Confirmar
+                {dict.confirmar}
               </button>
             </div>
           </div>

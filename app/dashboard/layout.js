@@ -103,7 +103,7 @@ export default function DashboardLayout({ children }) {
         {/* Bottom: store info + logout */}
         <div className="mt-auto p-4 border-t border-slate-200/50 bg-white/40">
           {loading ? (
-            <div className="text-slate-400 text-sm text-center py-4">Cargando...</div>
+            <div className="text-slate-400 text-sm text-center py-4">{dict.caricamento}</div>
           ) : (
             <>
               {/* Store card */}
@@ -131,7 +131,7 @@ export default function DashboardLayout({ children }) {
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2.5 mb-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
                 >
-                  <Globe size={16} /> Visitar sitio
+                  <Globe size={16} /> {dict.visitarSitio}
                 </a>
               )}
 
@@ -140,7 +140,7 @@ export default function DashboardLayout({ children }) {
                 onClick={handleLogout}
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-100 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer"
               >
-                <LogOut size={16} /> Salir
+                <LogOut size={16} /> {dict.salir}
               </button>
             </>
           )}
@@ -153,7 +153,7 @@ export default function DashboardLayout({ children }) {
         <header className="h-16 bg-white/70 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-8 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
           <div className="font-semibold text-slate-800 flex items-center gap-2">
             <Store size={18} className="text-slate-400" />
-            {loading ? '...' : (tienda?.nombre || 'Dashboard')}
+            {loading ? '...' : (tienda?.nombre || dict.dashboard)}
           </div>
           <div className="flex items-center gap-4">
             <LanguageSelector />

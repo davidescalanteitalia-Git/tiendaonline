@@ -2,9 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useLang } from '../../components/LanguageProvider'
+import { DICTIONARY } from '../../lib/dictionaries'
 import { Eye, Smartphone, Package as PackageIcon, Copy, ExternalLink, MessageCircle, CheckCircle, Store } from 'lucide-react'
 
 export default function DashboardPage() {
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang] || DICTIONARY['es']
+
   const [tienda, setTienda] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -45,10 +50,10 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-800 tracking-tight mb-2">
-          Bienvenido{tienda?.nombre ? `, ${tienda.nombre}` : ''} 👋
+          {dict.bienvenido}{tienda?.nombre ? `, ${tienda.nombre}` : ''} 👋
         </h1>
         <p className="text-slate-500">
-          Resumen general de tu tienda en línea de un vistazo.
+          {dict.resumenGeneral}
         </p>
       </div>
 
@@ -58,7 +63,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2 font-semibold text-primary mb-1">
               <Store size={18} />
-              Tu tienda está online
+              {dict.tiendaOnline}
             </div>
             <div className="text-slate-800 font-mono text-lg font-medium">
               {tienda.subdominio}.tiendaonline.it
@@ -68,11 +73,11 @@ export default function DashboardPage() {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(storeUrl)
-                alert('¡Enlace copiado!')
+                alert(dict.enlaceCopiado)
               }}
               className="px-4 py-2 bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2"
             >
-              <Copy size={16} /> Copiar
+              <Copy size={16} /> {dict.copiar}
             </button>
             <a
               href={storeUrl}
@@ -80,7 +85,7 @@ export default function DashboardPage() {
               rel="noopener noreferrer"
               className="px-5 py-2 bg-primary hover:bg-blue-700 text-white rounded-xl font-medium transition-all shadow-[0_4px_14px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] flex items-center gap-2 transform hover:-translate-y-0.5"
             >
-              <ExternalLink size={16} /> Abrir
+              <ExternalLink size={16} /> {dict.abrir}
             </a>
           </div>
         </div>
@@ -89,9 +94,9 @@ export default function DashboardPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         {[
-          { label: 'Visitas (Hoy)', value: '—', icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
-          { label: 'Pedidos Nuevos', value: '—', icon: Smartphone, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
-          { label: 'Productos Activos', value: '—', icon: PackageIcon, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-100' },
+          { label: dict.visitasHoy,      value: '—', icon: Eye,         color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-blue-100'   },
+          { label: dict.pedidosNuevos,   value: '—', icon: Smartphone,  color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-100'  },
+          { label: dict.productosActivos,value: '—', icon: PackageIcon, color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-100' },
         ].map((stat, i) => {
           const Icon = stat.icon
           return (
@@ -108,15 +113,15 @@ export default function DashboardPage() {
 
       {/* Next steps */}
       <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-[0_2px_15px_rgba(0,0,0,0.03)] mb-8">
-        <h2 className="text-lg font-bold text-slate-800 mb-6">Próximos pasos</h2>
+        <h2 className="text-lg font-bold text-slate-800 mb-6">{dict.proximosPasos}</h2>
 
         <div className="flex items-start gap-4 pb-6 border-b border-slate-100 mb-6">
           <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
             <CheckCircle size={18} />
           </div>
           <div>
-            <div className="font-semibold text-slate-800 mb-1">Crea tu cuenta</div>
-            <div className="text-slate-500 text-sm">Has registrado tu tienda con éxito. TIENDAONLINE está lista.</div>
+            <div className="font-semibold text-slate-800 mb-1">{dict.creatuCuenta}</div>
+            <div className="text-slate-500 text-sm">{dict.cuentaRegistrada}</div>
           </div>
         </div>
 
@@ -125,13 +130,13 @@ export default function DashboardPage() {
             2
           </div>
           <div>
-            <div className="font-semibold text-slate-800 mb-1">Añade tu primer producto</div>
-            <div className="text-slate-500 text-sm mb-4">Sube una foto, escribe un título y ponle precio a tu producto.</div>
+            <div className="font-semibold text-slate-800 mb-1">{dict.añadePrimerProducto}</div>
+            <div className="text-slate-500 text-sm mb-4">{dict.añadePrimerProductoDesc}</div>
             <a
               href="/dashboard/productos"
               className="inline-flex items-center bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
-              + Nuevo Producto
+              {dict.nuevoProducto}
             </a>
           </div>
         </div>
@@ -146,18 +151,18 @@ export default function DashboardPage() {
           <div className="relative z-10">
             <div className="font-bold text-xl mb-2 flex items-center gap-2">
               <MessageCircle size={24} />
-              Comparte tu tienda en WhatsApp
+              {dict.comparteTienda}
             </div>
             <div className="text-emerald-50 mb-6 max-w-md">
-              Envía el enlace a tus clientes y comienza a recibir pedidos inmediatamente. Es rápido y sencillo.
+              {dict.comparteTiendaDesc}
             </div>
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(`Ordena en mi tienda online: ${storeUrl}`)}`}
+              href={`https://wa.me/?text=${encodeURIComponent(`${dict.ordenarEnMiTienda} ${storeUrl}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white text-emerald-600 hover:bg-emerald-50 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-[0_4px_14px_rgba(0,0,0,0.1)] transform hover:-translate-y-0.5"
             >
-              <MessageCircle size={18} /> Enviar Mensaje
+              <MessageCircle size={18} /> {dict.enviarMensaje}
             </a>
           </div>
         </div>

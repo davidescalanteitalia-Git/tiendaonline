@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLang } from '../../../components/LanguageProvider'
+import { DICTIONARY } from '../../../lib/dictionaries'
 
 const C = {
   card:     '#1e293b',
@@ -16,6 +18,9 @@ const C = {
 }
 
 export default function UsuariosPage() {
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang] || DICTIONARY['it']
+
   const [usuarios, setUsuarios] = useState([])
   const [loading,  setLoading]  = useState(true)
   const [search,   setSearch]   = useState('')
@@ -72,9 +77,9 @@ export default function UsuariosPage() {
 
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px' }}>👥 Gestión de Usuarios</h1>
+        <h1 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px' }}>👥 {dict.gestioneUtenti}</h1>
         <p style={{ color: C.textMuted, margin: 0, fontSize: '0.9rem' }}>
-          {usuarios.length} usuarios registrados en total
+          {usuarios.length} {dict.utentiRegistrati}
         </p>
       </div>
 
@@ -82,7 +87,7 @@ export default function UsuariosPage() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '20px', alignItems: 'center' }}>
         <input
           type="text"
-          placeholder="🔍 Buscar por email, nombre, subdominio..."
+          placeholder={dict.cercaNegoziPlaceholder}
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{
@@ -92,17 +97,24 @@ export default function UsuariosPage() {
           }}
         />
         <div style={{ display: 'flex', gap: '8px' }}>
-          {['todos', 'activos', 'bloqueados', 'sin-tienda'].map(f => (
-            <button key={f} onClick={() => setFiltro(f)} style={{
-              padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-              background: filtro === f ? C.green : C.card,
-              color: filtro === f ? C.white : C.textMuted,
-              fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
-              textTransform: 'capitalize',
-            }}>
-              {f === 'sin-tienda' ? 'Sin tienda' : f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+          {['todos', 'activos', 'bloqueados', 'sin-tienda'].map(f => {
+            const label = 
+              f === 'todos' ? dict.filtroTutte : 
+              f === 'activos' ? dict.filtroAttive : 
+              f === 'bloqueados' ? dict.filtroBloccate : 
+              dict.sinTienda
+            return (
+              <button key={f} onClick={() => setFiltro(f)} style={{
+                padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                background: filtro === f ? C.green : C.card,
+                color: filtro === f ? C.white : C.textMuted,
+                fontSize: '0.8rem', fontWeight: 600, fontFamily: 'inherit',
+                textTransform: 'capitalize',
+              }}>
+                {label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -110,15 +122,15 @@ export default function UsuariosPage() {
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '16px', overflow: 'hidden' }}>
         {/* Header tabla */}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 1.5fr', padding: '12px 20px', borderBottom: `1px solid ${C.border}`, background: C.bg }}>
-          {['Email', 'Tienda', 'Subdominio', 'WhatsApp', 'Estado', 'Acciones'].map(h => (
+          {[dict.tabEmail, dict.tabNegozio, dict.tabSotto, dict.tabWA, dict.tabStato, dict.tabAzioni].map(h => (
             <div key={h} style={{ color: C.textMuted, fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</div>
           ))}
         </div>
 
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: C.textMuted }}>Cargando...</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: C.textMuted }}>{dict.caricando}...</div>
         ) : filtrados.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: C.textMuted }}>No se encontraron usuarios.</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: C.textMuted }}>{dict.nessunNegozioTrovato}</div>
         ) : (
           filtrados.map((u, i) => (
             <div key={u.id} style={{
@@ -129,7 +141,7 @@ export default function UsuariosPage() {
               {/* Email */}
               <div>
                 <div style={{ color: C.text, fontSize: '0.85rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
-                <div style={{ color: C.textMuted, fontSize: '0.72rem' }}>{new Date(u.created_at).toLocaleDateString('es-ES')}</div>
+                <div style={{ color: C.textMuted, fontSize: '0.72rem' }}>{new Date(u.created_at).toLocaleDateString(lang === 'it' ? 'it-IT' : 'es-ES')}</div>
               </div>
 
               {/* Nombre tienda */}
@@ -158,10 +170,10 @@ export default function UsuariosPage() {
                     background: u.tienda.estado === 'activo' ? '#05966922' : '#ef444422',
                     color: u.tienda.estado === 'activo' ? C.green : C.red,
                   }}>
-                    {u.tienda.estado === 'activo' ? '● Activo' : '● Bloqueado'}
+                    {u.tienda.estado === 'activo' ? dict.adminAttivo : dict.adminBloccato}
                   </span>
                 ) : (
-                  <span style={{ color: C.textMuted, fontSize: '0.75rem' }}>Sin tienda</span>
+                  <span style={{ color: C.textMuted, fontSize: '0.75rem' }}>{dict.sinTienda}</span>
                 )}
               </div>
 
@@ -174,7 +186,7 @@ export default function UsuariosPage() {
                     color: u.tienda.estado === 'activo' ? C.amber : C.green,
                     fontSize: '0.75rem', fontWeight: 700, fontFamily: 'inherit',
                   }}>
-                    {u.tienda.estado === 'activo' ? '🔒 Bloquear' : '✅ Activar'}
+                    {u.tienda.estado === 'activo' ? '🔒 ' + dict.blocca : '✅ ' + dict.attiva}
                   </button>
                 )}
                 <button onClick={() => setConfirm({ type: 'delete', user: u })} style={{
@@ -195,17 +207,17 @@ export default function UsuariosPage() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '32px', maxWidth: '400px', width: '90%' }}>
             <h3 style={{ margin: '0 0 12px', color: C.text, fontSize: '1.1rem' }}>
-              {confirm.type === 'delete' ? '🗑️ Eliminar usuario' : confirm.user.tienda?.estado === 'activo' ? '🔒 Bloquear usuario' : '✅ Activar usuario'}
+              {confirm.type === 'delete' ? '🗑️ ' + dict.eliminaNegoziConfirm : confirm.user.tienda?.estado === 'activo' ? '🔒 ' + dict.blocca + ' ' + dict.perfilTienda : '✅ ' + dict.attiva + ' ' + dict.perfilTienda}
             </h3>
             <p style={{ color: C.textMuted, margin: '0 0 24px', fontSize: '0.9rem', lineHeight: 1.6 }}>
               {confirm.type === 'delete'
-                ? `¿Eliminar permanentemente a "${confirm.user.email}" y su tienda? Esta acción no se puede deshacer.`
-                : `¿${confirm.user.tienda?.estado === 'activo' ? 'Bloquear' : 'Activar'} la cuenta de "${confirm.user.email}"?`
+                ? dict.eliminaNegoziConfirm.replace('?', '') + ` "${confirm.user.email}"?`
+                : `${confirm.user.tienda?.estado === 'activo' ? dict.blocca : dict.attiva} "${confirm.user.email}"?`
               }
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button onClick={() => setConfirm(null)} style={{ padding: '9px 18px', borderRadius: '8px', border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                Cancelar
+                {dict.annulla}
               </button>
               <button
                 onClick={() => confirm.type === 'delete' ? eliminarUsuario(confirm.user) : toggleEstado(confirm.user)}
@@ -215,7 +227,7 @@ export default function UsuariosPage() {
                   color: C.white,
                 }}
               >
-                Confirmar
+                {dict.confirmar}
               </button>
             </div>
           </div>

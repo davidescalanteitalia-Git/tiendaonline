@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import PageShell from '../../components/PageShell'
 import { supabase } from '../../lib/supabase'
+import { useLang } from '../../components/LanguageProvider'
+import { DICTIONARY } from '../../lib/dictionaries'
 
 const C = {
   green:      '#059669',
@@ -21,18 +23,11 @@ const C = {
   amberBorder:'#fcd34d',
 }
 
-// Mensajes de error específicos por código
-const ERROR_MESSAGES = {
-  subdomain_taken: '❌ Este subdominio ya está en uso. Elige otro nombre.',
-  whatsapp_taken:  '❌ Este número de WhatsApp ya está registrado.',
-  email_taken:     '❌ Este email ya tiene una cuenta. ¿Quieres acceder?',
-  user_error:      '❌ Error al crear la cuenta. Verifica tu email y contraseña.',
-  store_error:     '❌ Error al crear la tienda. Inténtalo de nuevo.',
-  unexpected:      '❌ Error inesperado. Inténtalo de nuevo en unos segundos.',
-}
-
 export default function RegisterPage() {
   const router  = useRouter()
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang]
+
   const [loading,      setLoading]      = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error,        setError]        = useState('')
@@ -45,6 +40,16 @@ export default function RegisterPage() {
     email:      '',
     password:   '',
   })
+
+  // Mensajes de error específicos por código
+  const ERROR_MESSAGES = {
+    subdomain_taken: dict.sottodominioPreso,
+    whatsapp_taken:  dict.whatsappPreso,
+    email_taken:     dict.emailPresa,
+    user_error:      dict.erroreLogin, // Using generic auth error for user creation issues
+    store_error:     dict.erroreInaspettato,
+    unexpected:      dict.erroreInaspettato,
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -61,15 +66,15 @@ export default function RegisterPage() {
 
   const validate = () => {
     const errors = {}
-    if (!form.nombre.trim())            errors.nombre     = 'Inserisci il nome del negozio.'
-    if (!form.subdominio.trim())        errors.subdominio = 'Inserisci un sottodominio.'
-    if (form.subdominio.length < 3)     errors.subdominio = 'Il sottodominio deve avere almeno 3 caratteri.'
-    if (!form.whatsapp.trim())          errors.whatsapp   = 'Inserisci il numero di WhatsApp.'
-    if (!/^\+?[0-9\s\-]{7,}$/.test(form.whatsapp)) errors.whatsapp = 'Formato non valido. Es: +39 333 123 4567'
-    if (!form.email.trim())             errors.email      = 'Inserisci la tua email.'
-    if (!/\S+@\S+\.\S+/.test(form.email)) errors.email   = 'Email non valida.'
-    if (!form.password)                 errors.password   = 'Inserisci una password.'
-    if (form.password.length < 6)       errors.password   = 'La password deve avere almeno 6 caratteri.'
+    if (!form.nombre.trim())            errors.nombre     = dict.erroreValidazioneNome
+    if (!form.subdominio.trim())        errors.subdominio = dict.erroreValidazioneSub
+    if (form.subdominio.length < 3)     errors.subdominio = dict.erroreValidazioneSubCorto
+    if (!form.whatsapp.trim())          errors.whatsapp   = dict.erroreValidazioneWhatsapp
+    if (!/^\+?[0-9\s\-]{7,}$/.test(form.whatsapp)) errors.whatsapp = dict.erroreValidazioneWhatsappFormato
+    if (!form.email.trim())             errors.email      = dict.erroreValidazioneEmail
+    if (!/\S+@\S+\.\S+/.test(form.email)) errors.email   = dict.erroreValidazioneEmailFormato
+    if (!form.password)                 errors.password   = dict.erroreValidazionePass
+    if (form.password.length < 6)       errors.password   = dict.erroreValidazionePassCorto
     return errors
   }
 
@@ -170,10 +175,10 @@ export default function RegisterPage() {
         }}>
           <div style={{ marginBottom: '32px' }}>
             <h1 style={{ color: C.text, fontSize: '1.8rem', fontWeight: 900, margin: '0 0 8px', letterSpacing: '-0.5px' }}>
-              Crea la tua bottega
+              {dict.creaLaTuaBottega}
             </h1>
             <p style={{ color: C.textMuted, fontSize: '0.95rem', margin: 0 }}>
-              Inizia a vendere online in pochi minuti.
+              {dict.iniziaAVendere}
             </p>
           </div>
 
@@ -181,15 +186,15 @@ export default function RegisterPage() {
 
             {/* Nome del Negozio */}
             <div>
-              <Label>Nome del Negozio</Label>
+              <Label>{dict.nomeNegozioLabel}</Label>
               <input type="text" name="nombre" value={form.nombre} onChange={handleChange}
-                placeholder="Es: Pizzeria da Mario" style={inputStyle('nombre')} />
+                placeholder={dict.placeholderEjemploNegozio} style={inputStyle('nombre')} />
               <FieldError field="nombre" />
             </div>
 
             {/* Sottodominio */}
             <div>
-              <Label>Sottodominio unico (es: mia-bottega)</Label>
+              <Label>{dict.sottodominioUnico}</Label>
               <div style={{
                 display:      'flex',
                 alignItems:   'center',
@@ -213,40 +218,40 @@ export default function RegisterPage() {
 
             {/* WhatsApp */}
             <div>
-              <Label>📱 WhatsApp del negozio</Label>
+              <Label>{dict.whatsappNegozio}</Label>
               <input type="tel" name="whatsapp" value={form.whatsapp} onChange={handleChange}
-                placeholder="+39 333 123 4567" style={inputStyle('whatsapp')} />
+                placeholder={dict.whatsappPlaceholder} style={inputStyle('whatsapp')} />
               <FieldError field="whatsapp" />
               {!fieldError.whatsapp && (
                 <span style={{ fontSize: '0.8rem', color: C.textMuted, marginTop: '4px', display: 'block' }}>
-                  I clienti ti invieranno gli ordini su questo numero.
+                  {dict.clientiInvianoOrdini}
                 </span>
               )}
             </div>
 
             {/* Email */}
             <div>
-              <Label>Email</Label>
+              <Label>{dict.emailLabel}</Label>
               <input type="email" name="email" value={form.email} onChange={handleChange}
-                placeholder="tu@email.com" style={inputStyle('email')} />
+                placeholder={dict.emailPlaceholder} style={inputStyle('email')} />
               <FieldError field="email" />
               {fieldError.email === ERROR_MESSAGES.email_taken && (
                 <a href="/login" style={{ fontSize: '0.82rem', color: C.green, fontWeight: 700, display: 'block', marginTop: '4px' }}>
-                  → Vai al login
+                  {dict.vaiAlLogin}
                 </a>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <Label>Password</Label>
+              <Label>{dict.passwordLabel}</Label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  placeholder="Minimo 6 caratteri"
+                  placeholder={dict.minimo6Caratteri}
                   style={{ ...inputStyle('password'), paddingRight: '44px' }}
                 />
                 <button type="button" onClick={() => setShowPassword(v => !v)}
@@ -268,7 +273,7 @@ export default function RegisterPage() {
                     }} />
                   ))}
                   <span style={{ fontSize: '0.72rem', color: C.textMuted, whiteSpace: 'nowrap', marginLeft: '6px' }}>
-                    {form.password.length < 6 ? 'Troppo corta' : form.password.length < 10 ? 'Media' : 'Forte 💪'}
+                    {form.password.length < 6 ? dict.passwordTroppoCorta : form.password.length < 10 ? dict.passwordMedia : dict.passwordForte}
                   </span>
                 </div>
               )}
@@ -296,14 +301,14 @@ export default function RegisterPage() {
                 fontFamily:   'inherit',
                 opacity:      loading ? 0.8 : 1,
               }}>
-              {loading ? '⏳ Creando la tua bottega...' : 'Crea il mio negozio →'}
+              {loading ? dict.creandoBottega : dict.creaNegozioBtn}
             </button>
 
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '28px', fontSize: '0.9rem', color: C.textMuted }}>
-            Hai già un account?{' '}
-            <a href="/login" style={{ color: C.greenDark, fontWeight: 700, textDecoration: 'none' }}>Accedi</a>
+            {dict.haiGiaAccount}{' '}
+            <a href="/login" style={{ color: C.greenDark, fontWeight: 700, textDecoration: 'none' }}>{dict.accedi}</a>
           </div>
 
         </div>
