@@ -47,12 +47,12 @@ export default function DashboardLayout({ children }) {
   }
 
   const menuItems = [
-    { icon: '🏠', label: 'Inicio',     href: '/dashboard' },
-    { icon: '📦', label: 'Productos',  href: '/dashboard/productos' },
-    { icon: '📁', label: 'Categorías', href: '/dashboard/categorias' },
-    { icon: '🛒', label: 'Pedidos',    href: '/dashboard/pedidos' },
-    { icon: '🎨', label: 'Diseño',     href: '/dashboard/diseno' },
-    { icon: '⚙️', label: 'Ajustes',    href: '/dashboard/ajustes' },
+    { icon: '🏠', label: 'Home',         href: '/dashboard' },
+    { icon: '📦', label: 'Prodotti',     href: '/dashboard/productos' },
+    { icon: '📁', label: 'Categorie',    href: '/dashboard/categorias' },
+    { icon: '🛒', label: 'Ordini',       href: '/dashboard/pedidos' },
+    { icon: '🎨', label: 'Design',       href: '/dashboard/diseno' },
+    { icon: '⚙️', label: 'Impostazioni', href: '/dashboard/ajustes' },
   ]
 
   const storeUrl = tienda?.subdominio

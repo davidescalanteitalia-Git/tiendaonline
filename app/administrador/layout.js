@@ -23,8 +23,8 @@ const C = {
 }
 const NAV = [
   { href: '/administrador',          icon: '🏠', label: 'Dashboard'   },
-  { href: '/administrador/usuarios', icon: '👥', label: 'Usuarios'    },
-  { href: '/administrador/tiendas',  icon: '🏪', label: 'Tiendas'     },
+  { href: '/administrador/usuarios', icon: '👥', label: 'Utenti'      },
+  { href: '/administrador/tiendas',  icon: '🏪', label: 'Negozi'      },
 ]
 
 export default function AdminLayout({ children }) {
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }) {
   if (checking) {
     return (
       <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: C.textMuted, fontSize: '1rem' }}>Verificando acceso...</div>
+        <div style={{ color: C.textMuted, fontSize: '1rem' }}>Verifica dell'accesso...</div>
       </div>
     )
   }
@@ -83,7 +83,7 @@ export default function AdminLayout({ children }) {
           {!collapsed && (
             <div>
               <div style={{ color: C.green, fontWeight: 900, fontSize: '1rem', letterSpacing: '-0.5px' }}>TIENDAONLINE</div>
-              <div style={{ color: C.textMuted, fontSize: '0.7rem', fontWeight: 500 }}>Panel Admin</div>
+              <div style={{ color: C.textMuted, fontSize: '0.7rem', fontWeight: 500 }}>Pannello Admin</div>
             </div>
           )}
           <button onClick={() => setCollapsed(!collapsed)} style={{ background: 'transparent', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '1.1rem', padding: '4px', borderRadius: '6px', flexShrink: 0 }}>
@@ -153,7 +153,7 @@ export default function AdminLayout({ children }) {
             }}
           >
             <span>🚪</span>
-            {!collapsed && <span>Cerrar sesión</span>}
+            {!collapsed && <span>Esci</span>}
           </button>
         </div>
       </aside>
@@ -179,7 +179,7 @@ export default function AdminLayout({ children }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <LanguageSelector />
             <a href="/" target="_blank" style={{ color: C.textMuted, fontSize: '0.82rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🌐 Ver sitio
+              🌐 Vedi sito
             </a>
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: C.green, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.white, fontWeight: 800, fontSize: '0.85rem' }}>
               D
