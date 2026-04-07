@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import StoreClient from '../../../components/StoreClient'
 
 export const dynamic = 'force-dynamic'
+// Version 1.1.2 - Dynamic Storefront Fix
 
 async function getStoreData(domain) {
   try {
