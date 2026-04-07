@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLang } from '../../../components/LanguageProvider'
 import { DICTIONARY } from '../../../lib/dictionaries'
-import { Package, Plus, Search, Pencil, Trash2, X, Save, Loader2, Image as ImageIcon } from 'lucide-react'
+import { Package, Plus, Search, Pencil, Trash2, X, Save, Loader2, Camera, Upload, Image as ImageIcon } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
 export default function ProductosPage() {
@@ -23,8 +23,12 @@ export default function ProductosPage() {
   const [emoji, setEmoji] = useState('📦')
   const [categoriaId, setCategoriaId] = useState('')
   const [estado, setEstado] = useState('activo')
+  const [imagenUrl, setImagenUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
+
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     fetchData()
@@ -52,6 +56,35 @@ export default function ProductosPage() {
     }
   }
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
+      const filePath = `product-images/${fileName}`
+
+      const { data, error } = await supabase.storage
+        .from('productos')
+        .upload(filePath, file)
+
+      if (error) throw error
+
+      const { data: publicUrlData } = supabase.storage
+        .from('productos')
+        .getPublicUrl(filePath)
+
+      setImagenUrl(publicUrlData.publicUrl)
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Error: ' + error.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   async function handleSave(e) {
     e.preventDefault()
     setSaving(true)
@@ -64,7 +97,8 @@ export default function ProductosPage() {
         precio: parseFloat(precio) || 0, 
         emoji, 
         categoria_id: categoriaId || null, 
-        estado 
+        estado,
+        imagen_url: imagenUrl
       }
       if (editingId) body.id = editingId
 
@@ -115,6 +149,7 @@ export default function ProductosPage() {
     setEmoji(p.emoji || '📦')
     setCategoriaId(p.categoria_id || '')
     setEstado(p.estado || 'activo')
+    setImagenUrl(p.imagen_url || '')
     setIsModalOpen(true)
   }
 
@@ -126,6 +161,7 @@ export default function ProductosPage() {
     setEmoji('📦')
     setCategoriaId('')
     setEstado('activo')
+    setImagenUrl('')
   }
 
   const filteredProducts = productos.filter(p => 
@@ -196,8 +232,10 @@ export default function ProductosPage() {
                   <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0">
-                          {p.emoji}
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-2xl flex-shrink-0 relative overflow-hidden">
+                          {p.imagen_url ? (
+                             <img src={p.imagen_url} alt={p.nombre} className="w-full h-full object-cover" />
+                          ) : p.emoji}
                         </div>
                         <div>
                           <p className="font-bold text-slate-800 leading-tight">{p.nombre}</p>
@@ -252,7 +290,7 @@ export default function ProductosPage() {
                       <h2 className="text-2xl font-bold text-slate-800">
                         {editingId ? dict.editare : dict.añadirProducto}
                       </h2>
-                      <p className="text-slate-500 text-sm">Completa i dettagli del prodotto.</p>
+                      <p className="text-slate-500 text-sm">{dict.completaDetalles || 'Completa i dettagli del prodotto.'}</p>
                    </div>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
@@ -261,6 +299,61 @@ export default function ProductosPage() {
              </div>
 
              <form onSubmit={handleSave} className="space-y-6">
+                
+                {/* Photo Upload Section */}
+                <div className="bg-slate-50 p-6 rounded-3xl border-2 border-dashed border-slate-200 text-center space-y-4">
+                   <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">{dict.fotoProducto || 'Foto del Prodotto'}</label>
+                   
+                   <div className="relative mx-auto w-32 h-32 rounded-3xl bg-white shadow-md flex items-center justify-center overflow-hidden border-4 border-white group">
+                      {uploading ? (
+                         <div className="flex flex-col items-center gap-2">
+                           <Loader2 className="animate-spin text-primary" size={24} />
+                           <span className="text-[10px] uppercase font-black text-slate-400">Caricamento...</span>
+                         </div>
+                      ) : imagenUrl ? (
+                         <>
+                           <img src={imagenUrl} alt="Preview" className="w-full h-full object-cover" />
+                           <button 
+                             type="button" 
+                             onClick={() => setImagenUrl('')}
+                             className="absolute inset-0 bg-red-600/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-black text-xs"
+                           >
+                             Rimuovi
+                           </button>
+                         </>
+                      ) : (
+                         <ImageIcon className="text-slate-200" size={48} />
+                      )}
+                   </div>
+
+                   <div className="flex items-center justify-center gap-3">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleFileUpload} 
+                        className="hidden" 
+                        ref={fileInputRef} 
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => fileInputRef.current.click()}
+                        className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl text-slate-600 font-bold text-sm shadow-sm hover:shadow-md transition-all border border-slate-200"
+                      >
+                         <Upload size={16} /> {dict.galeria || 'Galleria'}
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          fileInputRef.current.setAttribute('capture', 'environment')
+                          fileInputRef.current.click()
+                        }}
+                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm hover:shadow-md transition-all"
+                      >
+                         <Camera size={16} /> {dict.camara || 'Fotocamera'}
+                      </button>
+                   </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-2">
                       <label className="block text-sm font-bold text-slate-700">{dict.nombreProducto}</label>
@@ -294,7 +387,7 @@ export default function ProductosPage() {
                     onChange={(e) => setDescripcion(e.target.value)}
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
-                    placeholder="Descrivi gli ingredienti o i dettagli del prodotto..."
+                    placeholder="Descrivi gli ingredienti o i detalles del prodotto..."
                    />
                 </div>
 
@@ -315,9 +408,10 @@ export default function ProductosPage() {
                    <div className="space-y-2">
                       <label className="block text-sm font-bold text-slate-700">{dict.emojiProducto}</label>
                       <select 
+                        disabled={!!imagenUrl}
                         value={emoji}
                         onChange={(e) => setEmoji(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white disabled:opacity-50"
                       >
                          <option value="📦">📦 Prodotto</option>
                          <option value="🍕">🍕 Pizza</option>
@@ -372,7 +466,7 @@ export default function ProductosPage() {
                      {dict.cerrar}
                    </button>
                    <button 
-                    disabled={saving}
+                    disabled={saving || uploading}
                     type="submit"
                     className="flex-1 px-6 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-blue-700 shadow-xl shadow-blue-200 disabled:opacity-50 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
                    >
