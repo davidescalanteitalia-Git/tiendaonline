@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { C } from '../lib/theme'
+import { useLang } from './LanguageProvider'
 
 const STORAGE_KEY = 'tiendaonline_cookie_consent'
 
@@ -61,13 +62,10 @@ export default function CookieBanner() {
   const [visible, setVisible]       = useState(false)
   const [panelOpen, setPanelOpen]   = useState(false)
   const [analytics, setAnalytics]   = useState(false)
-  const [lang, setLang]             = useState('it')
+  const { lang } = useLang()
+
 
   useEffect(() => {
-    // Leer idioma guardado
-    const savedLang = localStorage.getItem('appLang')
-    if (savedLang && T[savedLang]) setLang(savedLang)
-
     // Mostrar banner solo si no hay consentimiento previo
     const saved = localStorage.getItem(STORAGE_KEY)
     if (!saved) {
