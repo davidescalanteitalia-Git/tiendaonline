@@ -13,10 +13,16 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [customerName, setCustomerName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [successMessageOpen, setSuccessMessageOpen] = useState(false)
   
+  const aceptarPedidos = tienda.aceptar_pedidos ?? true
+  const enviarWhatsapp = tienda.enviar_whatsapp ?? true
+  const modoCatalogo = tienda.modo_catalogo || 'cuadricula'
+  const mensajePost = tienda.mensaje_post_pedido || 'Pronto nos pondremos en contacto para confirmar los detalles de tu compra. ¡Gracias por elegirnos!'
   const [activeCategory, setActiveCategory] = useState(groupedProducts[0]?.id || 'uncategorized')
 
   const addToCart = (product) => {
+    if(!aceptarPedidos) return;
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
@@ -30,6 +36,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   }
 
   const updateQuantity = (productId, delta) => {
+    if(!aceptarPedidos) return;
     setCart((prev) => prev.map((item) => {
       if (item.id === productId) {
         const newQ = item.quantity + delta
@@ -76,18 +83,24 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
       
       if (data.success) {
         const pedido = data.pedido
-        const message = `*${dict.ordini.toUpperCase()} ${pedido.codigo}*%0A` +
-          `*Cliente:* ${customerName}%0A%0A` +
-          cart.map(item => `- ${item.quantity}x ${item.nombre} (€${item.price.toFixed(2)})`).join('%0A') +
-          `%0A%0A*${dict.total}: €${total.toFixed(2)}*%0A%0A_Inviato da: ${tienda.nombre}_`
+        
+        if (enviarWhatsapp && tienda.whatsapp) {
+          const message = `*${dict.ordini.toUpperCase()} ${pedido.codigo}*%0A` +
+            `*Cliente:* ${customerName}%0A%0A` +
+            cart.map(item => `- ${item.quantity}x ${item.nombre} (€${item.price.toFixed(2)})`).join('%0A') +
+            `%0A%0A*${dict.total}: €${total.toFixed(2)}*%0A%0A_Inviato da: ${tienda.nombre}_`
 
-        const whatsappUrl = `https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`
-        window.open(whatsappUrl, '_blank')
+          const whatsappUrl = `https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`
+          window.open(whatsappUrl, '_blank')
+        }
         
         setIsModalOpen(false)
         setIsCartOpen(false)
         setCart([])
         setCustomerName('')
+        
+        // Show success message
+        setSuccessMessageOpen(true)
       }
     } catch (err) {
       console.error('Error saving order:', err)
@@ -133,9 +146,9 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           {groupedProducts.map((cat) => (
             <div key={cat.id} id={`category-${cat.id}`} className="category-section">
               <h2 className="category-title" style={{ color: C.text }}>{cat.nombre}</h2>
-              <div className="product-grid">
+              <div className={`product-grid ${modoCatalogo === 'lista' ? 'product-list' : 'product-grid-view'}`}>
                 {cat.items.map((p) => (
-                  <ProductCard key={p.id} product={p} C={C} dict={dict} onAdd={() => addToCart(p)} />
+                  <ProductCard key={p.id} product={p} C={C} dict={dict} onAdd={() => addToCart(p)} hideAddBtn={!aceptarPedidos} modo={modoCatalogo} />
                 ))}
               </div>
             </div>
@@ -144,9 +157,9 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           {uncategorized.length > 0 && (
             <div id={`category-uncategorized`} className="category-section">
               <h2 className="category-title" style={{ color: C.text }}>{dict.sinCategoria || 'Altro'}</h2>
-              <div className="product-grid">
+              <div className={`product-grid ${modoCatalogo === 'lista' ? 'product-list' : 'product-grid-view'}`}>
                 {uncategorized.map((p) => (
-                  <ProductCard key={p.id} product={p} C={C} dict={dict} onAdd={() => addToCart(p)} />
+                  <ProductCard key={p.id} product={p} C={C} dict={dict} onAdd={() => addToCart(p)} hideAddBtn={!aceptarPedidos} modo={modoCatalogo} />
                 ))}
               </div>
             </div>
@@ -160,6 +173,12 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           )}
         </div>
       </div>
+
+      {!aceptarPedidos && cart.length === 0 && (
+         <div className="closed-banner" style={{ background: C.grayBorder, color: C.text }}>
+            <span>No estamos aceptando pedidos temporalmente.</span>
+         </div>
+      )}
 
       {/* Floating Action Button for Cart (Mobile / Desktop) */}
       {cart.length > 0 && (
@@ -259,6 +278,25 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         </div>
       )}
 
+      {/* Success Modal */}
+      {successMessageOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content scale-in" style={{ background: C.white, textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
+            <h2 style={{ color: C.text, marginBottom: '8px' }}>¡Pedido enviado!</h2>
+            <p style={{ color: C.textMuted, fontSize: '15px', lineHeight: '1.5' }}>{mensajePost}</p>
+            
+            <button 
+              onClick={() => setSuccessMessageOpen(false)} 
+              className="modal-btn-confirm" 
+              style={{ background: C.primary, color: C.white, marginTop: '24px', width: '100%' }}
+            >
+              {dict.cerrar || 'Cerrar'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Global Scoped Styles via JSX (Kyte Format implementation) */}
       <style jsx global>{`
         .store-container {
@@ -321,10 +359,15 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           margin: 0 0 20px 0;
         }
 
-        .product-grid {
+        .product-grid-view {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 16px;
+        }
+
+        .product-list {
+          display: flex;
+          flex-direction: column;
         }
 
         .product-card {
@@ -337,6 +380,16 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           flex-direction: column;
         }
 
+        .product-card-list {
+          flex-direction: row;
+          border-radius: 0;
+          box-shadow: none;
+          border: none;
+          border-bottom: 1px solid #e2e8f0;
+          padding: 16px 0;
+          gap: 16px;
+        }
+
         .product-img-wrapper {
           width: 100%;
           aspect-ratio: 1 / 1;
@@ -346,6 +399,14 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           align-items: center;
           justify-content: center;
           font-size: 4rem;
+        }
+
+        .img-list-wrapper {
+          width: 80px;
+          height: 80px;
+          border-radius: 12px;
+          flex-shrink: 0;
+          overflow: hidden;
         }
 
         .product-img-wrapper img {
@@ -382,6 +443,14 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           flex-direction: column;
         }
 
+        .product-info-list {
+          padding: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
         .product-name {
           font-weight: 800;
           font-size: 1rem;
@@ -407,6 +476,22 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         .product-price {
           font-weight: 900;
           font-size: 1.1rem;
+        }
+
+        .price-row-list {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .product-add-btn-list {
+          border: none;
+          color: white;
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-weight: bold;
+          font-size: 0.85rem;
+          cursor: pointer;
         }
 
         /* Floating Cart */
@@ -590,13 +675,13 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           .store-content {
             padding: 32px 48px;
           }
-          .product-grid {
+          .product-grid-view {
             grid-template-columns: repeat(3, 1fr);
             gap: 24px;
           }
         }
         @media (min-width: 1024px) {
-          .product-grid {
+          .product-grid-view {
             grid-template-columns: repeat(4, 1fr);
           }
         }
@@ -605,31 +690,49 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   )
 }
 
-function ProductCard({ product, C, onAdd }) {
+function ProductCard({ product, C, onAdd, hideAddBtn, modo }) {
+  const isList = modo === 'lista';
   return (
-    <div className="product-card">
-       <div className="product-img-wrapper" style={{ background: product.imagen_url ? '#fff' : C.primary + '15' }}>
+    <div className={`product-card ${isList ? 'product-card-list' : ''}`}>
+       <div className={`product-img-wrapper ${isList ? 'img-list-wrapper' : ''}`} style={{ background: product.imagen_url ? '#fff' : C.primary + '15' }}>
          {product.imagen_url ? (
            <img src={product.imagen_url} alt={product.nombre} loading="lazy" />
          ) : (
-           <span style={{ opacity: 0.5 }}>{product.emoji || '🛍️'}</span>
+           <span style={{ opacity: 0.5, fontSize: isList ? '2rem' : '4rem' }}>{product.emoji || '🛍️'}</span>
          )}
          
          {/* Botón flotante al estilo Kyte */}
-         <button 
-           className="product-add-btn" 
-           onClick={onAdd}
-           style={{ background: C.primary }}
-         >
-           +
-         </button>
+         {!isList && !hideAddBtn && (
+           <button 
+             className="product-add-btn" 
+             onClick={onAdd}
+             style={{ background: C.primary }}
+           >
+             +
+           </button>
+         )}
        </div>
-       <div className="product-info">
-         <h3 className="product-name" style={{ color: C.text }}>{product.nombre}</h3>
-         <p className="product-desc">{product.descripcion}</p>
-         <span className="product-price" style={{ color: C.text }}>
-           €{parseFloat(product.price || product.precio).toFixed(2)}
-         </span>
+       <div className={`product-info ${isList ? 'product-info-list' : ''}`}>
+         <div className="product-info-top">
+           <h3 className="product-name" style={{ color: C.text }}>{product.nombre}</h3>
+           {!isList && <p className="product-desc">{product.descripcion}</p>}
+         </div>
+         
+         <div className={`product-price-row ${isList ? 'price-row-list' : ''}`}>
+           <span className="product-price" style={{ color: C.text }}>
+             €{parseFloat(product.price || product.precio).toFixed(2)}
+           </span>
+           
+           {isList && !hideAddBtn && (
+             <button 
+               className="product-add-btn-list" 
+               onClick={onAdd}
+               style={{ background: C.primary }}
+             >
+               + Añadir
+             </button>
+           )}
+         </div>
        </div>
     </div>
   )
