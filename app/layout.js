@@ -1,5 +1,6 @@
 import './globals.css'
 import { LanguageProvider } from '../components/LanguageProvider'
+import CookieBanner from '../components/CookieBanner'
 
 export const metadata = {
   title: 'TIENDAONLINE — La tua vetrina online in 10 minuti',
@@ -47,6 +48,7 @@ export default function RootLayout({ children }) {
       <body>
         <LanguageProvider>
           {children}
+          <CookieBanner />
         </LanguageProvider>
       </body>
     </html>

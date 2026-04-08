@@ -5,6 +5,8 @@ import { C } from '../lib/theme'
 import { DICTIONARY } from '../lib/dictionaries'
 import { useLang } from './LanguageProvider'
 
+const STORAGE_KEY = 'tiendaonline_cookie_consent'
+
 export default function UniversalFooter() {
   const { lang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['it']
@@ -23,9 +25,16 @@ export default function UniversalFooter() {
             </p>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', marginTop: '8px' }}>
-            <a href="/privacy" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.footerPrivacy}</a>
-            <a href="/terms" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.footerTerms}</a>
-            <a href="/contatti" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', transition: 'color 0.2s', fontSize: '0.86rem' }}>{dict.footerContact}</a>
+            <a href="/privacy" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.86rem' }}>{dict.footerPrivacy}</a>
+            <a href="/terms" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.86rem' }}>{dict.footerTerms}</a>
+            <a href="/cookie-policy" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.86rem' }}>Cookie Policy</a>
+            <a href="/contatti" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.86rem' }}>{dict.footerContact}</a>
+            <button
+              onClick={() => { localStorage.removeItem(STORAGE_KEY); window.location.reload() }}
+              style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px', padding: '4px 10px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+            >
+              🍪 {lang === 'it' ? 'Gestisci cookie' : lang === 'es' ? 'Gestionar cookies' : 'Manage cookies'}
+            </button>
           </div>
         </div>
 
