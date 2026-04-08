@@ -2,7 +2,7 @@ import PageShell from '../../components/PageShell'
 
 export const metadata = {
   title: 'Privacy Policy — TIENDAONLINE',
-  description: 'Informativa sul trattamento dei dati personali di TIENDAONLINE.',
+  description: 'Informativa sul trattamento dei dati personali ai sensi del GDPR (Reg. UE 2016/679) e delle linee guida del Garante Privacy italiano.',
 }
 
 const C = {
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.95rem', margin: 0 }}>
-          Ultimo aggiornamento: 1 aprile 2025
+          Ultimo aggiornamento: 8 aprile 2026 · Conforme al GDPR (Reg. UE 2016/679) e al D.Lgs. 196/2003
         </p>
       </section>
 
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
             <p style={{ background: C.greenBg, padding: '14px 18px', borderRadius: '8px', border: `1px solid ${C.greenBorder}` }}>
               <strong>TIENDAONLINE</strong><br />
               Sviluppato da David Escalante<br />
-              Email: <a href="mailto:utilizzositemaster@gmail.com" style={{ color: C.green }}>utilizzositemaster@gmail.com</a><br />
+              Email: <a href="mailto:davidescalanteitalia@gmail.com" style={{ color: C.green }}>davidescalanteitalia@gmail.com</a><br />
               Telefono: <a href="tel:+393717701185" style={{ color: C.green }}>+39 371 770 1185</a>
             </p>
           </Section>
@@ -115,9 +115,11 @@ export default function PrivacyPage() {
           <Section title="5. Condivisione dei dati con terze parti">
             <p>I dati non vengono venduti né ceduti a terzi per finalità commerciali. Potremmo condividerli con:</p>
             <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
-              <li style={{ marginBottom: '6px' }}><strong>Supabase</strong> (database cloud): per l&apos;archiviazione sicura dei dati della piattaforma.</li>
-              <li style={{ marginBottom: '6px' }}><strong>Vercel</strong> (hosting): per l&apos;erogazione del servizio web.</li>
-              <li style={{ marginBottom: '6px' }}>Autorità competenti, ove richiesto dalla legge.</li>
+              <li style={{ marginBottom: '6px' }}><strong>Supabase Inc.</strong> (USA) – database e autenticazione. Trattamento basato su Clausole Contrattuali Standard UE.</li>
+              <li style={{ marginBottom: '6px' }}><strong>Coolify / Hetzner</strong> – infrastruttura di hosting con server localizzati in Europa (EU-West-2).</li>
+              <li style={{ marginBottom: '6px' }}><strong>PostHog Inc.</strong> – analisi del traffico in forma anonima e aggregata. I dati vengono anonimizzati prima dell&apos;invio. <a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: C.green }}>Privacy Policy PostHog</a></li>
+              <li style={{ marginBottom: '6px' }}><strong>Sentry (Functional Software Inc.)</strong> – monitoraggio degli errori tecnici. Non raccoglie dati personali degli utenti finali. <a href="https://sentry.io/privacy/" target="_blank" rel="noopener noreferrer" style={{ color: C.green }}>Privacy Policy Sentry</a></li>
+              <li style={{ marginBottom: '6px' }}>Autorità competenti (Garante Privacy, Autorità giudiziaria), ove richiesto dalla legge.</li>
             </ul>
           </Section>
 
@@ -131,12 +133,21 @@ export default function PrivacyPage() {
               <li style={{ marginBottom: '6px' }}>Portabilità dei dati (art. 20 GDPR)</li>
               <li style={{ marginBottom: '6px' }}>Opporsi al trattamento (art. 21 GDPR)</li>
             </ul>
-            <p>Per esercitare i tuoi diritti, scrivi a: <a href="mailto:utilizzositemaster@gmail.com" style={{ color: C.green, fontWeight: 600 }}>utilizzositemaster@gmail.com</a></p>
+            <p>Per esercitare i tuoi diritti, scrivi a: <a href="mailto:davidescalanteitalia@gmail.com" style={{ color: C.green, fontWeight: 600 }}>davidescalanteitalia@gmail.com</a></p>
             <p>Hai inoltre il diritto di presentare reclamo al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener noreferrer" style={{ color: C.green }}>www.garanteprivacy.it</a>).</p>
           </Section>
 
           <Section title="7. Cookie">
-            <p>Il sito utilizza esclusivamente cookie tecnici essenziali per il funzionamento del servizio. Non vengono utilizzati cookie di profilazione o di tracciamento di terze parti senza il consenso dell&apos;utente.</p>
+            <p>Il sito utilizza cookie tecnici essenziali e, previo consenso, cookie analitici. I cookie analitici (PostHog) vengono attivati <strong>solo dopo il consenso esplicito</strong> dell&apos;utente, in conformità alle linee guida del Garante del 10 giugno 2021.</p>
+            <p style={{ marginTop: '10px' }}>Per informazioni dettagliate sui cookie utilizzati, sulle loro finalità e su come gestirli o revocare il consenso, consulta la nostra <a href="/cookie-policy" style={{ color: C.green, fontWeight: 600 }}>Cookie Policy</a>.</p>
+          </Section>
+
+          <Section title="7b. Conservazione dei dati analitici">
+            <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
+              <li style={{ marginBottom: '6px' }}>Cookie tecnici (sessione, lingua): durata della sessione o max 12 mesi</li>
+              <li style={{ marginBottom: '6px' }}>Cookie analitici PostHog: <strong>massimo 13 mesi</strong> (limite imposto dal Garante Privacy italiano, provvedimento del 10/06/2021)</li>
+              <li style={{ marginBottom: '6px' }}>Dati di log tecnici: massimo 12 mesi</li>
+            </ul>
           </Section>
 
           <Section title="8. Sicurezza dei dati">

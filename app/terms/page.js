@@ -52,7 +52,7 @@ export default function TermsPage() {
           Termini di servizio
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.95rem', margin: 0 }}>
-          Ultimo aggiornamento: 1 aprile 2025
+          Ultimo aggiornamento: 8 aprile 2026 · Legge applicabile: diritto italiano (D.Lgs. 206/2005)
         </p>
       </section>
 
@@ -139,11 +139,17 @@ export default function TermsPage() {
             <p>I presenti Termini sono regolati dalla legge italiana. Per qualsiasi controversia è competente il Tribunale di riferimento del luogo di residenza del Titolare del servizio. Per i consumatori si applica la normativa europea sulla risoluzione alternativa delle controversie (ODR).</p>
           </Section>
 
-          <Section title="11. Contatti">
+          <Section title="11. Risoluzione alternativa delle controversie (ODR)">
+            <p>In conformità al Regolamento UE 524/2013, i consumatori residenti nell&apos;UE hanno il diritto di ricorrere alla piattaforma ODR della Commissione Europea per la risoluzione delle controversie online:</p>
+            <p><a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" style={{ color: C.green, fontWeight: 600 }}>https://ec.europa.eu/consumers/odr</a></p>
+          </Section>
+
+          <Section title="12. Contatti">
             <p>Per qualsiasi domanda sui presenti Termini:</p>
             <p style={{ background: C.greenBg, padding: '14px 18px', borderRadius: '8px', border: `1px solid ${C.greenBorder}` }}>
-              Email: <a href="mailto:utilizzositemaster@gmail.com" style={{ color: C.green, fontWeight: 600 }}>utilizzositemaster@gmail.com</a><br />
-              Telefono: <a href="tel:+393717701185" style={{ color: C.green, fontWeight: 600 }}>+39 371 770 1185</a>
+              <strong>TIENDAONLINE</strong> · sviluppato da David Escalante<br />
+              Email: <a href="mailto:davidescalanteitalia@gmail.com" style={{ color: C.green, fontWeight: 600 }}>davidescalanteitalia@gmail.com</a><br />
+              Sito: <a href="https://tiendaonline.it" style={{ color: C.green }}>tiendaonline.it</a>
             </p>
           </Section>
 
