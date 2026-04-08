@@ -1,4 +1,3 @@
-'use client'
 
 import PageShell from '../../components/PageShell'
 import { C } from '../../lib/theme'
