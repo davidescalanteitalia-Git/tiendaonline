@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useLang } from './LanguageProvider'
 import { DICTIONARY } from '../lib/dictionaries'
 
@@ -9,9 +9,12 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   const dict = DICTIONARY[lang] || DICTIONARY['es']
   
   const [cart, setCart] = useState([])
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [customerName, setCustomerName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const [activeCategory, setActiveCategory] = useState(groupedProducts[0]?.id || 'uncategorized')
 
   const addToCart = (product) => {
     setCart((prev) => {
@@ -23,6 +26,17 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
       }
       return [...prev, { ...product, quantity: 1 }]
     })
+    setIsCartOpen(true) // Opcional: abrir el carrito o mostrar feedback
+  }
+
+  const updateQuantity = (productId, delta) => {
+    setCart((prev) => prev.map((item) => {
+      if (item.id === productId) {
+        const newQ = item.quantity + delta
+        return newQ > 0 ? { ...item, quantity: newQ } : item
+      }
+      return item
+    }))
   }
 
   const removeFromCart = (productId) => {
@@ -32,19 +46,21 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0)
 
-  const handleCheckoutClick = () => {
-    if (cart.length === 0) return
-    setIsModalOpen(true)
+  const scrollToCategory = (id) => {
+    setActiveCategory(id)
+    const element = document.getElementById(`category-${id}`)
+    if (element) {
+      const y = element.getBoundingClientRect().top + window.scrollY - 100 // offset header
+      window.scrollTo({ top: y, behavior: 'smooth' })
+    }
   }
 
   const processOrder = async (e) => {
     e.preventDefault()
     if (!customerName.trim() || isSubmitting) return
-    
     setIsSubmitting(true)
 
     try {
-      // 1. Save to database
       const response = await fetch('/api/pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,7 +75,6 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
       const data = await response.json()
       
       if (data.success) {
-        // 2. Open WhatsApp with the generated code
         const pedido = data.pedido
         const message = `*${dict.ordini.toUpperCase()} ${pedido.codigo}*%0A` +
           `*Cliente:* ${customerName}%0A%0A` +
@@ -69,8 +84,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         const whatsappUrl = `https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`
         window.open(whatsappUrl, '_blank')
         
-        // 3. Reset
         setIsModalOpen(false)
+        setIsCartOpen(false)
         setCart([])
         setCustomerName('')
       }
@@ -83,88 +98,141 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   }
 
   return (
-    <>
-      {/* Categorías y Productos */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', textAlign: 'left' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '90px' }}>
+      
+      {/* Container Principal Responsive */}
+      <div className="store-container">
         
-        {groupedProducts.map((cat) => (
-          <div key={cat.id}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: C.text, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ width: '4px', height: '1.2rem', background: C.green, borderRadius: '2px' }}></span>
-              {cat.nombre}
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {cat.items.map((p) => (
-                <ProductCard key={p.id} product={p} C={C} onAdd={() => addToCart(p)} dict={dict} />
-              ))}
-            </div>
-          </div>
-        ))}
+        {/* Barra de Categorías (Sidebar en Desktop / Horizontal en Móvil) */}
+        <div className="store-sidebar">
+          <ul className="category-list">
+            {groupedProducts.map((cat) => (
+              <li 
+                key={cat.id} 
+                onClick={() => scrollToCategory(cat.id)}
+                className={`category-item ${activeCategory === cat.id ? 'active' : ''}`}
+                style={{ '--primary': C.primary }}
+              >
+                {cat.nombre}
+              </li>
+            ))}
+            {uncategorized.length > 0 && (
+              <li 
+                onClick={() => scrollToCategory('uncategorized')}
+                className={`category-item ${activeCategory === 'uncategorized' ? 'active' : ''}`}
+                style={{ '--primary': C.primary }}
+              >
+                {dict.sinCategoria || 'Altro'}
+              </li>
+            )}
+          </ul>
+        </div>
 
-        {uncategorized.length > 0 && (
-          <div>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: C.text, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ width: '4px', height: '1.2rem', background: C.green, borderRadius: '2px' }}></span>
-              {dict.sinCategoria || 'Altro'}
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {uncategorized.map((p) => (
-                <ProductCard key={p.id} product={p} C={C} onAdd={() => addToCart(p)} dict={dict} />
-              ))}
+        {/* Área de Productos (Grilla) */}
+        <div className="store-content">
+          {groupedProducts.map((cat) => (
+            <div key={cat.id} id={`category-${cat.id}`} className="category-section">
+              <h2 className="category-title" style={{ color: C.text }}>{cat.nombre}</h2>
+              <div className="product-grid">
+                {cat.items.map((p) => (
+                  <ProductCard key={p.id} product={p} C={C} dict={dict} onAdd={() => addToCart(p)} />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          ))}
 
-        {groupedProducts.length === 0 && uncategorized.length === 0 && (
-           <div style={{ padding: '60px 20px', textAlign: 'center', color: C.textMuted }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📦</div>
-              <p style={{ fontWeight: 600 }}>{dict.sinProductosDesc || 'Tornate a trovarci presto!'}</p>
-           </div>
-        )}
+          {uncategorized.length > 0 && (
+            <div id={`category-uncategorized`} className="category-section">
+              <h2 className="category-title" style={{ color: C.text }}>{dict.sinCategoria || 'Altro'}</h2>
+              <div className="product-grid">
+                {uncategorized.map((p) => (
+                  <ProductCard key={p.id} product={p} C={C} dict={dict} onAdd={() => addToCart(p)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {groupedProducts.length === 0 && uncategorized.length === 0 && (
+             <div className="empty-state" style={{ color: C.textMuted }}>
+                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📦</div>
+                <p style={{ fontWeight: 600 }}>{dict.sinProductosDesc || 'Tornate a trovarci presto!'}</p>
+             </div>
+          )}
+        </div>
       </div>
 
-      {/* Floating Cart Button */}
+      {/* Floating Action Button for Cart (Mobile / Desktop) */}
       {cart.length > 0 && (
         <div 
-          onClick={handleCheckoutClick}
-          style={{
-            position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-            width: 'calc(100% - 40px)', maxWidth: '560px',
-            background: C.green, color: C.white, borderRadius: '18px', padding: '18px 24px',
-            fontWeight: 800, fontSize: '1.1rem', boxShadow: '0 12px 30px rgba(5, 150, 105, 0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-            cursor: 'pointer', zIndex: 100, transition: 'all 0.2s', border: 'none'
-          }}
+          onClick={() => setIsCartOpen(true)}
+          className="floating-cart-button"
+          style={{ background: C.primary, color: C.white }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-             <div style={{ background: 'rgba(255,255,255,0.2)', padding: '6px 14px', borderRadius: '10px' }}>
+             <div className="cart-badge">
                 {totalItems}
              </div>
-             <span>{dict.continuarWA || 'Invia ordine su WhatsApp'}</span>
+             <span>{dict.verCarrito || 'Ver Carrito'}</span>
           </div>
           <span>€{total.toFixed(2)}</span>
         </div>
       )}
 
+      {/* Cart Drawer Overlay */}
+      {isCartOpen && (
+        <div className="drawer-overlay" onClick={() => setIsCartOpen(false)}>
+          <div className="cart-drawer fade-in-right" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="drawer-header">
+              <h2 style={{ color: C.text }}>{dict.tuCarrito || 'Tu Pedido'}</h2>
+              <button className="close-btn" onClick={() => setIsCartOpen(false)}>✖</button>
+            </div>
+
+            <div className="drawer-body">
+              {cart.map((item) => (
+                <div key={item.id} className="cart-item">
+                  <div className="cart-item-info">
+                    <h4>{item.nombre}</h4>
+                    <p style={{ color: C.primary }}>€{parseFloat(item.price || item.precio).toFixed(2)}</p>
+                  </div>
+                  <div className="cart-item-actions">
+                    <button onClick={() => updateQuantity(item.id, -1)}>−</button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.id, 1)}>+</button>
+                    <button onClick={() => removeFromCart(item.id)} className="remove-btn">🗑️</button>
+                  </div>
+                </div>
+              ))}
+              {cart.length === 0 && (
+                <p className="empty-cart">{dict.carritoVacio || 'El carrito está vacío.'}</p>
+              )}
+            </div>
+
+            <div className="drawer-footer">
+              <div className="drawer-total">
+                <span>{dict.total}</span>
+                <span style={{ color: C.text }}>€{total.toFixed(2)}</span>
+              </div>
+              <button 
+                onClick={() => { setIsCartOpen(false); setIsModalOpen(true); }}
+                className="checkout-btn"
+                disabled={cart.length === 0}
+                style={{ background: cart.length > 0 ? C.primary : C.grayBorder, color: cart.length > 0 ? C.white : C.textMuted }}
+              >
+                {dict.continuarWA || 'Invia ordine su WhatsApp'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Name Modal */}
       {isModalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 1000, padding: '20px'
-        }}>
-          <div style={{
-            background: C.white, width: '100%', maxWidth: '400px',
-            borderRadius: '24px', padding: '32px', textAlign: 'center',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)', animation: 'slideUp 0.3s ease-out'
-          }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: C.text, marginBottom: '8px' }}>
-              {dict.dinosTuNombre || 'Dinos tu nombre'}
-            </h2>
-            <p style={{ color: C.textMuted, fontSize: '0.95rem', marginBottom: '24px' }}>
-              {dict.introducirNombreDesc || 'Por favor, introduce tu nombre para completar el pedido.'}
-            </p>
+        <div className="modal-overlay">
+          <div className="modal-content scale-in" style={{ background: C.white }}>
+            <h2 style={{ color: C.text }}>{dict.dinosTuNombre || 'Dinos tu nombre'}</h2>
+            <p style={{ color: C.textMuted }}>{dict.introducirNombreDesc || 'Por favor, introduce tu nombre para completar el pedido.'}</p>
             
             <form onSubmit={processOrder}>
               <input 
@@ -174,35 +242,15 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 required
-                style={{
-                  width: '100%', padding: '16px', borderRadius: '12px',
-                  border: `2px solid ${C.grayBorder}`, background: C.grayBg,
-                  fontSize: '1rem', outline: 'none', marginBottom: '20px',
-                  textAlign: 'center', fontWeight: 600, color: C.text
-                }}
+                className="modal-input"
+                style={{ borderColor: C.grayBorder, background: C.grayBg, color: C.text }}
               />
               
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  style={{
-                    flex: 1, padding: '16px', borderRadius: '12px', border: 'none',
-                    background: '#f1f5f9', color: '#64748b', fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
+              <div className="modal-actions">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="modal-btn-cancel">
                   {dict.cerrar || 'Chiudi'}
                 </button>
-                <button 
-                  disabled={isSubmitting}
-                  style={{
-                    flex: 2, padding: '16px', borderRadius: '12px', border: 'none',
-                    background: C.green, color: C.white, fontWeight: 700,
-                    cursor: 'pointer', transition: 'opacity 0.2s',
-                    opacity: isSubmitting ? 0.7 : 1
-                  }}
-                >
+                <button type="submit" disabled={isSubmitting} className="modal-btn-confirm" style={{ background: C.primary, color: C.white }}>
                   {isSubmitting ? (dict.caricamento || '...') : (dict.continuarWA || 'Continua')}
                 </button>
               </div>
@@ -211,60 +259,377 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+      {/* Global Scoped Styles via JSX (Kyte Format implementation) */}
+      <style jsx global>{`
+        .store-container {
+          display: flex;
+          flex-direction: column;
+          max-width: 1200px;
+          margin: 0 auto;
+          width: 100%;
+        }
+
+        .store-sidebar {
+          background: #fff;
+          position: sticky;
+          top: 81px; /* Just below header */
+          z-index: 30;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-list {
+          list-style: none;
+          padding: 0 16px;
+          margin: 0;
+          display: flex;
+          overflow-x: auto;
+          gap: 20px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .category-list::-webkit-scrollbar { display: none; }
+
+        .category-item {
+          padding: 16px 4px;
+          white-space: nowrap;
+          font-weight: 600;
+          color: #64748b;
+          cursor: pointer;
+          font-size: 0.95rem;
+          border-bottom: 3px solid transparent;
+          transition: all 0.2s;
+        }
+
+        .category-item.active {
+          color: var(--primary);
+          border-bottom-color: var(--primary);
+          font-weight: 800;
+        }
+
+        .store-content {
+          flex: 1;
+          padding: 24px;
+        }
+
+        .category-section {
+          margin-bottom: 48px;
+        }
+
+        .category-title {
+          font-size: 1.5rem;
+          font-weight: 900;
+          margin: 0 0 20px 0;
+        }
+
+        .product-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+
+        .product-card {
+          background: #fff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+          border: 1px solid #e2e8f0;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .product-img-wrapper {
+          width: 100%;
+          aspect-ratio: 1 / 1;
+          background: #f8fafc;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 4rem;
+        }
+
+        .product-img-wrapper img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .product-add-btn {
+          position: absolute;
+          bottom: -16px;
+          right: 16px;
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: none;
+          color: white;
+          font-size: 1.5rem;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+          transition: transform 0.2s;
+          padding-bottom: 2px;
+        }
+        .product-add-btn:active { transform: scale(0.9); }
+
+        .product-info {
+          padding: 20px 16px 16px;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .product-name {
+          font-weight: 800;
+          font-size: 1rem;
+          margin: 0 0 4px 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .product-desc {
+          font-size: 0.8rem;
+          color: #64748b;
+          margin: 0 0 12px 0;
+          line-height: 1.4;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          flex: 1;
+        }
+
+        .product-price {
+          font-weight: 900;
+          font-size: 1.1rem;
+        }
+
+        /* Floating Cart */
+        .floating-cart-button {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: calc(100% - 40px);
+          max-width: 560px;
+          border-radius: 20px;
+          padding: 18px 24px;
+          font-weight: 800;
+          font-size: 1.1rem;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          z-index: 100;
+          border: none;
+        }
+
+        .cart-badge {
+          background: rgba(255,255,255,0.2);
+          padding: 4px 12px;
+          border-radius: 12px;
+          font-size: 0.95rem;
+        }
+
+        /* Drawer Overlay */
+        .drawer-overlay {
+          position: fixed;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.5);
+          z-index: 1000;
+          display: flex;
+          justify-content: flex-end;
+          backdrop-filter: blur(4px);
+        }
+
+        .cart-drawer {
+          width: 100%;
+          max-width: 420px;
+          height: 100%;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+          box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        }
+
+        .fade-in-right {
+          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+
+        .drawer-header {
+          padding: 24px;
+          border-bottom: 1px solid #e2e8f0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .drawer-header h2 { margin: 0; font-size: 1.5rem; font-weight: 900; }
+        .close-btn { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1rem; color: #64748b; cursor: pointer; }
+
+        .drawer-body {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px;
+        }
+
+        .cart-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 20px;
+          margin-bottom: 20px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .cart-item-info h4 { margin: 0 0 4px; font-weight: 800; color: #0f172a; }
+        .cart-item-info p { margin: 0; font-weight: 900; }
+        
+        .cart-item-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #f8fafc;
+          padding: 4px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+        }
+        .cart-item-actions button { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; width: 28px; height: 28px; font-weight: bold; cursor: pointer; color: #0f172a;}
+        .cart-item-actions span { font-weight: 800; width: 16px; text-align: center; }
+        .cart-item-actions .remove-btn { border: none; background: transparent; font-size: 1rem; width: auto; height: auto; padding: 4px; }
+
+        .drawer-footer {
+          padding: 24px;
+          border-top: 1px solid #e2e8f0;
+          background: #fff;
+        }
+        .drawer-total {
+          display: flex;
+          justify-content: space-between;
+          font-size: 1.25rem;
+          font-weight: 900;
+          margin-bottom: 20px;
+          color: #64748b;
+        }
+        .checkout-btn {
+          width: 100%;
+          padding: 18px;
+          border-radius: 16px;
+          border: none;
+          font-size: 1.1rem;
+          font-weight: 800;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+        .checkout-btn:active { opacity: 0.8; }
+
+        .empty-cart { text-align: center; color: #64748b; margin-top: 40px; font-weight: 600; }
+
+        /* Modal Overlays */
+        .modal-overlay {
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 1000; padding: 20px;
+        }
+        .modal-content {
+          width: 100%; max-width: 400px; border-radius: 24px; padding: 32px; text-align: center;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .modal-input {
+          width: 100%; padding: 16px; border-radius: 12px; border: 2px solid;
+          font-size: 1rem; outline: none; margin-bottom: 20px; text-align: center; font-weight: 600;
+        }
+        .modal-actions { display: flex; gap: 12px; }
+        .modal-btn-cancel { flex: 1; padding: 16px; border-radius: 12px; border: none; background: #f1f5f9; color: #64748b; font-weight: 700; cursor: pointer; }
+        .modal-btn-confirm { flex: 2; padding: 16px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+
+        /* Desktop Layout Overrides */
+        @media (min-width: 768px) {
+          .store-container {
+            flex-direction: row;
+            align-items: flex-start;
+          }
+          .store-sidebar {
+            width: 260px;
+            height: calc(100vh - 81px);
+            overflow-y: auto;
+            border-right: 1px solid #e2e8f0;
+            background: transparent;
+            box-shadow: none;
+          }
+          .category-list {
+            flex-direction: column;
+            padding: 24px;
+            gap: 4px;
+          }
+          .category-item {
+            padding: 12px 16px;
+            border-bottom: none;
+            border-left: 4px solid transparent;
+            border-radius: 0 12px 12px 0;
+          }
+          .category-item.active {
+            border-bottom-color: transparent;
+            border-left-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+          }
+          .store-content {
+            padding: 32px 48px;
+          }
+          .product-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+          }
+        }
+        @media (min-width: 1024px) {
+          .product-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
         }
       `}</style>
-    </>
+    </div>
   )
 }
 
-function ProductCard({ product, C, onAdd, dict }) {
+function ProductCard({ product, C, onAdd }) {
   return (
-    <div style={{ 
-      background: C.white, 
-      borderRadius: '20px', 
-      padding: '16px', 
-      boxShadow: '0 2px 12px rgba(0,0,0,0.03)', 
-      display: 'flex', 
-      gap: '16px', 
-      textAlign: 'left',
-      border: `1px solid ${C.grayBorder}`,
-    }}>
-       <div style={{ 
-         width: '85px', height: '85px', borderRadius: '14px', background: C.grayBg, 
-         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem',
-         flexShrink: 0,
-         overflow: 'hidden'
-       }}>
+    <div className="product-card">
+       <div className="product-img-wrapper" style={{ background: product.imagen_url ? '#fff' : C.primary + '15' }}>
          {product.imagen_url ? (
-           <img src={product.imagen_url} alt={product.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+           <img src={product.imagen_url} alt={product.nombre} loading="lazy" />
          ) : (
-           product.emoji || '📦'
+           <span style={{ opacity: 0.5 }}>{product.emoji || '🛍️'}</span>
          )}
-       </div>
-       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: C.text }}>{product.nombre}</h3>
-              <span style={{ fontWeight: 800, color: C.green, fontSize: '1.05rem' }}>€{parseFloat(product.price || product.precio).toFixed(2)}</span>
-            </div>
-            <p style={{ margin: '0 0 12px', fontSize: '0.88rem', color: C.textMuted, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-              {product.descripcion}
-            </p>
-         </div>
+         
+         {/* Botón flotante al estilo Kyte */}
          <button 
+           className="product-add-btn" 
            onClick={onAdd}
-           style={{ 
-            background: '#ecfdf5', color: C.green, border: `1px solid #d1fae5`, 
-            borderRadius: '12px', padding: '8px 20px', fontSize: '0.9rem', fontWeight: 700,
-            cursor: 'pointer', alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: '6px'
-          }}
+           style={{ background: C.primary }}
          >
-           <span>+</span> {dict.añadirProducto?.split('+')[1]?.trim() || 'Aggiungi'}
+           +
          </button>
+       </div>
+       <div className="product-info">
+         <h3 className="product-name" style={{ color: C.text }}>{product.nombre}</h3>
+         <p className="product-desc">{product.descripcion}</p>
+         <span className="product-price" style={{ color: C.text }}>
+           €{parseFloat(product.price || product.precio).toFixed(2)}
+         </span>
        </div>
     </div>
   )

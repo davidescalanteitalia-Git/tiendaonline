@@ -20,6 +20,15 @@ export default function AjustesPage() {
   const [descripcion, setDescripcion] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
   const [emoji, setEmoji] = useState('🏪')
+  const [colorPrincipal, setColorPrincipal] = useState('#3B82F6')
+
+  const THEME_COLORS = [
+    { name: 'Kyte Blue', hex: '#3B82F6' },
+    { name: 'Emerald Green', hex: '#10B981' },
+    { name: 'Ruby Red', hex: '#EF4444' },
+    { name: 'Amethyst Purple', hex: '#8B5CF6' },
+    { name: 'Midnight Black', hex: '#1F2937' }
+  ]
 
   useEffect(() => {
     fetchTienda()
@@ -41,6 +50,7 @@ export default function AjustesPage() {
         setDescripcion(data.descripcion || '')
         setWhatsapp(data.whatsapp || '')
         setEmoji(data.emoji || '🏪')
+        setColorPrincipal(data.color_principal || '#3B82F6')
       }
     } catch (err) {
       console.error('Error fetching store info:', err)
@@ -61,7 +71,7 @@ export default function AjustesPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ nombre, descripcion, whatsapp, emoji })
+        body: JSON.stringify({ nombre, descripcion, whatsapp, emoji, color_principal: colorPrincipal })
       })
 
       if (res.ok) {
@@ -191,6 +201,23 @@ export default function AjustesPage() {
                   placeholder={dict.placeholderDescripcion}
                   className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none text-slate-700 leading-relaxed"
                 ></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-3">{dict.colorPrincipal || 'Color Principal'}</label>
+                <div className="flex flex-wrap gap-4">
+                  {THEME_COLORS.map((c) => (
+                    <button
+                      key={c.hex}
+                      type="button"
+                      onClick={() => setColorPrincipal(c.hex)}
+                      className={`w-12 h-12 rounded-full border-4 transition-all ${colorPrincipal === c.hex ? 'scale-110 shadow-lg shadow-slate-300' : 'border-transparent hover:scale-105'}`}
+                      style={{ backgroundColor: c.hex, borderColor: colorPrincipal === c.hex ? 'white' : 'transparent', outline: colorPrincipal === c.hex ? `2px solid ${c.hex}` : 'none' }}
+                      title={c.name}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-slate-400 mt-3">{dict.personalizaAspecto || 'Personaliza el color de botones y detalles en tu tienda.'}</p>
               </div>
 
               <div className="pt-6 border-t border-slate-100 flex justify-end">

@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import StoreClient from '../../../components/StoreClient'
 
 export const dynamic = 'force-dynamic'
-// Version 1.1.2 - Dynamic Storefront Fix
 
 async function getStoreData(domain) {
   try {
@@ -54,13 +53,12 @@ export default async function StoreFrontPage({ params }) {
   const { tienda, categorias, productos } = data
 
   const C = {
-    green: '#059669',
+    primary: tienda.color_principal || '#3B82F6', // Kyte Blue default
     white: '#ffffff',
     text: '#0f172a',
     textMuted: '#64748b',
     grayBg: '#f8fafc',
     grayBorder: '#e2e8f0',
-    primary: '#2563eb'
   }
 
   // Agrupar productos por categoría
@@ -74,38 +72,33 @@ export default async function StoreFrontPage({ params }) {
 
   return (
     <div style={{ backgroundColor: C.grayBg, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
-      {/* Portada Móvil Premium */}
+      {/* Header Fijo con Logo de Tienda */}
       <div style={{ 
-        width: '100%', 
-        height: '240px', 
-        background: `linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200') center/cover`,
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        position: 'sticky', top: 0, zIndex: 40,
+        backgroundColor: C.white, borderBottom: `1px solid ${C.grayBorder}`, 
+        padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px'
       }}>
-        {/* Logo Circular */}
         <div style={{ 
-          position: 'absolute', bottom: '-45px', left: '50%', transform: 'translateX(-50%)', 
-          width: '94px', height: '94px', borderRadius: '50%', background: C.white, 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-          border: `4px solid ${C.white}`,
-          zIndex: 10
+          width: '48px', height: '48px', borderRadius: '50%', background: C.grayBg, 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem',
+          border: `2px solid ${C.grayBorder}`, flexShrink: 0
         }}>
           {tienda.emoji || '🏪'}
         </div>
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: C.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {tienda.nombre}
+          </h1>
+          {tienda.descripcion && (
+            <p style={{ margin: 0, fontSize: '0.85rem', color: C.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {tienda.descripcion}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '65px 20px 120px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: C.text, margin: '0 0 10px', letterSpacing: '-0.8px' }}>
-          {tienda.nombre}
-        </h1>
-        <p style={{ color: C.textMuted, fontSize: '1.05rem', marginBottom: '40px', lineHeight: 1.6, maxWidth: '450px', margin: '0 auto 40px' }}>
-          {tienda.descripcion || 'Benvenuti nel nostro negozio online! Sfoglia i prodotti e ordina via WhatsApp.'}
-        </p>
-
-        {/* Client Component handles the list and cart logic */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Client Component handles the Sidebar, Grid logic, and Cart */}
         <StoreClient 
           tienda={tienda} 
           groupedProducts={groupedProducts} 
