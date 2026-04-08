@@ -306,7 +306,7 @@ export default function ProductosPage() {
                           </div>
                           <div className="flex flex-col">
                             <span className="font-bold text-slate-800 text-sm hover:text-emerald-600 transition-colors">{p.nombre}</span>
-                            <span className="text-[11px] text-slate-500">Cód.: {p.codigo || \`P-\${p.id.substring(0,4)}\`}</span>
+                            <span className="text-[11px] text-slate-500">Cód.: {p.codigo || ('P-' + (p.id || '').substring(0, 4))}</span>
                           </div>
                         </div>
                       </td>
