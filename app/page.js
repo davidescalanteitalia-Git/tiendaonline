@@ -58,7 +58,7 @@ const DEMO_TABS = [
 
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function Home() {
-  const { lang, setLang } = useLang()
+  const { lang, changeLang: setLang } = useLang()
   const dict = DICTIONARY[lang]
   const [storeCount,  setStoreCount]  = useState(0)
   const [activeDemo,  setActiveDemo]  = useState(0)
