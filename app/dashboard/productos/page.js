@@ -56,19 +56,46 @@ export default function ProductosPage() {
     }
   }
 
+  // Comprime cualquier imagen a máx 800px y calidad 85% antes de subir
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const MAX = 800
+          let w = img.width
+          let h = img.height
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX }
+            else        { w = Math.round(w * MAX / h); h = MAX }
+          }
+          const canvas = document.createElement('canvas')
+          canvas.width  = w
+          canvas.height = h
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+          canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85)
+        }
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
 
     setUploading(true)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
+      // Comprime antes de subir — acepta cualquier tamaño de foto
+      const compressed = await compressImage(file)
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.jpg`
       const filePath = `product-images/${fileName}`
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('productos')
-        .upload(filePath, file)
+        .upload(filePath, compressed, { contentType: 'image/jpeg' })
 
       if (error) throw error
 
