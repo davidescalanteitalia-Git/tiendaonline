@@ -178,11 +178,14 @@ export default function DisenoPage() {
     )
   }
 
+  // URL interna para el botón "Ver Tienda" (funciona sin DNS wildcard)
+  const storeVisitUrl = `/store/${tienda?.subdominio}`
+  // URL pública con subdominio, para mostrar y copiar (una vez DNS configurado)
   const storeUrl = `https://${tienda?.subdominio}.tiendaonline.it`
 
   return (
     <div className="max-w-[1200px] mx-auto p-4 md:p-8 animate-in fade-in duration-500 font-sans">
-      
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
@@ -191,9 +194,9 @@ export default function DisenoPage() {
           </h1>
           <p className="text-slate-500 mt-2 font-medium">{dict.personalizaAspecto || 'Personaliza el aspecto de tu tienda pública.'}</p>
         </div>
-        <a 
-          href={storeUrl} 
-          target="_blank" 
+        <a
+          href={storeVisitUrl}
+          target="_blank"
           className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-xl active:scale-95"
         >
           {dict.verEnOtraPestana || 'Ver Tienda'} <ExternalLink size={20} />

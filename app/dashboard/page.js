@@ -58,13 +58,18 @@ export default function DashboardPage() {
     load()
   }, [])
 
+  // URL para visitar internamente (sin necesitar DNS wildcard)
   const storeUrl = tienda?.subdominio
+    ? `/store/${tienda.subdominio}`
+    : null
+  // URL real con subdominio, para copiar y compartir con clientes
+  const storePublicUrl = tienda?.subdominio
     ? `https://${tienda.subdominio}.tiendaonline.it`
     : null
 
   const copyLink = () => {
-    if (!storeUrl) return
-    navigator.clipboard.writeText(storeUrl)
+    if (!storePublicUrl) return
+    navigator.clipboard.writeText(storePublicUrl)
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2000)
   }

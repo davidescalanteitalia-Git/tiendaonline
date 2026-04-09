@@ -143,21 +143,6 @@ export default function Home() {
     <div style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: C.text, margin: 0, padding: 0 }}>
 
       {/* ════════════════════════════════════════════════════════════════════
-          BANNER — EN CONSTRUCCIÓN
-      ════════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        background:   '#fef3c7',
-        borderBottom: `2px solid ${C.amber}`,
-        padding:      '10px 20px',
-        textAlign:    'center',
-        fontSize:     '0.88rem',
-        fontWeight:   600,
-        color:        C.amberText,
-      }}>
-        🚧 {t('bannerText')}
-      </div>
-
-      {/* ════════════════════════════════════════════════════════════════════
           HEADER STICKY
       ════════════════════════════════════════════════════════════════════ */}
       <header className="glass-header" style={{

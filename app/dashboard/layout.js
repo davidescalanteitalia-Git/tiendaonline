@@ -64,8 +64,10 @@ export default function DashboardLayout({ children }) {
     { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
   ]
 
+  // Para "visitar tienda" usamos la ruta interna /store/ (funciona sin DNS wildcard).
+  // La URL con subdominio (prueba5.tiendaonline.it) es solo para compartir con clientes.
   const storeUrl = tienda?.subdominio
-    ? `https://${tienda.subdominio}.tiendaonline.it`
+    ? `/store/${tienda.subdominio}`
     : null
 
   const inicial = tienda?.nombre ? tienda.nombre.charAt(0).toUpperCase() : '?'

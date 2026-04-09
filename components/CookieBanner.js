@@ -198,17 +198,18 @@ export default function CookieBanner() {
       {!panelOpen && (
         <div style={{
           position: 'fixed',
-          bottom: '16px',
+          bottom: '12px',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 'calc(100% - 32px)',
+          width: 'calc(100% - 24px)',
           maxWidth: '720px',
           background: '#fff',
-          borderRadius: '18px',
-          padding: '20px 22px',
+          borderRadius: '16px',
+          padding: '16px 16px',
           zIndex: 9999,
           boxShadow: '0 8px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.06)',
           animation: 'fadeUp 0.3s ease',
+          boxSizing: 'border-box',
         }}>
 
           {/* Cabecera */}
@@ -224,7 +225,7 @@ export default function CookieBanner() {
           </div>
 
           {/* Botones — todos igual de visibles (requisito Garante) */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="cookie-btns">
             <button
               onClick={handleRejectAll}
               style={{ ...btnBase, background: C.grayBg, color: C.text, border: `1.5px solid ${C.grayBorder}` }}
@@ -246,13 +247,13 @@ export default function CookieBanner() {
           </div>
 
           {/* Nota Garante */}
-          <p style={{ margin: '10px 0 0', fontSize: '0.73rem', color: C.grayText, textAlign: 'center' }}>
+          <p style={{ margin: '10px 0 0', fontSize: '0.73rem', color: C.grayText, textAlign: 'center', lineHeight: 1.4 }}>
             🔒 {t.garante}
           </p>
         </div>
       )}
 
-      {/* Animaciones CSS */}
+      {/* Animaciones CSS + responsive */}
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -261,6 +262,23 @@ export default function CookieBanner() {
         @keyframes slideUp {
           from { transform: translateX(-50%) translateY(100%); }
           to   { transform: translateX(-50%) translateY(0); }
+        }
+        .cookie-btns {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        @media (max-width: 480px) {
+          .cookie-btns {
+            flex-direction: column;
+            gap: 6px;
+          }
+          .cookie-btns button {
+            min-width: unset !important;
+            flex: unset !important;
+            width: 100%;
+            padding: 12px 16px !important;
+          }
         }
       `}</style>
     </>
