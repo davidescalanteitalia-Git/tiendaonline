@@ -7,7 +7,8 @@ import { DICTIONARY } from '../../lib/dictionaries'
 import {
   ShoppingCart, Package, CheckCircle2, Clock, XCircle,
   TrendingUp, Copy, ExternalLink, ArrowRight, Plus,
-  ShoppingBag, Store, Zap, Users, ChevronRight
+  ShoppingBag, Store, Zap, Users, ChevronRight,
+  ShieldCheck, Settings, Palette, CreditCard, Truck
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -23,32 +24,36 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
 
-      const headers = { Authorization: `Bearer ${session.access_token}` }
+        const headers = { Authorization: `Bearer ${session.access_token}` }
 
-      // Fetch en paralelo
-      const [meRes, pedidosRes, productosRes] = await Promise.all([
-        fetch('/api/me', { headers }),
-        fetch('/api/pedidos', { headers }),
-        fetch('/api/productos', { headers }),
-      ])
+        // Fetch en paralelo
+        const [meRes, pedidosRes, productosRes] = await Promise.all([
+          fetch('/api/me', { headers }),
+          fetch('/api/pedidos', { headers }),
+          fetch('/api/productos', { headers }),
+        ])
 
-      if (meRes.ok) {
-        const json = await meRes.json()
-        setTienda(json.tienda || null)
+        if (meRes.ok) {
+          const json = await meRes.json()
+          setTienda(json.tienda || null)
+        }
+        if (pedidosRes.ok) {
+          const json = await pedidosRes.json()
+          setPedidos(json.pedidos || [])
+        }
+        if (productosRes.ok) {
+          const json = await productosRes.json()
+          setProductos(Array.isArray(json) ? json : [])
+        }
+      } catch (err) {
+        console.error('Error loading dashboard data:', err)
+      } finally {
+        setLoading(false)
       }
-      if (pedidosRes.ok) {
-        const json = await pedidosRes.json()
-        setPedidos(json.pedidos || [])
-      }
-      if (productosRes.ok) {
-        const json = await productosRes.json()
-        setProductos(Array.isArray(json) ? json : [])
-      }
-
-      setLoading(false)
     }
     load()
   }, [])
@@ -64,309 +69,273 @@ export default function DashboardPage() {
     setTimeout(() => setCopiedLink(false), 2000)
   }
 
-  // ─── Stats calculadas en tiempo real ───
+  // ─── Stats calculadas ───
   const pendientes = pedidos.filter(p => p.estado === 'pendiente').length
-  const confirmados = pedidos.filter(p => p.estado === 'confirmado').length
-  const cancelados = pedidos.filter(p => p.estado === 'cancelado').length
   const totalVentas = pedidos
     .filter(p => p.estado !== 'cancelado')
     .reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0)
-  const productosActivos = productos.filter(p => p.activo !== false).length
-  const recentPedidos = pedidos.slice(0, 5)
+  const productosActivos = productos.filter(p => p.estado === 'activo').length
+  const recentPedidos = pedidos.slice(0, 4)
 
-  const aceptarPedidos = tienda?.aceptar_pedidos ?? true
+  // ─── Operational Checklist ───
+  const config = tienda?.config_diseno || {}
+  const checklist = [
+    { title: 'Métodos de Pago', status: !!config.pagos && Object.keys(config.pagos).length > 0, icon: <CreditCard size={18} />, href: '/dashboard/diseno?tab=pagos' },
+    { title: 'Zonas de Envío', status: !!config.envios && Object.keys(config.envios).length > 0, icon: <Truck size={18} />, href: '/dashboard/diseno?tab=envios' },
+    { title: 'Identidad Visual (Logo/Banner)', status: !!config.logo || !!config.banner, icon: <Palette size={18} />, href: '/dashboard/diseno?tab=branding' },
+    { title: 'Inventario de Productos', status: productos.length > 0, icon: <Package size={18} />, href: '/dashboard/productos' },
+  ]
+  const completedSteps = checklist.filter(c => c.status).length
+  const progressPercent = (completedSteps / checklist.length) * 100
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex gap-2">
-          {[0, 1, 2].map(i => (
-            <div
-              key={i}
-              className="w-3 h-3 rounded-full bg-emerald-400 animate-bounce"
-              style={{ animationDelay: `${i * 0.15}s` }}
-            />
-          ))}
-        </div>
+      <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
+        <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-400 font-bold text-sm tracking-widest uppercase">Inizializzazione Command Center...</p>
       </div>
     )
   }
 
-  const STATS = [
-    {
-      label: 'Pedidos pendientes',
-      value: pendientes,
-      icon: Clock,
-      color: 'text-amber-600',
-      bg: 'bg-amber-50',
-      border: 'border-amber-100',
-      ring: 'ring-amber-200',
-      href: '/dashboard/pedidos',
-    },
-    {
-      label: 'Confirmados hoy',
-      value: confirmados,
-      icon: CheckCircle2,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-      border: 'border-emerald-100',
-      ring: 'ring-emerald-200',
-      href: '/dashboard/pedidos',
-    },
-    {
-      label: 'Ingresos totales',
-      value: `€${totalVentas.toFixed(2)}`,
-      icon: TrendingUp,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-      border: 'border-blue-100',
-      ring: 'ring-blue-200',
-      href: '/dashboard/pedidos',
-    },
-    {
-      label: 'Productos activos',
-      value: productosActivos,
-      icon: Package,
-      color: 'text-violet-600',
-      bg: 'bg-violet-50',
-      border: 'border-violet-100',
-      ring: 'ring-violet-200',
-      href: '/dashboard/productos',
-    },
-  ]
-
-  const STATUS_CONFIG = {
-    pendiente:   { label: 'Pendiente',   color: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-200' },
-    confirmado:  { label: 'Confirmado',  color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-    cancelado:   { label: 'Cancelado',   color: 'text-red-600',     bg: 'bg-red-50',     border: 'border-red-200' },
-  }
-
-  const ACCIONES_RAPIDAS = [
-    { icon: Plus,          label: 'Nuevo producto',  href: '/dashboard/productos',  color: 'bg-slate-900 text-white hover:bg-slate-700' },
-    { icon: ShoppingCart,  label: 'Ver pedidos',     href: '/dashboard/pedidos',    color: 'bg-emerald-500 text-white hover:bg-emerald-600' },
-    { icon: Store,         label: 'Abrir mi tienda', href: storeUrl || '#', external: true, color: 'bg-blue-500 text-white hover:bg-blue-600' },
-  ]
-
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
+    <div className="min-h-screen bg-[#F8FAFC] pb-20 space-y-10 animate-in fade-in slide-in-from-bottom-3 duration-700">
 
-      {/* ── Greeting Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-            ¡Hola, {tienda?.nombre || 'bienvenido'} 👋
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            Resumen de tu negocio en tiempo real
-          </p>
-        </div>
-
-        {/* Estado de tienda */}
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border shadow-sm
-          ${aceptarPedidos
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-            : 'bg-slate-100 text-slate-500 border-slate-200'
-          }`}>
-          <span className={`w-2 h-2 rounded-full ${aceptarPedidos ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-          {aceptarPedidos ? 'Tienda abierta' : 'Tienda cerrada'}
-        </div>
-      </div>
-
-      {/* ── Link de la Tienda ── */}
-      {storeUrl && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-              <Store size={18} />
-            </div>
+      {/* ── 1. Hero / Header ── */}
+      <div className="max-w-7xl mx-auto">
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tu tienda online</p>
-              <p className="text-sm font-mono font-medium text-slate-800">{tienda.subdominio}.tiendaonline.it</p>
+               <h1 className="text-4xl font-black text-slate-800 tracking-tight mb-2">
+                 Centro de Comando
+               </h1>
+               <p className="text-slate-500 font-medium">Gestione operativa di {tienda?.nombre || 'la tua attività'}</p>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={copyLink}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all
-                ${copiedLink
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-            >
-              {copiedLink ? <CheckCircle2 size={15} /> : <Copy size={15} />}
-              {copiedLink ? '¡Copiado!' : 'Copiar link'}
-            </button>
-            <a
-              href={`/store/${tienda.subdominio}`}
-              target="_blank"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-blue-200"
-            >
-              <ExternalLink size={15} /> Ver tienda
-            </a>
-          </div>
-        </div>
-      )}
-
-      {/* ── Stats en tiempo real ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map((stat, i) => {
-          const Icon = stat.icon
-          return (
-            <Link
-              key={i}
-              href={stat.href}
-              className={`bg-white rounded-2xl p-5 border ${stat.border} shadow-sm hover:shadow-md transition-all group cursor-pointer`}
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${stat.bg} ${stat.color} ${stat.border} border`}>
-                <Icon size={20} />
-              </div>
-              <div className="text-2xl font-bold text-slate-800 font-mono mb-1">{stat.value}</div>
-              <div className="text-xs text-slate-500 font-medium flex items-center justify-between">
-                {stat.label}
-                <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </Link>
-          )
-        })}
-      </div>
-
-      {/* ── Acciones Rápidas + Pedidos Recientes ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Acciones Rápidas */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-5 flex items-center gap-2">
-            <Zap size={16} className="text-amber-500" /> Acciones rápidas
-          </h2>
-          <div className="flex flex-col gap-3">
-            {ACCIONES_RAPIDAS.map((accion, i) => {
-              const Icon = accion.icon
-              return accion.external ? (
-                <a
-                  key={i}
-                  href={accion.href}
-                  target="_blank"
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${accion.color}`}
-                >
-                  <Icon size={18} /> {accion.label}
-                  <ArrowRight size={14} className="ml-auto" />
-                </a>
-              ) : (
-                <Link
-                  key={i}
-                  href={accion.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${accion.color}`}
-                >
-                  <Icon size={18} /> {accion.label}
-                  <ArrowRight size={14} className="ml-auto" />
-                </Link>
-              )
-            })}
-          </div>
-
-          {/* Separator + Tip */}
-          <div className="mt-6 pt-5 border-t border-slate-100">
-            <p className="text-xs text-slate-400 font-medium flex items-center gap-2">
-              <Users size={13} /> {pedidos.length} {pedidos.length === 1 ? 'pedido total' : 'pedidos totales'}
-            </p>
-            {!aceptarPedidos && (
-              <p className="text-xs text-amber-600 font-semibold mt-2 flex items-center gap-1">
-                ⚠️ Tu tienda no acepta pedidos. Actívala en Ajustes.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Pedidos Recientes */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <ShoppingCart size={16} className="text-blue-500" /> Pedidos recientes
-            </h2>
-            <Link
-              href="/dashboard/pedidos"
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
-            >
-              Ver todos <ChevronRight size={13} />
-            </Link>
-          </div>
-
-          {recentPedidos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-              <ShoppingBag size={36} className="mb-3 opacity-30" />
-              <p className="text-sm font-medium">Todavía no tienes pedidos</p>
-              <p className="text-xs mt-1">¡Comparte tu tienda para recibir el primero!</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-50">
-              {recentPedidos.map((pedido) => {
-                const status = STATUS_CONFIG[pedido.estado] || STATUS_CONFIG.pendiente
-                const fecha = new Date(pedido.created_at)
-                const hoy = new Date()
-                const esHoy = fecha.toDateString() === hoy.toDateString()
-                const fechaLabel = esHoy
-                  ? `Hoy ${fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
-                  : fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-
-                return (
-                  <Link
-                    key={pedido.id}
-                    href="/dashboard/pedidos"
-                    className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/80 transition-colors group"
+            
+            <div className="flex items-center gap-4">
+               {/* Store Link Card */}
+               <div className="bg-white rounded-3xl border border-slate-200 p-2 pl-4 pr-2 flex items-center gap-4 shadow-sm">
+                  <span className="text-xs font-mono font-bold text-slate-400">{tienda?.subdominio}.tiendaonline...</span>
+                  <button 
+                    onClick={copyLink}
+                    className={`p-2.5 rounded-2xl transition-all ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                   >
-                    <div className="flex items-center gap-3">
-                      {/* Avatar inicial */}
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                        {(pedido.cliente_nombre || '?').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-800">{pedido.cliente_nombre || 'Cliente'}</p>
-                        <p className="text-xs text-slate-400 font-mono">{pedido.codigo} · {fechaLabel}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${status.color} ${status.bg} ${status.border}`}>
-                        {status.label}
-                      </span>
-                      <span className="text-sm font-bold text-slate-800 font-mono">
-                        €{parseFloat(pedido.total).toFixed(2)}
-                      </span>
-                      <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
-                    </div>
-                  </Link>
-                )
-              })}
+                     {copiedLink ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                  </button>
+                  <a 
+                    href={`/store/${tienda?.subdominio}`} 
+                    target="_blank"
+                    className="p-2.5 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
+                  >
+                     <ExternalLink size={18} />
+                  </a>
+               </div>
             </div>
-          )}
-        </div>
+         </div>
+
+         {/* Stats Row */}
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+               <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <TrendingUp size={24} />
+               </div>
+               <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ventas Totales</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">€{totalVentas.toFixed(2)}</h3>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+               <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Clock size={24} />
+               </div>
+               <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pedidos Pendientes</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">{pendientes}</h3>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Package size={24} />
+               </div>
+               <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Stock Activo</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">{productosActivos} items</h3>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+               <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Users size={24} />
+               </div>
+               <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Lealtad</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">82%</h3>
+               </div>
+            </div>
+         </div>
       </div>
 
-      {/* ── Banner compartir por WhatsApp ── */}
-      {storeUrl && (
-        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-100">
-          {/* Decorative bubbles */}
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full" />
-          <div className="absolute right-10 -bottom-8 w-20 h-20 bg-white/10 rounded-full" />
+      {/* ── 2. Content Sections ── */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+         
+         {/* Left Side: Setup & Analytics */}
+         <div className="lg:col-span-1 space-y-10">
+            {/* Setup Checklist */}
+            <div className="bg-slate-900 rounded-[40px] p-8 text-white shadow-2xl shadow-blue-900/10">
+               <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-blue-400">Setup de Tienda</h3>
+                  <div className="bg-white/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                     {completedSteps}/{checklist.length} Completado
+                  </div>
+               </div>
+               
+               <div className="w-full h-2 bg-white/5 rounded-full mb-8 overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-500 transition-all duration-1000" 
+                    style={{ width: `${progressPercent}%` }}
+                  />
+               </div>
 
-          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="font-bold text-lg">¡Comparte tu tienda! 🚀</p>
-              <p className="text-emerald-100 text-sm mt-1 max-w-sm">
-                Compártela en WhatsApp o redes sociales y empieza a recibir pedidos.
-              </p>
+               <div className="space-y-4">
+                  {checklist.map((item, idx) => (
+                    <Link 
+                      key={idx} 
+                      href={item.href}
+                      className="flex items-center justify-between p-4 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group"
+                    >
+                       <div className="flex items-center gap-4">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${item.status ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/40 group-hover:text-white'}`}>
+                             {item.icon}
+                          </div>
+                          <span className={`text-sm font-bold ${item.status ? 'text-white/80' : 'text-white/40 group-hover:text-white'}`}>
+                             {item.title}
+                          </span>
+                       </div>
+                       {item.status ? (
+                          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                             <ShieldCheck size={14} className="text-white" />
+                          </div>
+                       ) : (
+                          <ChevronRight size={16} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                       )}
+                    </Link>
+                  ))}
+               </div>
             </div>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(`¡Haz tu pedido en mi tienda online! 🛍️ ${storeUrl}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-white text-emerald-600 hover:bg-emerald-50 px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-sm shrink-0"
-            >
-              <ShoppingCart size={16} /> Compartir por WhatsApp
-            </a>
-          </div>
-        </div>
-      )}
 
+            {/* Support Box */}
+            <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
+               <div className="relative">
+                  <h3 className="text-lg font-black text-slate-800 mb-2">Ayuda & Soporte</h3>
+                  <p className="text-slate-400 text-sm font-medium mb-6">¿Tienes dudas con tu configuración o necesitas funciones extra?</p>
+                  <a 
+                    href="https://wa.me/5491100000000" 
+                    target="_blank"
+                    className="flex justify-center items-center gap-2 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-sm transition-all active:scale-95"
+                  >
+                     Hablar con un experto
+                  </a>
+               </div>
+            </div>
+         </div>
+
+         {/* Right Side: Recent Activity & Orders */}
+         <div className="lg:col-span-2 space-y-10">
+            {/* Quick Actions Bar */}
+            <div className="bg-white rounded-[40px] p-4 border border-slate-100 shadow-sm flex items-center gap-4 overflow-x-auto no-scrollbar">
+               <Link href="/dashboard/productos" className="flex items-center gap-3 px-6 py-4 bg-emerald-50 text-emerald-700 rounded-[28px] font-black text-xs uppercase tracking-widest hover:bg-emerald-100 transition-all shrink-0">
+                  <Plus size={18} /> Nuevo Producto
+               </Link>
+               <Link href="/dashboard/pedidos" className="flex items-center gap-3 px-6 py-4 bg-blue-50 text-blue-700 rounded-[28px] font-black text-xs uppercase tracking-widest hover:bg-blue-100 transition-all shrink-0">
+                  <ShoppingCart size={18} /> Ver Pedidos
+               </Link>
+               <Link href="/dashboard/diseno" className="flex items-center gap-3 px-6 py-4 bg-slate-50 text-slate-700 rounded-[28px] font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all shrink-0">
+                  <Settings size={18} /> Panel Ajustes
+               </Link>
+            </div>
+
+            {/* Recent Orders List */}
+            <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+               <div className="px-8 py-8 border-b border-slate-50 flex items-center justify-between">
+                  <div>
+                     <h3 className="text-xl font-black text-slate-800 tracking-tight">Actividad Reciente</h3>
+                     <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Últimas 4 Órdenes</p>
+                  </div>
+                  <Link href="/dashboard/pedidos" className="p-3 bg-slate-50 hover:bg-slate-100 text-slate-400 rounded-2xl transition-all">
+                     <ArrowRight size={20} />
+                  </Link>
+               </div>
+
+               {recentPedidos.length === 0 ? (
+                 <div className="py-20 flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 rounded-[28px] bg-slate-50 text-slate-200 flex items-center justify-center mb-4">
+                       <ShoppingBag size={32} />
+                    </div>
+                    <p className="text-slate-400 font-bold text-sm">Esperando tu primer venta...</p>
+                 </div>
+               ) : (
+                 <div className="divide-y divide-slate-50">
+                    {recentPedidos.map((p, idx) => (
+                      <Link 
+                        key={p.id} 
+                        href="/dashboard/pedidos"
+                        className="flex items-center justify-between p-8 hover:bg-blue-50/20 transition-all group"
+                      >
+                         <div className="flex items-center gap-6">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 font-black text-xs group-hover:from-blue-100 group-hover:to-blue-600 group-hover:text-white transition-all">
+                               {p.codigo.replace('#', '')}
+                            </div>
+                            <div>
+                               <h4 className="font-black text-slate-800 text-sm mb-1">{p.cliente_nombre}</h4>
+                               <div className="flex items-center gap-3">
+                                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                    p.estado === 'confirmado' 
+                                    ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+                                    : 'bg-amber-50 border-amber-100 text-amber-600'
+                                  }`}>
+                                     {p.estado}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                                     {new Date(p.created_at).toLocaleDateString()}
+                                  </span>
+                               </div>
+                            </div>
+                         </div>
+
+                         <div className="text-right">
+                            <p className="font-black text-slate-800 tracking-tight">€{parseFloat(p.total).toFixed(2)}</p>
+                            <div className="flex items-center justify-end gap-1 mt-1">
+                               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Detalles</span>
+                               <ChevronRight size={12} className="text-slate-300 group-hover:translate-x-1 transition-all" />
+                            </div>
+                         </div>
+                      </Link>
+                    ))}
+                 </div>
+               )}
+
+               {/* Footer with Banner */}
+               <div className="p-8 bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden">
+                  <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full"></div>
+                  <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                     <div>
+                        <h4 className="text-lg font-black tracking-tight mb-1">¡Impulsa tus Ventas! 🚀</h4>
+                        <p className="text-blue-100 text-sm opacity-80 max-w-sm font-medium">Conecta tu catálogo con Instagram y WhatsApp para automatizar tus pedidos al 100%.</p>
+                     </div>
+                     <button className="px-8 py-4 bg-white text-blue-700 rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-900/20">
+                        Tutorial Pro
+                     </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   )
 }

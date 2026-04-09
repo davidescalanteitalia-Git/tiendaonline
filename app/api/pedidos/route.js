@@ -49,7 +49,7 @@ export async function GET(req) {
 // POST: Create a new order (from customer store)
 export async function POST(req) {
   try {
-    const { tienda_id, cliente_nombre, items, total } = await req.json()
+    const { tienda_id, cliente_nombre, items, total, metodo_envio, metodo_pago, direccion, shipping_cost, whatsapp } = await req.json()
     const supabaseAdmin = getSupabaseAdmin()
 
     if (!tienda_id || !cliente_nombre || !items || !total) {
@@ -57,7 +57,6 @@ export async function POST(req) {
     }
 
     // 1. Generate unique code for this store
-    // We count existing orders for this store to give a friendly number
     const { count } = await supabaseAdmin
       .from('pedidos')
       .select('*', { count: 'exact', head: true })
@@ -66,6 +65,21 @@ export async function POST(req) {
     const orderNumber = (count || 0) + 101
     const codigo = `#C-${orderNumber}`
 
+    // Include metadata in items or as a special structure if preferred
+    // For now, we'll store metadata as a special item in the array to avoid schema errors
+    const enrichedItems = [
+      ...items,
+      {
+        id: 'ORDER_META',
+        type: 'metadata',
+        metodo_envio,
+        metodo_pago,
+        direccion,
+        shipping_cost: shipping_cost || 0,
+        whatsapp
+      }
+    ]
+
     // 2. Insert order
     const { data: newOrder, error } = await supabaseAdmin
       .from('pedidos')
@@ -73,7 +87,7 @@ export async function POST(req) {
         tienda_id,
         codigo,
         cliente_nombre,
-        items,
+        items: enrichedItems,
         total,
         estado: 'pendiente'
       })

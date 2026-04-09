@@ -54,6 +54,13 @@ export async function POST(req) {
         whatsapp,
         user_id: userData.user.id,
         estado:  'activo',
+        config_diseno: {
+          publicado: true,
+          color_principal: '#2563EB',
+          version_catalogo: 'nuevo',
+          modo_exhibicion: 'cuadricula',
+          mostrar_sin_stock: 'normal'
+        }
       })
 
     if (tiendaError) {

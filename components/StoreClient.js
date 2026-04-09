@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useLang } from './LanguageProvider'
 import { DICTIONARY } from '../lib/dictionaries'
 
-export default function StoreClient({ tienda, groupedProducts, uncategorized, C }) {
+export default function StoreClient({ tienda, groupedProducts, uncategorized, C, config = {} }) {
   const { lang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['es']
   
@@ -17,7 +17,10 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   
   const aceptarPedidos = tienda.aceptar_pedidos ?? true
   const enviarWhatsapp = tienda.enviar_whatsapp ?? true
-  const modoCatalogo = tienda.modo_catalogo || 'cuadricula'
+  const modoCatalogo = config.modo_exhibicion || tienda.modo_catalogo || 'cuadricula'
+  const stockBehavior = config.mostrar_sin_stock || 'normal'
+  const isNuevo = config.version_catalogo === 'nuevo'
+
   const mensajePost = tienda.mensaje_post_pedido || 'Pronto nos pondremos en contacto para confirmar los detalles de tu compra. ¡Gracias por elegirnos!'
   const [activeCategory, setActiveCategory] = useState(groupedProducts[0]?.id || 'uncategorized')
 
@@ -50,7 +53,20 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
     setCart((prev) => prev.filter((item) => item.id !== productId))
   }
 
-  const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  const [checkoutStep, setCheckoutStep] = useState(1) // 1: Info, 2: Envío/Pago
+  const [metodoEnvio, setMetodoEnvio] = useState('') // 'retiro' or 'domicilio'
+  const [zonaSeleccionada, setZonaSeleccionada] = useState(null)
+  const [direccionCliente, setDireccionCliente] = useState('')
+  const [metodoPago, setMetodoPago] = useState('')
+
+  const [customerPhone, setCustomerPhone] = useState('')
+
+  const configPagos = config.pagos || {}
+  const configEnvios = config.envios || {}
+
+  const totalProductos = cart.reduce((acc, item) => acc + (parseFloat(item.price || item.precio) * item.quantity), 0)
+  const shippingCost = metodoEnvio === 'domicilio' ? (zonaSeleccionada?.costo || 0) : 0
+  const total = totalProductos + shippingCost
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0)
 
   const scrollToCategory = (id) => {
@@ -63,7 +79,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   }
 
   const processOrder = async (e) => {
-    e.preventDefault()
+    if (e) e.preventDefault()
     if (!customerName.trim() || isSubmitting) return
     setIsSubmitting(true)
 
@@ -75,7 +91,12 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           tienda_id: tienda.id,
           cliente_nombre: customerName,
           items: cart,
-          total: total
+          total: total,
+          metodo_envio: metodoEnvio,
+          metodo_pago: metodoPago,
+          direccion: direccionCliente,
+          shipping_cost: shippingCost,
+          whatsapp: customerPhone
         })
       })
 
@@ -85,10 +106,27 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         const pedido = data.pedido
         
         if (enviarWhatsapp && tienda.whatsapp) {
-          const message = `*${dict.ordini.toUpperCase()} ${pedido.codigo}*%0A` +
+          const shippingInfo = metodoEnvio === 'domicilio' 
+            ? `*${dict.envioADomicilio}*%0A- *Zona:* ${zonaSeleccionada?.nombre}%0A- *Dirección:* ${direccionCliente}`
+            : `*${dict.retiroEnLocal}*%0A- *Dirección:* ${configEnvios.retiro?.direccion || 'A coordinar'}`
+
+          const paymentInfo = metodoPago === 'transferencia'
+            ? `*${dict.metodosDePago}:* ${dict.transferenciaBancaria}%0A_Enviar comprobante a este chat._`
+            : `*${dict.metodosDePago}:* ${dict.pagosEnEfectivo}`
+
+          const bankDetails = metodoPago === 'transferencia' ? (
+            `%0A%0A*DATOS BANCARIOS:*%0A` +
+            `- *Banco:* ${configPagos.transferencia?.banco}%0A` +
+            `- *Alias/CBU:* ${configPagos.transferencia?.cbu}%0A` +
+            `- *Titular:* ${configPagos.transferencia?.titular}%0A`
+          ) : ''
+
+          const message = `*ORDEN #${pedido.codigo || pedido.id.slice(0,5).toUpperCase()}*%0A` +
             `*Cliente:* ${customerName}%0A%0A` +
-            cart.map(item => `- ${item.quantity}x ${item.nombre} (€${item.price.toFixed(2)})`).join('%0A') +
-            `%0A%0A*${dict.total}: €${total.toFixed(2)}*%0A%0A_Inviato da: ${tienda.nombre}_`
+            `*PEDIDO:*%0A` +
+            cart.map(item => `- ${item.quantity}x ${item.nombre} (€${(parseFloat(item.price || item.precio)).toFixed(2)})`).join('%0A') +
+            `%0A%0A${shippingInfo}%0A%0A${paymentInfo}${bankDetails}%0A%0A` +
+            `*${dict.total}: €${total.toFixed(2)}*%0A%0A_Enviado desde: ${tienda.nombre}_`
 
           const whatsappUrl = `https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`
           window.open(whatsappUrl, '_blank')
@@ -98,6 +136,11 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         setIsCartOpen(false)
         setCart([])
         setCustomerName('')
+        setMetodoEnvio('')
+        setZonaSeleccionada(null)
+        setDireccionCliente('')
+        setMetodoPago('')
+        setCheckoutStep(1)
         
         // Show success message
         setSuccessMessageOpen(true)
@@ -114,7 +157,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '90px' }}>
       
       {/* Container Principal Responsive */}
-      <div className="store-container">
+      <div className={`store-container ${isNuevo ? 'v-new' : ''}`}>
         
         {/* Barra de Categorías (Sidebar en Desktop / Horizontal en Móvil) */}
         <div className="store-sidebar">
@@ -246,34 +289,196 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
         </div>
       )}
 
-      {/* Name Modal */}
+      {/* Multi-step Checkout Modal */}
       {isModalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content scale-in" style={{ background: C.white }}>
-            <h2 style={{ color: C.text }}>{dict.dinosTuNombre || 'Dinos tu nombre'}</h2>
-            <p style={{ color: C.textMuted }}>{dict.introducirNombreDesc || 'Por favor, introduce tu nombre para completar el pedido.'}</p>
+          <div className="modal-content scale-in" style={{ background: C.white, maxWidth: '450px' }}>
             
-            <form onSubmit={processOrder}>
-              <input 
-                autoFocus
-                type="text"
-                placeholder={dict.nombreCliente || 'Nombre...'}
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                required
-                className="modal-input"
-                style={{ borderColor: C.grayBorder, background: C.grayBg, color: C.text }}
-              />
-              
-              <div className="modal-actions">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="modal-btn-cancel">
-                  {dict.cerrar || 'Chiudi'}
-                </button>
-                <button type="submit" disabled={isSubmitting} className="modal-btn-confirm" style={{ background: C.primary, color: C.white }}>
-                  {isSubmitting ? (dict.caricamento || '...') : (dict.continuarWA || 'Continua')}
-                </button>
+            {/* Steps Indicator */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+               {[1, 2].map(s => (
+                 <div key={s} style={{ 
+                   width: '32px', h: '4px', height: '4px', borderRadius: '2px',
+                   background: checkoutStep >= s ? C.primary : C.grayBorder 
+                 }} />
+               ))}
+            </div>
+
+            {checkoutStep === 1 ? (
+              <div className="animate-in fade-in slide-in-from-right-4">
+                <h2 style={{ color: C.text, marginBottom: '8px' }}>{dict.dinosTuNombre || 'Tus Datos'}</h2>
+                <p style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>{dict.introducirNombreDesc || 'Completa tu información para el pedido.'}</p>
+                
+                <input 
+                  autoFocus
+                  type="text"
+                  placeholder={dict.nombreCliente || 'Tu nombre...'}
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="modal-input"
+                  style={{ borderColor: C.grayBorder, background: C.grayBg, color: C.text, marginBottom: '16px' }}
+                />
+
+                <input 
+                  type="tel"
+                  placeholder="Tu WhatsApp (ej: 54911...)"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="modal-input"
+                  style={{ borderColor: C.grayBorder, background: C.grayBg, color: C.text, marginBottom: '24px' }}
+                />
+
+                <div style={{ textAlign: 'left', marginBottom: '24px' }}>
+                   <label style={{ fontSize: '0.75rem', fontWeight: 900, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'block' }}>
+                      {dict.entregaRetirada || '¿Cómo quieres recibirlo?'}
+                   </label>
+                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {configEnvios.retiro?.habilitado !== false && (
+                        <button 
+                          onClick={() => setMetodoEnvio('retiro')}
+                          style={{ 
+                            padding: '16px', borderRadius: '16px', border: `2px solid ${metodoEnvio === 'retiro' ? C.primary : C.grayBorder}`,
+                            background: metodoEnvio === 'retiro' ? C.primary + '10' : 'transparent',
+                            display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s', textAlign: 'left'
+                          }}
+                        >
+                           <div style={{ fontSize: '1.2rem' }}>🏪</div>
+                           <div>
+                              <div style={{ fontWeight: 800, color: C.text, fontSize: '0.9rem' }}>{dict.retiroEnLocal}</div>
+                              <div style={{ fontSize: '0.75rem', color: C.textMuted }}>{configEnvios.retiro?.direccion}</div>
+                           </div>
+                        </button>
+                      )}
+                      
+                      {configEnvios.domicilio?.habilitado && (
+                        <button 
+                          onClick={() => setMetodoEnvio('domicilio')}
+                          style={{ 
+                            padding: '16px', borderRadius: '16px', border: `2px solid ${metodoEnvio === 'domicilio' ? C.primary : C.grayBorder}`,
+                            background: metodoEnvio === 'domicilio' ? C.primary + '10' : 'transparent',
+                            display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s', textAlign: 'left'
+                          }}
+                        >
+                           <div style={{ fontSize: '1.2rem' }}>🛵</div>
+                           <div>
+                              <div style={{ fontWeight: 800, color: C.text, fontSize: '0.9rem' }}>{dict.envioADomicilio}</div>
+                              <div style={{ fontSize: '0.75rem', color: C.textMuted }}>Reparto en zonas seleccionadas</div>
+                           </div>
+                        </button>
+                      )}
+                   </div>
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="modal-btn-cancel">
+                    {dict.cerrar || 'Chiudi'}
+                  </button>
+                  <button 
+                    type="button" 
+                    disabled={!customerName.trim() || !customerPhone.trim() || !metodoEnvio}
+                    onClick={() => setCheckoutStep(2)} 
+                    className="modal-btn-confirm" 
+                    style={{ background: C.primary, color: C.white, opacity: (!customerName.trim() || !customerPhone.trim() || !metodoEnvio) ? 0.5 : 1 }}
+                  >
+                    {dict.continuarWA || 'Continua'} →
+                  </button>
+                </div>
               </div>
-            </form>
+            ) : (
+              <div className="animate-in fade-in slide-in-from-right-4">
+                <h2 style={{ color: C.text, marginBottom: '24px' }}>Detalles Finales</h2>
+
+                {/* Sub-steps depending on Delivery */}
+                <div style={{ textAlign: 'left', marginBottom: '24px', maxHeight: '350px', overflowY: 'auto', paddingRight: '4px' }}>
+                   
+                   {metodoEnvio === 'domicilio' && (
+                     <div style={{ marginBottom: '24px' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 900, color: C.textMuted, textTransform: 'uppercase', marginBottom: '10px', display: 'block' }}>Zona de Envío</label>
+                        <select 
+                          value={zonaSeleccionada?.id || ''} 
+                          onChange={(e) => setZonaSeleccionada(configEnvios.domicilio.zonas.find(z => z.id.toString() === e.target.value))}
+                          className="modal-input"
+                          style={{ borderColor: C.grayBorder, textAlign: 'left', fontSize: '0.9rem' }}
+                        >
+                           <option value="">Selecciona tu zona...</option>
+                           {configEnvios.domicilio.zonas.map(z => (
+                             <option key={z.id} value={z.id}>{z.nombre} (+€{z.costo.toFixed(2)})</option>
+                           ))}
+                        </select>
+                        <textarea 
+                          placeholder="Tu dirección completa..."
+                          value={direccionCliente}
+                          onChange={(e) => setDireccionCliente(e.target.value)}
+                          className="modal-input"
+                          style={{ borderColor: C.grayBorder, textAlign: 'left', fontSize: '0.9rem', height: '80px', paddingTop: '12px' }}
+                        />
+                     </div>
+                   )}
+
+                   <div style={{ marginBottom: '24px' }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 900, color: C.textMuted, textTransform: 'uppercase', marginBottom: '12px', display: 'block' }}>{dict.metodosDePago}</label>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                         {configPagos.efectivo?.habilitado !== false && (
+                           <button 
+                             onClick={() => setMetodoPago('efectivo')}
+                             style={{ 
+                               padding: '12px', borderRadius: '12px', border: `2px solid ${metodoPago === 'efectivo' ? C.primary : C.grayBorder}`,
+                               background: metodoPago === 'efectivo' ? C.primary + '10' : 'transparent',
+                               fontWeight: 800, fontSize: '0.8rem', color: C.text
+                             }}
+                           >
+                              💵 {dict.pagosEnEfectivo || 'Efectivo'}
+                           </button>
+                         )}
+                         {configPagos.transferencia?.habilitado && (
+                           <button 
+                             onClick={() => setMetodoPago('transferencia')}
+                             style={{ 
+                               padding: '12px', borderRadius: '12px', border: `2px solid ${metodoPago === 'transferencia' ? C.primary : C.grayBorder}`,
+                               background: metodoPago === 'transferencia' ? C.primary + '10' : 'transparent',
+                               fontWeight: 800, fontSize: '0.8rem', color: C.text
+                             }}
+                           >
+                              🏦 {dict.transferenciaBancaria || 'Transferencia'}
+                           </button>
+                         )}
+                      </div>
+                   </div>
+
+                   {/* Resumen Lite */}
+                   <div style={{ background: C.grayBg, borderRadius: '20px', padding: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: C.textMuted, marginBottom: '4px' }}>
+                         <span>Subtotal</span>
+                         <span>€{totalProductos.toFixed(2)}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: C.textMuted, marginBottom: '8px', borderBottom: `1px dashed ${C.grayBorder}`, pb: '8px', paddingBottom: '8px' }}>
+                         <span>Envío</span>
+                         <span>€{shippingCost.toFixed(2)}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 900, color: C.text }}>
+                         <span>Total</span>
+                         <span>€{total.toFixed(2)}</span>
+                      </div>
+                   </div>
+
+                </div>
+
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setCheckoutStep(1)} className="modal-btn-cancel">
+                    ← Volver
+                  </button>
+                  <button 
+                    type="button" 
+                    disabled={isSubmitting || (metodoEnvio === 'domicilio' && (!zonaSeleccionada || !direccionCliente)) || !metodoPago}
+                    onClick={processOrder}
+                    className="modal-btn-confirm" 
+                    style={{ background: C.primary, color: C.white }}
+                  >
+                    {isSubmitting ? (dict.caricamento || '...') : 'Finalizar Pedido'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -305,6 +510,11 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           max-width: 1200px;
           margin: 0 auto;
           width: 100%;
+        }
+
+        .v-new .category-item {
+          border-radius: 12px;
+          margin-bottom: 4px;
         }
 
         .store-sidebar {
@@ -378,6 +588,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           border: 1px solid #e2e8f0;
           display: flex;
           flex-direction: column;
+          position: relative;
         }
 
         .product-card-list {
@@ -399,6 +610,21 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           align-items: center;
           justify-content: center;
           font-size: 4rem;
+        }
+
+        .out-of-stock-badge {
+          position: absolute;
+          top: 8px;
+          left: 8px;
+          background: rgba(0,0,0,0.6);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 900;
+          text-transform: uppercase;
+          backdrop-filter: blur(4px);
+          z-index: 10;
         }
 
         .img-list-wrapper {
@@ -435,6 +661,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           padding-bottom: 2px;
         }
         .product-add-btn:active { transform: scale(0.9); }
+        .product-add-btn:disabled { background: #cbd5e1 !important; cursor: not-allowed; }
 
         .product-info {
           padding: 20px 16px 16px;
@@ -493,6 +720,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
           font-size: 0.85rem;
           cursor: pointer;
         }
+        .product-add-btn-list:disabled { background: #cbd5e1 !important; cursor: not-allowed; }
 
         /* Floating Cart */
         .floating-cart-button {
@@ -690,28 +918,39 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C 
   )
 }
 
-function ProductCard({ product, C, onAdd, hideAddBtn, modo }) {
+function ProductCard({ product, C, dict, onAdd, hideAddBtn, modo, stockBehavior }) {
   const isList = modo === 'lista';
+  const outOfStock = (product.stock || 0) <= 0;
+  const isNoDisponible = stockBehavior === 'no_disponible' && outOfStock;
+  
   return (
-    <div className={`product-card ${isList ? 'product-card-list' : ''}`}>
+    <div className={`product-card ${isList ? 'product-card-list' : ''} ${isNoDisponible ? 'opacity-60' : ''}`}>
+       
        <div className={`product-img-wrapper ${isList ? 'img-list-wrapper' : ''}`} style={{ background: product.imagen_url ? '#fff' : C.primary + '15' }}>
+         {outOfStock && (
+            <div className="out-of-stock-badge">
+               {dict.sinStock || 'Esaurito'}
+            </div>
+         )}
+         
          {product.imagen_url ? (
            <img src={product.imagen_url} alt={product.nombre} loading="lazy" />
          ) : (
            <span style={{ opacity: 0.5, fontSize: isList ? '2rem' : '4rem' }}>{product.emoji || '🛍️'}</span>
          )}
          
-         {/* Botón flotante al estilo Kyte */}
          {!isList && !hideAddBtn && (
            <button 
              className="product-add-btn" 
              onClick={onAdd}
+             disabled={isNoDisponible}
              style={{ background: C.primary }}
            >
              +
            </button>
          )}
        </div>
+
        <div className={`product-info ${isList ? 'product-info-list' : ''}`}>
          <div className="product-info-top">
            <h3 className="product-name" style={{ color: C.text }}>{product.nombre}</h3>
@@ -727,9 +966,10 @@ function ProductCard({ product, C, onAdd, hideAddBtn, modo }) {
              <button 
                className="product-add-btn-list" 
                onClick={onAdd}
+               disabled={isNoDisponible}
                style={{ background: C.primary }}
              >
-               + Añadir
+               + {dict.aggiungi || 'Añadir'}
              </button>
            )}
          </div>

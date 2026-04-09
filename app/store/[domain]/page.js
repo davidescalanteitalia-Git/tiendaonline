@@ -51,9 +51,25 @@ export default async function StoreFrontPage({ params }) {
   }
 
   const { tienda, categorias, productos } = data
+  const config = tienda.config_diseno || {}
+
+  // 0. Check if Published
+  if (config.publicado === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 p-10 text-center">
+           <div className="text-6xl mb-6">🏪</div>
+           <h1 className="text-2xl font-black text-slate-800 mb-4">{tienda.nombre}</h1>
+           <div className="h-1 w-20 bg-slate-200 mx-auto mb-6 rounded-full"></div>
+           <p className="text-slate-500 font-medium">Esta tienda está en mantenimiento por ahora. ¡Vuelve pronto!</p>
+           <p className="text-xs text-slate-400 mt-10">Desarrollado por TIENDAONLINE</p>
+        </div>
+      </div>
+    )
+  }
 
   const C = {
-    primary: tienda.color_principal || '#3B82F6', // Kyte Blue default
+    primary: config.color_principal || tienda.color_principal || '#2563EB',
     white: '#ffffff',
     text: '#0f172a',
     textMuted: '#64748b',
@@ -61,17 +77,32 @@ export default async function StoreFrontPage({ params }) {
     grayBorder: '#e2e8f0',
   }
 
+  // Filtrar productos sin stock si es necesario
+  const stockBehavior = config.mostrar_sin_stock || 'normal'
+  let filteredProducts = productos
+  if (stockBehavior === 'ocultar') {
+    filteredProducts = productos.filter(p => (p.stock || 0) > 0)
+  }
+
   // Agrupar productos por categoría
   const groupedProducts = categorias.map(cat => ({
     ...cat,
-    items: productos.filter(p => p.categoria_id === cat.id)
+    items: filteredProducts.filter(p => p.categoria_id === cat.id)
   })).filter(cat => cat.items.length > 0)
 
   // Productos sin categoría
-  const uncategorized = productos.filter(p => !p.categoria_id)
+  const uncategorized = filteredProducts.filter(p => !p.categoria_id)
 
   return (
     <div style={{ backgroundColor: C.grayBg, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
+      
+      {/* Banner de la Tienda */}
+      {config.banner_url && (
+         <div className="w-full h-32 md:h-48 overflow-hidden">
+            <img src={config.banner_url} className="w-full h-full object-cover" alt="Store Banner" />
+         </div>
+      )}
+
       {/* Header Fijo con Logo de Tienda */}
       <div style={{ 
         position: 'sticky', top: 0, zIndex: 40,
@@ -81,9 +112,9 @@ export default async function StoreFrontPage({ params }) {
         <div style={{ 
           width: '48px', height: '48px', borderRadius: '50%', background: C.grayBg, 
           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem',
-          border: `2px solid ${C.grayBorder}`, flexShrink: 0
+          border: `2px solid ${C.grayBorder}`, flexShrink: 0, overflow: 'hidden'
         }}>
-          {tienda.emoji || '🏪'}
+          {tienda.logo_url ? <img src={tienda.logo_url} className="w-full h-full object-cover" alt="Logo" /> : (tienda.emoji || '🏪')}
         </div>
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: C.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -103,7 +134,8 @@ export default async function StoreFrontPage({ params }) {
           tienda={tienda} 
           groupedProducts={groupedProducts} 
           uncategorized={uncategorized} 
-          C={C} 
+          C={C}
+          config={config}
         />
       </div>
     </div>
