@@ -19,7 +19,7 @@ import {
   PlusCircle,
   FolderTree
 } from 'lucide-react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '../../../lib/supabase'
 import { getDictionary } from '../../../lib/dictionaries'
 
 export default function ComprasPage() {
@@ -46,7 +46,6 @@ export default function ComprasPage() {
   const [newCatName, setNewCatName] = useState('')
   const [creatingCat, setCreatingCat] = useState(false)
   
-  const supabase = createClientComponentClient()
 
   useEffect(() => {
     loadData()
