@@ -24,9 +24,14 @@ export default function ProductosPage() {
   const [categoriaId, setCategoriaId] = useState('')
   const [estado, setEstado] = useState('activo')
   const [imagenUrl, setImagenUrl] = useState('')
+  const [stock, setStock] = useState('0')
+  const [fechaVencimiento, setFechaVencimiento] = useState('')
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [search, setSearch] = useState('')
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [creatingCategory, setCreatingCategory] = useState(false)
 
   const fileInputRef = useRef(null)
 
@@ -125,7 +130,9 @@ export default function ProductosPage() {
         emoji, 
         categoria_id: categoriaId || null, 
         estado,
-        imagen_url: imagenUrl
+        imagen_url: imagenUrl,
+        stock: parseInt(stock) || 0,
+        fecha_vencimiento: fechaVencimiento || null
       }
       if (editingId) body.id = editingId
 
@@ -177,6 +184,8 @@ export default function ProductosPage() {
     setCategoriaId(p.categoria_id || '')
     setEstado(p.estado || 'activo')
     setImagenUrl(p.imagen_url || '')
+    setStock(p.stock || 0)
+    setFechaVencimiento(p.fecha_vencimiento || '')
     setIsModalOpen(true)
   }
 
@@ -189,6 +198,60 @@ export default function ProductosPage() {
     setCategoriaId('')
     setEstado('activo')
     setImagenUrl('')
+    setStock('0')
+    setFechaVencimiento('')
+    setShowNewCategoryInput(false)
+  }
+
+  const exportToCSV = () => {
+    const headers = ['Producto', 'Categoría', 'Stock', 'Precio', 'Vencimiento', 'Estado']
+    const rows = filteredProducts.map(p => [
+      p.nombre,
+      categorias.find(c => c.id === p.categoria_id)?.nombre || '-',
+      p.stock || 0,
+      p.precio,
+      p.fecha_vencimiento || '-',
+      p.estado
+    ])
+
+    let csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n"
+      + rows.map(e => e.join(",")).join("\n")
+
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", `productos_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleCreateCategoryInline = async () => {
+    if (!newCategoryName.trim()) return
+    setCreatingCategory(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/categorias', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ nombre: newCategoryName })
+      })
+      if (res.ok) {
+        const newCat = await res.json()
+        setCategorias([...categorias, newCat])
+        setCategoriaId(newCat.id)
+        setShowNewCategoryInput(false)
+        setNewCategoryName('')
+      }
+    } catch (err) {
+      console.error('Error creating category:', err)
+    } finally {
+      setCreatingCategory(false)
+    }
   }
 
   const filteredProducts = productos.filter(p => 
@@ -231,8 +294,11 @@ export default function ProductosPage() {
             <button className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
               <FolderClosed size={16}/> Categorías
             </button>
-            <button className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
-              <ArrowUpToLine size={16}/> Exportar
+            <button 
+              onClick={exportToCSV}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+            >
+              <ArrowUpToLine size={16}/> {dict.exportar || 'Exportar'}
             </button>
           </div>
           
@@ -316,7 +382,9 @@ export default function ProductosPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-sm font-medium text-slate-600">∞</span>
+                        <span className={`text-sm font-bold ${p.stock <= 5 ? 'text-rose-500' : 'text-slate-600'}`}>
+                          {p.stock ?? 0}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-sm font-bold text-slate-700">€{parseFloat(p.precio).toFixed(2)}</span>
@@ -461,45 +529,97 @@ export default function ProductosPage() {
                     onChange={(e) => setDescripcion(e.target.value)}
                     rows={3}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all resize-none"
-                    placeholder="Descrivi gli ingredienti o i detalles del prodotto..."
+                    placeholder="Descrive gli ingredienti..."
                    />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="space-y-2">
-                      <label className="block text-sm font-bold text-slate-700">{dict.categoriaProducto}</label>
-                      <select 
-                        value={categoriaId}
-                        onChange={(e) => setCategoriaId(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white"
-                      >
-                         <option value="">{dict.sinCategoria}</option>
-                         {categorias.map(c => (
-                           <option key={c.id} value={c.id}>{c.nombre}</option>
-                         ))}
-                      </select>
-                   </div>
-                   <div className="space-y-2">
-                      <label className="block text-sm font-bold text-slate-700">{dict.emojiProducto}</label>
-                      <select 
-                        disabled={!!imagenUrl}
-                        value={emoji}
-                        onChange={(e) => setEmoji(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white disabled:opacity-50"
-                      >
-                         <option value="📦">📦 Prodotto</option>
-                         <option value="🍕">🍕 Pizza</option>
-                         <option value="🍔">🍔 Burger</option>
-                         <option value="🍝">🍝 Pasta</option>
-                         <option value="🥗">🥗 Insalata</option>
-                         <option value="🍰">🍰 Dolce</option>
-                         <option value="🥤">🥤 Bevanda</option>
-                         <option value="☕">☕ Caffè</option>
-                         <option value="🍺">🍺 Birra</option>
-                         <option value="🍷">🍷 Vino</option>
-                      </select>
-                   </div>
-                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                       <div className="flex items-center justify-between">
+                         <label className="block text-sm font-bold text-slate-700">{dict.categoriaProducto}</label>
+                         <button 
+                           type="button" 
+                           onClick={() => setShowNewCategoryInput(!showNewCategoryInput)}
+                           className="text-xs font-bold text-primary hover:underline"
+                         >
+                           {showNewCategoryInput ? dict.cerrar : `+ ${dict.nuevaCategoria}`}
+                         </button>
+                       </div>
+                       
+                       {showNewCategoryInput ? (
+                         <div className="flex gap-2">
+                           <input 
+                             type="text"
+                             value={newCategoryName}
+                             onChange={(e) => setNewCategoryName(e.target.value)}
+                             className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-primary/20 outline-none"
+                             placeholder="Nueva categoría..."
+                           />
+                           <button 
+                             type="button"
+                             onClick={handleCreateCategoryInline}
+                             disabled={creatingCategory}
+                             className="bg-primary text-white p-2 rounded-lg disabled:opacity-50"
+                           >
+                             {creatingCategory ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                           </button>
+                         </div>
+                       ) : (
+                         <select 
+                           value={categoriaId}
+                           onChange={(e) => setCategoriaId(e.target.value)}
+                           className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white"
+                         >
+                            <option value="">{dict.sinCategoria}</option>
+                            {categorias.map(c => (
+                              <option key={c.id} value={c.id}>{c.nombre}</option>
+                            ))}
+                         </select>
+                       )}
+                    </div>
+                    <div className="space-y-2">
+                       <label className="block text-sm font-bold text-slate-700">{dict.stock || 'Stock'}</label>
+                       <input 
+                         type="number" 
+                         value={stock} 
+                         onChange={(e) => setStock(e.target.value)}
+                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                         placeholder="0"
+                       />
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                       <label className="block text-sm font-bold text-slate-700">{dict.fechaVencimiento || 'Vencimiento'}</label>
+                       <input 
+                         type="date" 
+                         value={fechaVencimiento} 
+                         onChange={(e) => setFechaVencimiento(e.target.value)}
+                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="block text-sm font-bold text-slate-700">{dict.emojiProducto}</label>
+                       <select 
+                         disabled={!!imagenUrl}
+                         value={emoji}
+                         onChange={(e) => setEmoji(e.target.value)}
+                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all bg-white disabled:opacity-50"
+                       >
+                          <option value="📦">📦 Prodotto</option>
+                          <option value="🍕">🍕 Pizza</option>
+                          <option value="🍔">🍔 Burger</option>
+                          <option value="🍝">🍝 Pasta</option>
+                          <option value="🥗">🥗 Insalata</option>
+                          <option value="🍰">🍰 Dolce</option>
+                          <option value="🥤">🥤 Bevanda</option>
+                          <option value="☕">☕ Caffè</option>
+                          <option value="🍺">🍺 Birra</option>
+                          <option value="🍷">🍷 Vino</option>
+                       </select>
+                    </div>
+                 </div>
 
                 <div className="space-y-2">
                    <label className="block text-sm font-bold text-slate-700">{dict.estado}</label>

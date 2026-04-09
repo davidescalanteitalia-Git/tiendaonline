@@ -57,6 +57,7 @@ export default function DashboardLayout({ children }) {
   const menuItems = [
     { icon: Home, label: dict.home || 'Inicio', href: '/dashboard' },
     { icon: Package, label: dict.prodotti || 'Productos', href: '/dashboard/productos' },
+    { icon: ShoppingBag, label: dict.compras || 'Compras', href: '/dashboard/compras' },
     { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
     { icon: ShoppingCart, label: dict.ordini || 'Pedidos', href: '/dashboard/pedidos' },
     { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },

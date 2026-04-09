@@ -28,10 +28,10 @@ export async function GET(req) {
 
     const supabase = getSupabaseAdmin()
     const { data, error } = await supabase
-      .from('productos')
-      .select('*')
+      .from('compras')
+      .select('*, productos(nombre)')
       .eq('tienda_id', tiendaId)
-      .order('orden', { ascending: true })
+      .order('created_at', { ascending: false })
 
     if (error) throw error
     return NextResponse.json(data)
@@ -45,55 +45,44 @@ export async function POST(req) {
     const tiendaId = await getTiendaId(userId)
     if (!tiendaId) throw new Error('Store not found')
 
-    const body = await req.json()
+    const { producto_id, cantidad, costo, fecha_vencimiento } = await req.json()
     const supabase = getSupabaseAdmin()
-    const { data, error } = await supabase
-      .from('productos')
-      .insert({ 
-        ...body, 
+
+    // 1. Record the purchase
+    const { data: compra, error: errorCompra } = await supabase
+      .from('compras')
+      .insert({
         tienda_id: tiendaId,
-        stock: parseInt(body.stock) || 0,
-        fecha_vencimiento: body.fecha_vencimiento || null
+        producto_id,
+        cantidad: parseInt(cantidad),
+        costo: parseFloat(costo),
+        fecha_vencimiento: fecha_vencimiento || null
       })
       .select()
+      .single()
 
-    if (error) throw error
-    return NextResponse.json(data[0])
-  } catch (err) { return NextResponse.json({ error: err.message }, { status: 500 }) }
-}
+    if (errorCompra) throw errorCompra
 
-export async function PATCH(req) {
-  try {
-    const userId = await getUserId(req)
-    if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-    const tiendaId = await getTiendaId(userId)
-    if (!tiendaId) throw new Error('unauthorized')
-
-    const { id, ...updates } = await req.json()
-    const supabase = getSupabaseAdmin()
-    const { data, error } = await supabase
+    // 2. Update product stock and (optionally) update expiry date if it's sooner or provided
+    // Fetch current product to get current stock
+    const { data: producto } = await supabase
       .from('productos')
-      .update(updates)
-      .eq('id', id)
-      .eq('tienda_id', tiendaId)
-      .select()
+      .select('stock')
+      .eq('id', producto_id)
+      .single()
 
-    if (error) throw error
-    return NextResponse.json(data[0])
-  } catch (err) { return NextResponse.json({ error: err.message }, { status: 500 }) }
-}
+    const nuevoStock = (producto?.stock || 0) + parseInt(cantidad)
 
-export async function DELETE(req) {
-  try {
-    const userId = await getUserId(req)
-    if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-    const tiendaId = await getTiendaId(userId)
-    if (!tiendaId) throw new Error('unauthorized')
+    const { error: errorUpdate } = await supabase
+      .from('productos')
+      .update({ 
+        stock: nuevoStock,
+        fecha_vencimiento: fecha_vencimiento || null // We update it to the latest purchase expiry
+      })
+      .eq('id', producto_id)
 
-    const { id } = await req.json()
-    const supabase = getSupabaseAdmin()
-    const { error } = await supabase.from('productos').delete().eq('id', id).eq('tienda_id', tiendaId)
-    if (error) throw error
-    return NextResponse.json({ ok: true })
+    if (errorUpdate) throw errorUpdate
+
+    return NextResponse.json(compra)
   } catch (err) { return NextResponse.json({ error: err.message }, { status: 500 }) }
 }
