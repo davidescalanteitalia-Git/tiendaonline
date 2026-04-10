@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import LanguageSelector from './LanguageSelector'
 import UniversalFooter from './UniversalFooter'
+import { usePathname } from 'next/navigation'
 
 import { C } from '../lib/theme'
 import { DICTIONARY } from '../lib/dictionaries'
@@ -11,6 +12,8 @@ import { useLang } from './LanguageProvider'
 export default function PageShell({ children }) {
   const { lang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['it']
+  const pathname = usePathname()
+  const isOnRegister = pathname === '/register'
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: '#111827', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -38,7 +41,7 @@ export default function PageShell({ children }) {
           </a>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <LanguageSelector />
-            <a href="/register" className="glow-btn" style={{
+            <a href={isOnRegister ? '/login' : '/register'} className="glow-btn" style={{
               display:       'inline-block',
               background:    C.green,
               color:         C.white,
@@ -49,7 +52,7 @@ export default function PageShell({ children }) {
               fontWeight:    700,
               boxShadow:     `0 4px 10px rgba(5, 150, 105, 0.25)`,
             }}>
-              {dict.registrati}
+              {isOnRegister ? dict.accedi : dict.registrati}
             </a>
           </div>
         </div>

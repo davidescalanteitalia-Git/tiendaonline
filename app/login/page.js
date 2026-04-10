@@ -10,7 +10,7 @@ import { C } from '../../lib/theme'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { lang } = useLang()
+  const { lang, changeLang } = useLang()
   const dict = DICTIONARY[lang]
 
   const [email,    setEmail]    = useState('')
@@ -43,8 +43,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a5c2a 0%, #2d8a45 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a5c2a 0%, #2d8a45 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
       <div style={{ background: C.white, borderRadius: '24px', width: '100%', maxWidth: '420px', padding: '48px 40px', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' }}>
+
+        {/* Language selector */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '24px' }}>
+          {['it', 'es', 'en'].map(l => (
+            <button key={l} onClick={() => changeLang(l)} style={{
+              padding:      '3px 9px',
+              borderRadius: '20px',
+              border:       `1.5px solid ${lang === l ? C.green : '#ddd'}`,
+              background:   lang === l ? C.green : 'transparent',
+              color:        lang === l ? '#fff' : C.textMuted,
+              fontSize:     '0.7rem',
+              fontWeight:   700,
+              cursor:       'pointer',
+              textTransform:'uppercase',
+              letterSpacing:'0.5px',
+            }}>
+              {l}
+            </button>
+          ))}
+        </div>
+
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ color: C.green, fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-0.5px', marginBottom: '8px' }}>🛍️ TIENDAONLINE</div>
           <h1 style={{ color: C.text, fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px' }}>{dict.bentornato}</h1>
@@ -94,6 +115,28 @@ export default function LoginPage() {
           <a href="/register" style={{ color: C.green, fontWeight: 700, textDecoration: 'none' }}>{dict.creaVetrinaLink}</a>
         </div>
       </div>
+
+      {/* Bottom info */}
+      <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {[
+          { label: dict.footerPrivacy || 'Privacy Policy', href: '/privacy' },
+          { label: dict.footerTerms   || 'Termini',        href: '/terms'   },
+          { label: dict.footerContact || 'Contatti',       href: '/contatti'},
+        ].map((link, i) => (
+          <a key={i} href={link.href} style={{
+            color:         'rgba(255,255,255,0.7)',
+            textDecoration:'none',
+            fontSize:      '0.78rem',
+            fontWeight:    500,
+            transition:    'color 0.15s',
+          }}>
+            {link.label}
+          </a>
+        ))}
+      </div>
+      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: '12px', textAlign: 'center' }}>
+        © 2026 TIENDAONLINE · tiendaonline.it
+      </p>
     </div>
   )
 }

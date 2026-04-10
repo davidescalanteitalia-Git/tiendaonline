@@ -238,6 +238,25 @@ export default function Home() {
       </header>
 
       {/* ════════════════════════════════════════════════════════════════════
+          BANNER EN CONSTRUCCIÓN
+      ════════════════════════════════════════════════════════════════════ */}
+      <div style={{
+        background:  '#fef3c7',
+        borderBottom:'1px solid #fcd34d',
+        padding:     '10px 20px',
+        textAlign:   'center',
+        fontSize:    '0.88rem',
+        fontWeight:  600,
+        color:       '#92400e',
+        display:     'flex',
+        alignItems:  'center',
+        justifyContent:'center',
+        gap:         '8px',
+      }}>
+        🚧 {t('bannerText')}
+      </div>
+
+      {/* ════════════════════════════════════════════════════════════════════
           1. HERO
       ════════════════════════════════════════════════════════════════════ */}
       <section className="gradient-bg" style={{
@@ -608,15 +627,23 @@ export default function Home() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
 
             {/* ── Plan Gratuito ── */}
-            <div className="premium-shadow" style={{
-              flex:         '1 1 300px',
-              maxWidth:     '380px',
-              border:       `2px solid ${C.greenLight}`,
-              borderRadius: '20px',
-              padding:      '36px 32px',
-              position:     'relative',
-              background:   C.white,
-            }}>
+            <a href="/register" className="premium-shadow" style={{
+              flex:           '1 1 300px',
+              maxWidth:       '380px',
+              border:         `2px solid ${C.greenLight}`,
+              borderRadius:   '20px',
+              padding:        '36px 32px',
+              position:       'relative',
+              background:     C.white,
+              display:        'block',
+              textDecoration: 'none',
+              color:          'inherit',
+              cursor:         'pointer',
+              transition:     'transform 0.15s, box-shadow 0.15s',
+            }}
+              onMouseOver={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow=`0 16px 40px rgba(5,150,105,0.2)` }}
+              onMouseOut={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='' }}
+            >
               <div style={{
                 display:      'inline-block',
                 background:   C.green,
@@ -631,13 +658,13 @@ export default function Home() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ fontSize: '3rem', fontWeight: 900, color: C.green, lineHeight: 1 }}>€0</span>
+                <span style={{ fontSize: '4.5rem', fontWeight: 900, color: C.green, lineHeight: 1 }}>€0</span>
               </div>
               <div style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>
                 {lang === 'it' ? 'per sempre' : lang === 'es' ? 'para siempre' : 'forever'}
               </div>
 
-              <div style={{ borderTop: `1px solid ${C.greenBorder}`, paddingTop: '20px', marginBottom: '28px' }}>
+              <div style={{ borderTop: `1px solid ${C.greenBorder}`, paddingTop: '20px', marginBottom: '12px' }}>
                 {freeFeatures.map((feat, i) => (
                   <div key={i} style={{
                     display:    'flex',
@@ -653,36 +680,60 @@ export default function Home() {
                 ))}
               </div>
 
-              <a href="/register" className="glow-btn" style={{
+              {/* GDPR detail note */}
+              <div style={{
+                background:   C.greenBg,
+                border:       `1px solid ${C.greenBorder}`,
+                borderRadius: '8px',
+                padding:      '10px 14px',
+                marginBottom: '24px',
+                fontSize:     '0.78rem',
+                color:        C.textMuted,
+                lineHeight:   1.5,
+              }}>
+                🔒 {lang === 'it'
+                  ? 'GDPR: crittografia dati, diritto all\'oblio, nessuna vendita di dati a terzi.'
+                  : lang === 'es'
+                  ? 'GDPR: cifrado de datos, derecho al olvido, sin venta de datos a terceros.'
+                  : 'GDPR: data encryption, right to erasure, no sale of data to third parties.'}
+              </div>
+
+              <div className="glow-btn" style={{
                 display:       'block',
                 background:    C.green,
                 color:         C.white,
                 padding:       '14px',
                 borderRadius:  '10px',
-                textDecoration:'none',
                 fontWeight:    700,
                 textAlign:     'center',
                 boxShadow:     `0 4px 15px rgba(5, 150, 105, 0.3)`,
                 fontSize:      '0.98rem',
               }}>
                 {t('ctaHeader')} →
-              </a>
-            </div>
+              </div>
+            </a>
 
             {/* ── Plan Avanzato ── */}
-            <div className="premium-shadow" style={{
-              flex:         '1 1 300px',
-              maxWidth:     '380px',
-              border:       '1px solid transparent',
-              borderRadius: '20px',
-              padding:      '36px 32px',
-              background:   C.grayBg,
-            }}>
+            <a href="/register" className="premium-shadow" style={{
+              flex:           '1 1 300px',
+              maxWidth:       '380px',
+              border:         `2px solid ${C.greenLight}`,
+              borderRadius:   '20px',
+              padding:        '36px 32px',
+              background:     C.white,
+              display:        'block',
+              textDecoration: 'none',
+              color:          'inherit',
+              cursor:         'pointer',
+              transition:     'transform 0.15s, box-shadow 0.15s',
+            }}
+              onMouseOver={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow=`0 16px 40px rgba(5,150,105,0.2)` }}
+              onMouseOut={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='' }}
+            >
               <div style={{
                 display:      'inline-block',
-                background:   C.amberBg,
-                color:        C.amberText,
-                border:       `1px solid #fcd34d`,
+                background:   C.green,
+                color:        C.white,
                 padding:      '4px 14px',
                 borderRadius: '100px',
                 fontSize:     '0.78rem',
@@ -692,12 +743,14 @@ export default function Home() {
                 {t('planAvanzatoLabel')}
               </div>
 
-              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: C.grayText, marginBottom: '4px', lineHeight: 1 }}>
-                {t('planAvanzatoPrice')}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '4.5rem', fontWeight: 900, color: C.green, lineHeight: 1 }}>€0.50</span>
               </div>
-              <div style={{ color: '#d1d5db', fontSize: '0.9rem', marginBottom: '24px' }}>—</div>
+              <div style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>
+                {lang === 'it' ? '/ giorno' : lang === 'es' ? '/ día' : '/ day'}
+              </div>
 
-              <div style={{ borderTop: `1px solid ${C.grayBorder}`, paddingTop: '20px', marginBottom: '28px' }}>
+              <div style={{ borderTop: `1px solid ${C.greenBorder}`, paddingTop: '20px', marginBottom: '28px' }}>
                 {advFeatures.map((feat, i) => (
                   <div key={i} style={{
                     display:    'flex',
@@ -705,31 +758,28 @@ export default function Home() {
                     gap:        '10px',
                     padding:    '7px 0',
                     fontSize:   '0.92rem',
-                    color:      C.grayText,
+                    color:      C.text,
                   }}>
-                    <span style={{ color: '#d1d5db', fontWeight: 800 }}>○</span>
+                    <span style={{ color: C.green, fontWeight: 800, fontSize: '1rem' }}>✓</span>
                     {feat}
                   </div>
                 ))}
               </div>
 
-              <button disabled style={{
-                display:    'block',
-                width:      '100%',
-                background: C.grayBorder,
-                color:      C.grayText,
-                padding:    '14px',
-                borderRadius:'10px',
-                fontWeight: 700,
-                textAlign:  'center',
-                border:     'none',
-                cursor:     'not-allowed',
-                fontSize:   '0.98rem',
-                fontFamily: 'inherit',
+              <div className="glow-btn" style={{
+                display:       'block',
+                background:    C.green,
+                color:         C.white,
+                padding:       '14px',
+                borderRadius:  '10px',
+                fontWeight:    700,
+                textAlign:     'center',
+                boxShadow:     `0 4px 15px rgba(5, 150, 105, 0.3)`,
+                fontSize:      '0.98rem',
               }}>
-                {t('planAvanzatoCta')}
-              </button>
-            </div>
+                {t('planAvanzatoCta')} →
+              </div>
+            </a>
 
           </div>
         </div>

@@ -62,7 +62,15 @@ export default function CookieBanner() {
   const [visible, setVisible]       = useState(false)
   const [panelOpen, setPanelOpen]   = useState(false)
   const [analytics, setAnalytics]   = useState(false)
+  const [isMobile, setIsMobile]     = useState(false)
   const { lang } = useLang()
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 520)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
 
   useEffect(() => {
@@ -101,15 +109,17 @@ export default function CookieBanner() {
 
   // ── Estilos compartidos ──────────────────────────────────────────
   const btnBase = {
-    padding: '11px 20px',
+    padding: isMobile ? '12px 16px' : '11px 20px',
     borderRadius: '10px',
     fontWeight: 700,
     fontSize: '0.88rem',
     cursor: 'pointer',
     transition: 'all 0.18s',
     border: 'none',
-    flex: 1,
-    minWidth: '110px',
+    ...(isMobile
+      ? { width: '100%' }
+      : { flex: 1, minWidth: '110px' }
+    ),
   }
 
   return (
@@ -225,7 +235,7 @@ export default function CookieBanner() {
           </div>
 
           {/* Botones — todos igual de visibles (requisito Garante) */}
-          <div className="cookie-btns">
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '6px' : '8px' }}>
             <button
               onClick={handleRejectAll}
               style={{ ...btnBase, background: C.grayBg, color: C.text, border: `1.5px solid ${C.grayBorder}` }}
@@ -253,7 +263,7 @@ export default function CookieBanner() {
         </div>
       )}
 
-      {/* Animaciones CSS + responsive */}
+      {/* Animaciones CSS */}
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateX(-50%) translateY(20px); }
@@ -262,23 +272,6 @@ export default function CookieBanner() {
         @keyframes slideUp {
           from { transform: translateX(-50%) translateY(100%); }
           to   { transform: translateX(-50%) translateY(0); }
-        }
-        .cookie-btns {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-        @media (max-width: 480px) {
-          .cookie-btns {
-            flex-direction: column;
-            gap: 6px;
-          }
-          .cookie-btns button {
-            min-width: unset !important;
-            flex: unset !important;
-            width: 100%;
-            padding: 12px 16px !important;
-          }
         }
       `}</style>
     </>

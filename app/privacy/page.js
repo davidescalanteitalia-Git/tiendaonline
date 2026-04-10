@@ -1,9 +1,7 @@
-import PageShell from '../../components/PageShell'
+'use client'
 
-export const metadata = {
-  title: 'Privacy Policy — TIENDAONLINE',
-  description: 'Informativa sul trattamento dei dati personali ai sensi del GDPR (Reg. UE 2016/679) e delle linee guida del Garante Privacy italiano.',
-}
+import PageShell from '../../components/PageShell'
+import { useLang } from '../../components/LanguageProvider'
 
 const C = {
   green:      '#059669',
@@ -20,6 +18,24 @@ const C = {
   grayBorder: '#e2e8f0',
   grayBg:     '#f8fafc',
   grayText:   '#94a3b8',
+}
+
+const PAGE_T = {
+  it: {
+    title: 'Privacy Policy',
+    subtitle: 'Ultimo aggiornamento: 8 aprile 2026 · Conforme al GDPR (Reg. UE 2016/679) e al D.Lgs. 196/2003',
+    langNote: null,
+  },
+  es: {
+    title: 'Política de Privacidad',
+    subtitle: 'Última actualización: 8 de abril de 2026 · Conforme al GDPR (Reg. UE 2016/679)',
+    langNote: '📋 Este documento legal está disponible en italiano. El contenido jurídico es vinculante en su versión italiana.',
+  },
+  en: {
+    title: 'Privacy Policy',
+    subtitle: 'Last updated: 8 April 2026 · Compliant with GDPR (EU Reg. 2016/679)',
+    langNote: '📋 This legal document is available in Italian. The Italian version is the legally binding one.',
+  },
 }
 
 const Section = ({ title, children }) => (
@@ -40,6 +56,9 @@ const Section = ({ title, children }) => (
 )
 
 export default function PrivacyPage() {
+  const { lang } = useLang()
+  const pt = PAGE_T[lang] || PAGE_T.it
+
   return (
     <PageShell>
 
@@ -49,16 +68,32 @@ export default function PrivacyPage() {
         textAlign:  'center',
       }}>
         <h1 style={{ color: C.white, fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 900, margin: '0 0 12px', letterSpacing: '-1px' }}>
-          Privacy Policy
+          {pt.title}
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: '0.95rem', margin: 0 }}>
-          Ultimo aggiornamento: 8 aprile 2026 · Conforme al GDPR (Reg. UE 2016/679) e al D.Lgs. 196/2003
+          {pt.subtitle}
         </p>
       </section>
 
       {/* Contenuto */}
       <section style={{ background: C.white, padding: '64px 20px' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+
+          {/* Language note for non-Italian */}
+          {pt.langNote && (
+            <div style={{
+              background:   '#fffbeb',
+              border:       '1px solid #fcd34d',
+              borderRadius: '10px',
+              padding:      '14px 18px',
+              marginBottom: '24px',
+              fontSize:     '0.88rem',
+              color:        '#92400e',
+              lineHeight:   1.5,
+            }}>
+              {pt.langNote}
+            </div>
+          )}
 
           <div className="premium-shadow" style={{
             background:   C.greenBg,

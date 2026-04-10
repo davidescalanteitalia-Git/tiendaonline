@@ -1,28 +1,46 @@
+'use client'
+
 import PageShell from '../../components/PageShell'
+import { useLang } from '../../components/LanguageProvider'
+import { C } from '../../lib/theme'
 
-const C = {
-  green:      '#059669',
-  greenLight: '#10b981',
-  greenDark:  '#047857',
-  greenBg:    '#f0fdf4',
-  greenBorder:'#d1fae5',
-  white:      '#ffffff',
-  text:       '#0f172a',
-  textMuted:  '#64748b',
-  amber:      '#f59e0b',
-  amberBg:    '#fffbeb',
-  amberText:  '#92400e',
-  grayBorder: '#e2e8f0',
-  grayBg:     '#f8fafc',
-  grayText:   '#94a3b8',
-}
-
-export const metadata = {
-  title: 'Contatti — TIENDAONLINE',
-  description: 'Contatta il team di TIENDAONLINE. Siamo qui per aiutarti.',
+const T = {
+  it: {
+    title: 'Contatti',
+    subtitle: 'Siamo qui per aiutarti. Scrivici o chiamaci.',
+    emailTitle: 'Email',
+    emailDesc: 'Rispondiamo entro 24 ore lavorative.',
+    phoneTitle: 'Telefono / WhatsApp',
+    phoneDesc: 'Disponibili anche su WhatsApp per supporto rapido.',
+    hoursTitle: '🕐 Orari di assistenza',
+    hours: 'Lunedì – Venerdì: 9:00 – 18:00\nSabato: 9:00 – 13:00\nDomenica: chiuso',
+  },
+  es: {
+    title: 'Contacto',
+    subtitle: 'Estamos aquí para ayudarte. Escríbenos o llámanos.',
+    emailTitle: 'Email',
+    emailDesc: 'Respondemos en 24 horas laborables.',
+    phoneTitle: 'Teléfono / WhatsApp',
+    phoneDesc: 'También disponibles por WhatsApp para soporte rápido.',
+    hoursTitle: '🕐 Horario de atención',
+    hours: 'Lunes – Viernes: 9:00 – 18:00\nSábado: 9:00 – 13:00\nDomingo: cerrado',
+  },
+  en: {
+    title: 'Contact',
+    subtitle: 'We are here to help. Write to us or call us.',
+    emailTitle: 'Email',
+    emailDesc: 'We reply within 24 working hours.',
+    phoneTitle: 'Phone / WhatsApp',
+    phoneDesc: 'Also available on WhatsApp for quick support.',
+    hoursTitle: '🕐 Support hours',
+    hours: 'Monday – Friday: 9:00 – 18:00\nSaturday: 9:00 – 13:00\nSunday: closed',
+  },
 }
 
 export default function ContattiPage() {
+  const { lang } = useLang()
+  const t = T[lang] || T.it
+
   return (
     <PageShell>
 
@@ -32,10 +50,10 @@ export default function ContattiPage() {
         textAlign:  'center',
       }}>
         <h1 style={{ color: C.white, fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, margin: '0 0 12px', letterSpacing: '-1px' }}>
-          Contatti
+          {t.title}
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', margin: 0 }}>
-          Siamo qui per aiutarti. Scrivici o chiamaci.
+          {t.subtitle}
         </p>
       </section>
 
@@ -56,9 +74,9 @@ export default function ContattiPage() {
               textAlign:    'center',
             }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '14px' }}>📧</div>
-              <h2 style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0 0 10px', color: C.text }}>Email</h2>
+              <h2 style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0 0 10px', color: C.text }}>{t.emailTitle}</h2>
               <p style={{ color: C.textMuted, fontSize: '0.9rem', margin: '0 0 16px', lineHeight: 1.5 }}>
-                Rispondiamo entro 24 ore lavorative.
+                {t.emailDesc}
               </p>
               <a
                 href="mailto:utilizzositemaster@gmail.com"
@@ -91,9 +109,9 @@ export default function ContattiPage() {
               textAlign:    'center',
             }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '14px' }}>📞</div>
-              <h2 style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0 0 10px', color: C.text }}>Telefono / WhatsApp</h2>
+              <h2 style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0 0 10px', color: C.text }}>{t.phoneTitle}</h2>
               <p style={{ color: C.textMuted, fontSize: '0.9rem', margin: '0 0 16px', lineHeight: 1.5 }}>
-                Disponibili anche su WhatsApp per supporto rapido.
+                {t.phoneDesc}
               </p>
               <a
                 href="tel:+393717701185"
@@ -125,12 +143,10 @@ export default function ContattiPage() {
             textAlign:    'center',
           }}>
             <h3 style={{ fontWeight: 700, fontSize: '1rem', margin: '0 0 10px', color: C.text }}>
-              🕐 Orari di assistenza
+              {t.hoursTitle}
             </h3>
-            <p style={{ color: C.textMuted, margin: 0, lineHeight: 1.7, fontSize: '0.92rem' }}>
-              Lunedì – Venerdì: 9:00 – 18:00<br />
-              Sabato: 9:00 – 13:00<br />
-              Domenica: chiuso
+            <p style={{ color: C.textMuted, margin: 0, lineHeight: 1.7, fontSize: '0.92rem', whiteSpace: 'pre-line' }}>
+              {t.hours}
             </p>
           </div>
 

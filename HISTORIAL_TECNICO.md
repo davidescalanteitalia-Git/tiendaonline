@@ -211,6 +211,46 @@ Revisión completa de todas las páginas del dashboard para unificar funcionalid
 
 ---
 
+---
+
+### [2026-04-11] - Correcciones Landing + UX + Internacionalización
+
+**13 cambios aplicados:**
+
+#### 🏗️ Landing Page (`app/page.js`)
+- **Banner "en construcción"** re-añadido (fondo amarillo `#fef3c7`, usa key `bannerText` del diccionario).
+- **Pricing — Plan Gratuito**: €0 ampliado a `4.5rem`, card completa clickable con hover lift, añadida nota GDPR explicativa con cifrado/derecho al olvido.
+- **Pricing — Plan Avanzato**: Rediseñado de "prossimamente" (gris) a activo (verde, mismo estilo que Plan Gratuito), precio €0.50/giorno, features con ✓ en verde, botón habilitado → `/register`.
+
+#### 📖 Diccionario (`lib/dictionaries.js`)
+- `planAdv3`: "Dominio proprio" → "Modifica design e configurazione" (IT/ES/EN).
+- `planAvanzatoLabel`: "Prossimamente" → "Piano Avanzato" (IT/ES/EN).
+- `planAvanzatoPrice`: "Presto disponibile" → "€0,50 / giorno" (IT/ES/EN).
+- `planAvanzatoCta`: "In arrivo" → "Inizia gratis" (IT/ES/EN).
+- `faq1A`: Actualizada para mencionar plan base gratuito + plan avanzado + contacto profesional (IT/ES/EN).
+
+#### 🍪 Cookie Banner (`components/CookieBanner.js`)
+- **Fix mobile definitivo**: Eliminado el enfoque CSS class + `!important` que fallaba en estilos inline. Reemplazado por estado `isMobile` (JS) con `useEffect` + `resize` listener al breakpoint 520px. Los botones ahora reciben estilos inline correctos según el dispositivo.
+
+#### 🔗 PageShell (`components/PageShell.js`)
+- Botón header context-aware via `usePathname()`: muestra "Accedi → /login" en la página `/register`, y "Inizia gratis → /register" en todas las demás.
+
+#### 🔐 Login (`app/login/page.js`)
+- Selector de idioma IT/ES/EN añadido en la parte superior del card.
+- Sección inferior con links a Privacy Policy, Términos y Contacto.
+- Copyright `© 2026 TIENDAONLINE`.
+
+#### 🌍 Páginas estáticas (internacionalización)
+- **`app/privacy/page.js`**: Convertida a `'use client'`, eliminado `export const metadata`, título/subtítulo responsivo al idioma, nota para ES/EN indicando que el texto legal vinculante está en italiano.
+- **`app/terms/page.js`**: Ídem.
+- **`app/cookie-policy/page.js`**: Ídem.
+- **`app/contatti/page.js`**: Convertida a `'use client'`, **completamente traducida** (título, subtítulo, cards Email/Teléfono, horarios) en IT/ES/EN.
+
+#### ✅ Verificado
+- Dashboard store link ya usa `/store/[subdominio]` (fix de sesión anterior confirmado).
+
+---
+
 ## 🚀 PRÓXIMOS PASOS
 - [ ] Completar verificación DNS de Resend y configurar SMTP en Supabase.
 - [ ] Activar "Leaked Password Protection" en Supabase una vez SMTP configurado.

@@ -1,10 +1,25 @@
+'use client'
 
 import PageShell from '../../components/PageShell'
+import { useLang } from '../../components/LanguageProvider'
 import { C } from '../../lib/theme'
 
-export const metadata = {
-  title: 'Cookie Policy — TIENDAONLINE',
-  description: 'Informativa sull\'uso dei cookie su tiendaonline.it, conforme alle linee guida del Garante Privacy italiano del 10 giugno 2021.',
+const PAGE_T = {
+  it: {
+    title: 'Cookie Policy',
+    subtitle: 'Ultimo aggiornamento: 8 aprile 2026\nConforme alle Linee Guida del Garante Privacy italiano — Provvedimento del 10 giugno 2021',
+    langNote: null,
+  },
+  es: {
+    title: 'Política de Cookies',
+    subtitle: 'Última actualización: 8 de abril de 2026\nConforme a las directrices del Garante Privacy italiano',
+    langNote: '📋 Este documento legal está disponible en italiano. El contenido jurídico es vinculante en su versión italiana.',
+  },
+  en: {
+    title: 'Cookie Policy',
+    subtitle: 'Last updated: 8 April 2026\nCompliant with Italian Garante Privacy guidelines — Provision of 10 June 2021',
+    langNote: '📋 This legal document is available in Italian. The Italian version is the legally binding one.',
+  },
 }
 
 const Section = ({ title, children, accent }) => (
@@ -52,6 +67,9 @@ const CookieTable = ({ cookies }) => (
 )
 
 export default function CookiePolicyPage() {
+  const { lang } = useLang()
+  const pt = PAGE_T[lang] || PAGE_T.it
+
   const technicalCookies = [
     { name: 'sb-*-auth-token', type: 'Tecnico', duration: 'Sessione / 1 ora', purpose: 'Token di autenticazione Supabase. Necessario per mantenere la sessione dell\'utente loggato.' },
     { name: 'appLang', type: 'Tecnico', duration: '12 mesi', purpose: 'Memorizza la preferenza di lingua scelta dall\'utente (IT/ES/EN). Non raccoglie dati personali.' },
@@ -70,17 +88,31 @@ export default function CookiePolicyPage() {
       <section className="gradient-bg" style={{ padding: '64px 20px 56px', textAlign: 'center' }}>
         <div style={{ fontSize: '2.6rem', marginBottom: '12px' }}>🍪</div>
         <h1 style={{ color: '#fff', fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 900, margin: '0 0 12px', letterSpacing: '-1px' }}>
-          Cookie Policy
+          {pt.title}
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.93rem', margin: '0 auto', maxWidth: '600px', lineHeight: 1.6 }}>
-          Ultimo aggiornamento: 8 aprile 2026<br />
-          Conforme alle Linee Guida del Garante Privacy italiano — Provvedimento del 10 giugno 2021
+        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.93rem', margin: '0 auto', maxWidth: '600px', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+          {pt.subtitle}
         </p>
       </section>
 
       {/* Contenuto */}
       <section style={{ background: '#f8fafc', padding: '48px 20px 80px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+
+          {pt.langNote && (
+            <div style={{
+              background:   '#fffbeb',
+              border:       '1px solid #fcd34d',
+              borderRadius: '10px',
+              padding:      '14px 18px',
+              marginBottom: '24px',
+              fontSize:     '0.88rem',
+              color:        '#92400e',
+              lineHeight:   1.5,
+            }}>
+              {pt.langNote}
+            </div>
+          )}
 
           {/* Intro */}
           <div style={{ background: C.greenBg, border: `1px solid ${C.greenBorder}`, borderRadius: '14px', padding: '20px 24px', marginBottom: '36px', fontSize: '0.93rem', color: C.textMuted, lineHeight: 1.7 }}>
