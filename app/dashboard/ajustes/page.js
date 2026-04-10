@@ -18,6 +18,7 @@ export default function AjustesPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [copiedLink, setCopiedLink] = useState(false)
   
   // Tienda state
   const [nombre, setNombre] = useState('')
@@ -153,7 +154,8 @@ export default function AjustesPage() {
 
   const copyLink = () => {
     navigator.clipboard.writeText(`https://${subdominio}.tiendaonline.it`)
-    alert(dict.enlaceCopiado || 'Link copiato!')
+    setCopiedLink(true)
+    setTimeout(() => setCopiedLink(false), 2000)
   }
 
   if (loading) return (
@@ -167,10 +169,12 @@ export default function AjustesPage() {
   return (
     <div className="max-w-[1400px] mx-auto p-4 md:p-8 font-sans animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight">{dict.impostazioni || 'Ajustes'}</h1>
-          <p className="text-slate-500 text-sm mt-1">{dict.configuracionesGenerales || 'Gestiona tu negocio.'}</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <Settings className="text-blue-500" size={32} /> {dict.impostazioni || 'Ajustes'}
+          </h1>
+          <p className="text-slate-500 mt-2 font-medium">{dict.configuracionesGenerales || 'Gestiona tu negocio.'}</p>
         </div>
         <button 
            onClick={handleSave}
@@ -287,11 +291,12 @@ export default function AjustesPage() {
                    <p className="text-lg font-mono text-blue-400">https://{storeUrl}</p>
                 </div>
                 <div className="flex gap-3 w-full md:w-auto">
-                   <button 
+                   <button
                      onClick={copyLink}
-                     className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 px-6 py-3 rounded-xl transition-all font-bold"
+                     className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all font-bold ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}
                    >
-                     <Copy size={18} /> {dict.copiar || 'Copiar'}
+                     {copiedLink ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                     {copiedLink ? (dict.enlaceCopiado || '¡Copiado!') : (dict.copiar || 'Copiar')}
                    </button>
                    <a 
                      href={`/store/${subdominio}`} 

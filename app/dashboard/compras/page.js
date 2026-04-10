@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
-  ShoppingBag, 
-  Search, 
-  Plus, 
-  History, 
-  DollarSign, 
-  Calendar, 
+import {
+  ShoppingBag,
+  Search,
+  Plus,
+  History,
+  DollarSign,
+  Calendar,
   Hash,
   Package,
   ArrowRight,
@@ -21,18 +21,22 @@ import {
   ChevronRight,
   Filter,
   ArrowUpRight,
-  Boxes
+  Boxes,
+  CheckCircle2
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
-import { getDictionary } from '../../../lib/dictionaries'
+import { useLang } from '../../../components/LanguageProvider'
+import { DICTIONARY } from '../../../lib/dictionaries'
 
 export default function ComprasPage() {
+  const { lang } = useLang()
+  const dict = DICTIONARY[lang] || DICTIONARY['es']
+
   const [productos, setProductos] = useState([])
   const [compras, setCompras] = useState([])
   const [categorias, setCategorias] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [dict, setDict] = useState({})
   const [showForm, setShowForm] = useState(false)
   
   // Form state
@@ -60,8 +64,7 @@ export default function ComprasPage() {
     try {
       setLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
-      const d = await getDictionary(session?.user?.id)
-      setDict(d)
+      if (!session) return
 
       const [resProd, resComp, resCat] = await Promise.all([
         fetch('/api/productos', { headers: { 'Authorization': `Bearer ${session.access_token}` } }),
@@ -76,6 +79,34 @@ export default function ComprasPage() {
       console.error('Error loading data:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleCreateCat() {
+    if (!newCatName.trim()) return
+    setCreatingCat(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/categorias', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ nombre: newCatName, orden: 0 })
+      })
+      if (res.ok) {
+        const newCat = await res.json()
+        const newCatId = Array.isArray(newCat) ? newCat[0]?.id : newCat?.id
+        setCategorias(prev => [...prev, { id: newCatId, nombre: newCatName }])
+        setNewCategoriaId(newCatId || '')
+        setNewCatName('')
+        setShowCatInput(false)
+      }
+    } catch (err) {
+      console.error('Error creating category:', err)
+    } finally {
+      setCreatingCat(false)
     }
   }
 
@@ -470,22 +501,3 @@ export default function ComprasPage() {
   )
 }
 
-function CheckCircle2(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  )
-}

@@ -3,30 +3,32 @@
 import { useState, useEffect } from 'react'
 import { useLang } from '../../../components/LanguageProvider'
 import { DICTIONARY } from '../../../lib/dictionaries'
-import { 
-  Search, 
-  Filter, 
-  ArrowUpToLine, 
-  Download, 
-  Plus, 
-  Star, 
-  Trash2, 
-  CheckCircle2, 
-  Clock, 
-  XCircle, 
-  CreditCard, 
-  Truck, 
-  MapPin, 
-  Calendar, 
-  User, 
+import {
+  Search,
+  Filter,
+  ArrowUpToLine,
+  Download,
+  Plus,
+  Star,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  CreditCard,
+  Truck,
+  MapPin,
+  Calendar,
+  User,
   ExternalLink,
   MessageSquare,
   TrendingUp,
   Package,
   ChevronRight,
   MoreVertical,
-  X
+  X,
+  Loader2
 } from 'lucide-react'
+import { supabase } from '../../../lib/supabase'
 
 export default function PedidosPage() {
   const { lang } = useLang()
@@ -37,7 +39,7 @@ export default function PedidosPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('todos') // todos, pendiente, confirmado, cancelado
   const [selectedPedido, setSelectedPedido] = useState(null)
-  
+
   const [stats, setStats] = useState({
     todaySales: 0,
     pendingCount: 0,
@@ -56,9 +58,10 @@ export default function PedidosPage() {
 
   const fetchPedidos = async () => {
     try {
-      const token = localStorage.getItem('supabase_token')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
       const res = await fetch('/api/pedidos', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
       const data = await res.json()
       if (data.pedidos) setPedidos(data.pedidos)
@@ -82,12 +85,13 @@ export default function PedidosPage() {
 
   const updateStatus = async (id, nuevoEstado) => {
     try {
-      const token = localStorage.getItem('supabase_token')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
       const res = await fetch(`/api/pedidos/${id}`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ estado: nuevoEstado })
       })
@@ -259,7 +263,7 @@ export default function PedidosPage() {
                    {loading ? (
                      <tr>
                         <td colSpan="6" className="py-20 text-center">
-                           <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto"></div>
+                           <Loader2 className="animate-spin text-blue-500 mx-auto" size={36} />
                         </td>
                      </tr>
                    ) : filteredPedidos.length === 0 ? (

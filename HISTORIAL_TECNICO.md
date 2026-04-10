@@ -112,11 +112,108 @@ Este documento centraliza la evolución técnica, auditorías y cambios realizad
 | compras | ✅ | Dueño gestiona (ALL) ← **nuevo** |
 
 **Pendiente manual (no se puede hacer por SQL):**
-- [ ] Activar "Leaked Password Protection" en Supabase Dashboard → Auth → Settings → Password Security.
+- [ ] Activar "Leaked Password Protection" en Supabase → Auth → Attack Protection (requiere SMTP propio configurado primero).
+
+---
+
+### [2026-04-10] - Configuración Resend (Email Transaccional)
+
+**Objetivo:** Configurar proveedor SMTP propio para activar "Leaked Password Protection" en Supabase y enviar emails desde `@tiendaonline.it`.
+
+**Progreso:**
+- [x] Cuenta Resend creada (`davidescalanteitalia@gmail.com`).
+- [x] API Key generada (guardada en portapapeles — **copiarla a `.env.local` como `RESEND_API_KEY`**).
+- [x] Dominio `tiendaonline.it` añadido en Resend (región: Ireland eu-west-1).
+- [ ] Registros DNS añadidos en el proveedor del dominio.
+- [ ] Dominio verificado en Resend (click "Verify records").
+- [ ] SMTP configurado en Supabase → Auth → Sign In/Providers → Email.
+- [ ] "Leaked Password Protection" activado en Supabase → Auth → Attack Protection.
+
+**Registros DNS a añadir en el proveedor de `tiendaonline.it`:**
+
+| Tipo | Nombre | Contenido | TTL | Prioridad |
+|------|--------|-----------|-----|-----------|
+| TXT | `resend._domainkey` | clave DKIM larga — copiar desde Resend → Domains → tiendaonline.it | Auto | — |
+| MX | `send` | `feedback-smtp.eu-west-1.amazonses.com` | Auto | 10 |
+| TXT | `send` | `v=spf1 include:amazonses.com ~all` | Auto | — |
+
+**Configuración SMTP para Supabase (una vez verificado el dominio):**
+- Host: `smtp.resend.com`
+- Puerto: `465`
+- Usuario: `resend`
+- Contraseña: API Key de Resend
+- Remitente: `noreply@tiendaonline.it`
+
+---
+
+---
+
+### [2026-04-10] - Auditoría y Correcciones Dashboard (Todas las Páginas)
+
+**Referencia visual:** `app/dashboard/diseno/page.js` (estética Pro Max / Glassmorphism).
+Revisión completa de todas las páginas del dashboard para unificar funcionalidad y estética.
+
+---
+
+#### 🔴 BUGS CRÍTICOS resueltos
+
+**`pedidos/page.js` — Auth con `localStorage` (roto)**
+- `fetchPedidos` y `updateStatus` usaban `localStorage.getItem('supabase_token')` → siempre devuelve `null` porque Supabase JWT no se almacena en localStorage con esa clave.
+- Fix: reemplazado por `supabase.auth.getSession()` en ambas funciones.
+- También: `Loader2` de lucide-react reemplaza el spinner CSS manual para consistencia.
+
+**`compras/page.js` — Función `handleCreateCat` inexistente (roto)**
+- El botón "Guardar" dentro del modal de "nueva categoría" llamaba a `handleCreateCat` que nunca fue definida → error en runtime al crear categorías inline.
+- Fix: función `handleCreateCat` implementada correctamente con llamada a `/api/categorias` POST, actualización de estado local y selección automática de la nueva categoría.
+
+---
+
+#### 🟡 INCONSISTENCIAS DE SISTEMA corregidas
+
+**`compras/page.js` — Sistema de idioma diferente al resto**
+- Usaba `getDictionary(session?.user?.id)` (función async, resultado guardado en estado local) en lugar del hook `useLang()` + `DICTIONARY[lang]` que usan todas las demás páginas.
+- Fix: migrado a `useLang()` + `DICTIONARY[lang]` para sincronización global.
+- Además: `CheckCircle2` estaba duplicado como componente SVG manual al final del archivo (conflicto con el import de lucide-react). Eliminado el duplicado.
+
+---
+
+#### 🎨 CORRECCIONES VISUALES (alineación con diseno/page.js)
+
+**`categorias/page.js` — Redesign completo al esquema Pro Max**
+- `h1`: `text-3xl font-bold` → `text-4xl font-black` + icono `text-blue-500` + `tracking-tight`
+- Cards: `rounded-2xl` → `rounded-[32px]` + padding `p-8`
+- Header spacing: `mb-8` → `mb-12`
+- Botón CTA principal: `rounded-xl font-medium` → `rounded-2xl font-bold shadow-xl active:scale-95`
+- Empty state: `rounded-2xl border-2 dashed` → `rounded-[32px] p-16` + botón Pro Max
+- Modal: `rounded-3xl p-8` → `rounded-[40px] p-10` + botón guardar `bg-slate-900`
+- Labels: `text-sm font-bold text-slate-700` → `text-xs font-black text-slate-400 uppercase tracking-widest`
+- Inputs: `border-slate-200 focus:ring-primary/10 focus:border-primary` → `bg-slate-50 focus:ring-blue-500/10 focus:border-blue-500`
+- Spinner: `text-primary` → `text-blue-500`
+
+**`ajustes/page.js` — Mejoras de header y UX**
+- `h1`: `text-3xl font-bold` → `text-4xl font-black` + icono `Settings` en `text-blue-500` + gap Pro Max
+- `copyLink()`: `alert()` reemplazado por estado `copiedLink` con feedback visual en botón (verde `CheckCircle2` por 2 segundos).
+- Nuevo estado `copiedLink` añadido al componente.
+
+---
+
+#### Estado Visual Final del Dashboard
+
+| Página | Visual Consistente | Bugs Funcionales |
+|--------|-------------------|-----------------|
+| `/dashboard` (Home) | ✅ Pro Max | ✅ OK |
+| `/dashboard/productos` | ✅ Pro Max | ✅ OK |
+| `/dashboard/compras` | ✅ Pro Max | ✅ Corregido (handleCreateCat + lang) |
+| `/dashboard/categorias` | ✅ Pro Max | ✅ OK |
+| `/dashboard/pedidos` | ✅ Pro Max | ✅ Corregido (auth localStorage) |
+| `/dashboard/ajustes` | ✅ Pro Max | ✅ Corregido (copyLink UX) |
+| `/dashboard/diseno` | ✅ Referencia | ✅ OK |
 
 ---
 
 ## 🚀 PRÓXIMOS PASOS
+- [ ] Completar verificación DNS de Resend y configurar SMTP en Supabase.
+- [ ] Activar "Leaked Password Protection" en Supabase una vez SMTP configurado.
 - [ ] Módulo de Clientes (CRM Simple) - Listado de clientes recurrentes basado en pedidos.
 - [ ] Integración de Catálogos Automáticos (IG/FB).
-- [ ] Notificaciones Push/Email para nuevos pedidos.
+- [ ] Notificaciones Push/Email para nuevos pedidos (usar Resend una vez configurado).
