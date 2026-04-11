@@ -43,6 +43,7 @@ export default function ProductosPage() {
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
   const [creatingCategory, setCreatingCategory] = useState(false)
+  const [errorMsg, setErrorMsg] = useState(null)
 
   const fileInputRef = useRef(null)
 
@@ -111,7 +112,8 @@ export default function ProductosPage() {
       const { data } = supabase.storage.from('productos').getPublicUrl(filePath)
       setImagenUrl(data.publicUrl)
     } catch (error) {
-      alert('Error: ' + error.message)
+      setErrorMsg('Error al subir imagen: ' + error.message)
+      setTimeout(() => setErrorMsg(null), 4000)
     } finally {
       setUploading(false)
     }
@@ -215,7 +217,15 @@ export default function ProductosPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 font-sans text-slate-800">
-      
+
+      {/* Error Toast */}
+      {errorMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <X size={18} className="shrink-0" />
+          <span className="text-sm font-bold">{errorMsg}</span>
+        </div>
+      )}
+
       {/* 1. Header & Quick Actions */}
       <div className="max-w-7xl mx-auto p-6 lg:p-10">
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">

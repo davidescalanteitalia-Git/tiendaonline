@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLang } from '../../../components/LanguageProvider'
 import { DICTIONARY } from '../../../lib/dictionaries'
-import { 
-  Settings, User, Store, Bell, ShieldCheck, Loader2, Save, 
-  CheckCircle2, Copy, ExternalLink, Image as ImageIcon, 
-  Smartphone, Info, Camera, Trash2, Globe
+import {
+  Settings, User, Store, Bell, ShieldCheck, Loader2, Save,
+  CheckCircle2, Copy, ExternalLink, Image as ImageIcon,
+  Smartphone, Info, Camera, Trash2, Globe, X
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
@@ -19,6 +19,7 @@ export default function AjustesPage() {
   const [saved, setSaved] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [errorMsg, setErrorMsg] = useState(null)
   
   // Tienda state
   const [nombre, setNombre] = useState('')
@@ -115,7 +116,8 @@ export default function AjustesPage() {
       setLogoUrl(publicUrlData.publicUrl)
     } catch (error) {
       console.error('Error uploading logo:', error)
-      alert('Error: ' + error.message)
+      setErrorMsg('Error al subir logo: ' + error.message)
+      setTimeout(() => setErrorMsg(null), 4000)
     } finally {
       setUploading(false)
     }
@@ -168,7 +170,15 @@ export default function AjustesPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto p-4 md:p-8 font-sans animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+
+      {/* Error Toast */}
+      {errorMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <X size={18} className="shrink-0" />
+          <span className="text-sm font-bold">{errorMsg}</span>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">

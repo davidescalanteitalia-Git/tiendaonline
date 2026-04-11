@@ -39,6 +39,7 @@ export default function PedidosPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('todos') // todos, pendiente, confirmado, cancelado
   const [selectedPedido, setSelectedPedido] = useState(null)
+  const [warnMsg, setWarnMsg] = useState(null)
 
   const [stats, setStats] = useState({
     todaySales: 0,
@@ -111,12 +112,40 @@ export default function PedidosPage() {
     const meta = getMetadata(p.items)
     const phone = meta.whatsapp
     if (!phone) {
-      alert('No hay un número de WhatsApp registrado para este pedido.')
+      setWarnMsg('Este cliente no dejó número de WhatsApp al hacer el pedido.')
+      setTimeout(() => setWarnMsg(null), 4000)
       return
     }
 
-    const message = `Hola *${p.cliente_nombre}*! Te escribimos de *Tu Tienda* sobre tu pedido *${p.codigo}*.%0A%0AQueríamos coordinar los detalles de la entrega. El total es *€${parseFloat(p.total).toFixed(2)}*.%0A%0A¿Cómo podemos ayudarte?`
-    window.open(`https://wa.me/${phone.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`, '_blank')
+    const orderItems = getOrderItems(p.items)
+    const lineasProductos = orderItems
+      .map(item => `  • ${item.quantity}x ${item.nombre} — €${(item.quantity * parseFloat(item.price || item.precio)).toFixed(2)}`)
+      .join('%0A')
+
+    const envioInfo = meta.metodo_envio === 'domicilio'
+      ? `🚚 *Envío a domicilio*%0A  Dirección: ${meta.direccion || 'A coordinar'}`
+      : `🏪 *Retiro en local* (a coordinar)`
+
+    const shipping = parseFloat(meta.shipping_cost || 0)
+    const subtotal = parseFloat(p.total) - shipping
+
+    const pagoInfo = meta.metodo_pago === 'transferencia'
+      ? `💳 *Transferencia bancaria*%0A  Por favor envíanos el comprobante por este chat.`
+      : `💵 *Efectivo* al momento de la entrega`
+
+    const message =
+      `✅ *PEDIDO CONFIRMADO — ${p.codigo}*%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━%0A` +
+      `👤 *Cliente:* ${p.cliente_nombre}%0A%0A` +
+      `🛒 *Productos:*%0A${lineasProductos}%0A%0A` +
+      `${envioInfo}%0A%0A` +
+      `${pagoInfo}%0A%0A` +
+      `━━━━━━━━━━━━━━━━━━━━━━━%0A` +
+      (shipping > 0 ? `  Subtotal: €${subtotal.toFixed(2)}%0A  Envío: €${shipping.toFixed(2)}%0A` : '') +
+      `💰 *Total a pagar: €${parseFloat(p.total).toFixed(2)}*%0A%0A` +
+      `¡Gracias por tu compra! Nos ponemos en contacto para coordinar los detalles. 🙌`
+
+    window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${message}`, '_blank')
   }
 
   const deletePedido = async (id) => {
@@ -161,7 +190,15 @@ export default function PedidosPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 lg:p-10 font-sans text-slate-900 pb-20">
-      
+
+      {/* Warning Toast */}
+      {warnMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <X size={18} className="shrink-0" />
+          <span className="text-sm font-bold">{warnMsg}</span>
+        </div>
+      )}
+
       {/* 1. Header & Stats Area */}
       <div className="max-w-7xl mx-auto mb-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -450,13 +487,19 @@ export default function PedidosPage() {
                             </div>
                          </div>
 
-                         {/* Quick link button */}
-                         <button 
-                           onClick={() => sendWhatsappReminder(selectedPedido)}
-                           className="w-full mt-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center gap-3 font-bold text-sm transition-all active:scale-95"
-                         >
-                            <MessageSquare size={18} /> Chat con cliente
-                         </button>
+                         {/* WhatsApp Button */}
+                         <div className="mt-8 space-y-3">
+                           <button
+                             onClick={() => sendWhatsappReminder(selectedPedido)}
+                             className="w-full py-4 bg-[#25D366] hover:bg-[#20bc5a] rounded-2xl flex items-center justify-center gap-3 font-black text-white text-sm transition-all active:scale-95 shadow-lg shadow-emerald-900/30"
+                           >
+                             <MessageSquare size={18} />
+                             Enviar resumen del pedido al cliente
+                           </button>
+                           <p className="text-center text-[10px] text-slate-500 font-medium">
+                             Se abrirá WhatsApp con todos los detalles del pedido listos para enviar
+                           </p>
+                         </div>
                       </div>
                     )
                  })()}
@@ -494,10 +537,17 @@ export default function PedidosPage() {
                     <span className="text-slate-400 font-bold">Costo de Envío</span>
                     <span className="text-emerald-500 font-bold">+€{(getMetadata(selectedPedido.items).shipping_cost || 0).toFixed(2)}</span>
                  </div>
-                 <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between mb-6">
                     <span className="text-xl font-black text-slate-800">Total Orden</span>
                     <span className="text-2xl font-black text-blue-600">€{parseFloat(selectedPedido.total).toFixed(2)}</span>
                  </div>
+                 <button
+                   onClick={() => sendWhatsappReminder(selectedPedido)}
+                   className="w-full py-4 bg-[#25D366] hover:bg-[#20bc5a] text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-emerald-200"
+                 >
+                   <MessageSquare size={18} />
+                   Notificar al cliente por WhatsApp
+                 </button>
               </div>
 
            </div>

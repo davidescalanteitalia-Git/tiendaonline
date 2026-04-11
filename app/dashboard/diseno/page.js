@@ -41,6 +41,7 @@ export default function DisenoPage() {
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [tienda, setTienda] = useState(null)
   const [copied, setCopied] = useState(false)
+  const [errorMsg, setErrorMsg] = useState(null)
   
   // Design Configuration State
   const [config, setConfig] = useState({
@@ -152,7 +153,8 @@ export default function DisenoPage() {
       handleUpdateConfig('banner_url', publicUrlData.publicUrl)
     } catch (error) {
       console.error('Error uploading banner:', error)
-      alert('Error: ' + error.message)
+      setErrorMsg('Error al subir imagen: ' + error.message)
+      setTimeout(() => setErrorMsg(null), 4000)
     } finally {
       setUploadingBanner(false)
     }
@@ -185,6 +187,14 @@ export default function DisenoPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto p-4 md:p-8 animate-in fade-in duration-500 font-sans">
+
+      {/* Error Toast */}
+      {errorMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <X size={18} className="shrink-0" />
+          <span className="text-sm font-bold">{errorMsg}</span>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">

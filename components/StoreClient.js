@@ -14,6 +14,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
   const [customerName, setCustomerName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessageOpen, setSuccessMessageOpen] = useState(false)
+  const [orderError, setOrderError] = useState(null)
   const [activeCategory, setActiveCategory] = useState(groupedProducts[0]?.id || 'uncategorized')
 
   const aceptarPedidos = tienda.aceptar_pedidos ?? true
@@ -119,7 +120,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
       }
     } catch (err) {
       console.error('Error saving order:', err)
-      alert('Error al procesar pedido. Intenta de nuevo.')
+      setOrderError('Hubo un problema al enviar tu pedido. Por favor intenta de nuevo.')
+      setTimeout(() => setOrderError(null), 5000)
     } finally {
       setIsSubmitting(false)
     }
@@ -133,6 +135,14 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: cart.length > 0 ? '100px' : '0' }}>
+
+      {/* Error Toast */}
+      {orderError && (
+        <div style={{ position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: '#dc2626', color: '#fff', padding: '14px 20px', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 700, fontSize: '14px', maxWidth: '90vw' }}>
+          <span>⚠️</span>
+          <span>{orderError}</span>
+        </div>
+      )}
 
       {/* ─── LAYOUT PRINCIPAL: Sidebar + Contenido ─── */}
       <div className="kyte-layout">

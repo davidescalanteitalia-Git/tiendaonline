@@ -8,9 +8,10 @@ import {
   ShoppingCart, Package, CheckCircle2, Clock, XCircle,
   TrendingUp, Copy, ExternalLink, ArrowRight, Plus,
   ShoppingBag, Store, Zap, Users, ChevronRight,
-  ShieldCheck, Settings, Palette, CreditCard, Truck
+  ShieldCheck, Settings, Palette, CreditCard, Truck, Loader2
 } from 'lucide-react'
 import Link from 'next/link'
+import OnboardingWizard from '../../components/OnboardingWizard'
 
 export default function DashboardPage() {
   const { lang } = useLang()
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [showWizard, setShowWizard] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -37,9 +39,13 @@ export default function DashboardPage() {
           fetch('/api/productos', { headers }),
         ])
 
+        let loadedTienda = null
+        let loadedProductos = []
+
         if (meRes.ok) {
           const json = await meRes.json()
-          setTienda(json.tienda || null)
+          loadedTienda = json.tienda || null
+          setTienda(loadedTienda)
         }
         if (pedidosRes.ok) {
           const json = await pedidosRes.json()
@@ -47,7 +53,20 @@ export default function DashboardPage() {
         }
         if (productosRes.ok) {
           const json = await productosRes.json()
-          setProductos(Array.isArray(json) ? json : [])
+          loadedProductos = Array.isArray(json) ? json : []
+          setProductos(loadedProductos)
+        }
+
+        // Mostrar wizard si algún paso de onboarding no está completado
+        // y el usuario no lo ha descartado en esta sesión
+        const wizardDismissed = sessionStorage.getItem('onboarding_dismissed')
+        if (!wizardDismissed) {
+          const cfg = loadedTienda?.config_diseno || {}
+          const hasPayment = !!cfg.pagos && Object.keys(cfg.pagos).some(k => cfg.pagos[k])
+          const hasProduct = loadedProductos.length > 0
+          if (!hasPayment || !hasProduct) {
+            setShowWizard(true)
+          }
         }
       } catch (err) {
         console.error('Error loading dashboard data:', err)
@@ -96,7 +115,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-slate-50">
-        <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
         <p className="text-slate-400 font-bold text-sm tracking-widest uppercase">Inizializzazione Command Center...</p>
       </div>
     )
@@ -105,12 +124,24 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20 space-y-10 animate-in fade-in slide-in-from-bottom-3 duration-700">
 
+      {/* ── Onboarding Wizard ── */}
+      {showWizard && (
+        <OnboardingWizard
+          tienda={tienda}
+          productos={productos}
+          onDismiss={() => {
+            sessionStorage.setItem('onboarding_dismissed', '1')
+            setShowWizard(false)
+          }}
+        />
+      )}
+
       {/* ── 1. Hero / Header ── */}
       <div className="max-w-7xl mx-auto">
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
             <div>
-               <h1 className="text-4xl font-black text-slate-800 tracking-tight mb-2">
-                 Centro de Comando
+               <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3 mb-2">
+                 <Store className="text-blue-500" size={32} /> Centro de Comando
                </h1>
                <p className="text-slate-500 font-medium">Gestione operativa di {tienda?.nombre || 'la tua attività'}</p>
             </div>

@@ -55,6 +55,7 @@ export default function ComprasPage() {
   const [creatingCat, setCreatingCat] = useState(false)
   
   const [searchQuery, setSearchQuery] = useState('')
+  const [errorMsg, setErrorMsg] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -159,7 +160,8 @@ export default function ComprasPage() {
       }
     } catch (err) {
       console.error('Error saving purchase:', err)
-      alert('Error: ' + err.message)
+      setErrorMsg('Error al guardar compra: ' + err.message)
+      setTimeout(() => setErrorMsg(null), 4000)
     } finally {
       setSaving(false)
     }
@@ -188,7 +190,15 @@ export default function ComprasPage() {
 
   return (
     <div className="max-w-[1400px] mx-auto p-4 md:p-8 font-sans animate-in fade-in duration-500">
-      
+
+      {/* Error Toast */}
+      {errorMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+          <X size={18} className="shrink-0" />
+          <span className="text-sm font-bold">{errorMsg}</span>
+        </div>
+      )}
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>

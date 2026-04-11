@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auditoría Landing — TIENDAONLINE</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #059669;
+    --green-light: #10b981;
+    --green-dark: #047857;
+    --green-bg: #f0fdf4;
+    --green-border: #d1fae5;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --white: #ffffff;
+    --amber: #f59e0b;
+    --amber-bg: #fffbeb;
+    --amber-text: #92400e;
+    --red: #ef4444;
+    --red-bg: #fef2f2;
+    --red-border: #fecaca;
+    --gray-bg: #f8fafc;
+    --gray-border: #e2e8f0;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 24px rgba(0,0,0,0.1);
+  }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; color: var(--text); font-size: 15px; line-height: 1.6; }
+
+  /* ── HEADER ── */
+  .audit-header {
+    background: linear-gradient(135deg, #047857, #059669);
+    color: white;
+    padding: 32px 24px 28px;
+    text-align: center;
+  }
+  .audit-header h1 { font-size: 1.7rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .audit-header p { opacity: 0.82; font-size: 0.95rem; }
+  .audit-badge { display: inline-block; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 100px; padding: 4px 14px; font-size: 0.78rem; font-weight: 700; margin-bottom: 14px; letter-spacing: 0.5px; }
+
+  /* ── TABS ── */
+  .tabs-wrapper { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; overflow-x: auto; }
+  .tabs { display: flex; min-width: max-content; padding: 0 12px; }
+  .tab-btn {
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab-btn:hover { color: var(--green); }
+  .tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--gray-bg); font-size: 0.68rem; font-weight: 800; }
+  .tab-btn.active .tab-num { background: var(--green); color: white; }
+
+  /* ── CONTENT ── */
+  .content { max-width: 960px; margin: 0 auto; padding: 28px 20px 60px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px; }
+  .panel-subtitle { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 28px; }
+
+  /* ── CARDS ── */
+  .card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .card-title { font-weight: 700; font-size: 0.97rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .card-body { color: var(--text-muted); font-size: 0.9rem; line-height: 1.65; }
+  .card.green-border { border-left: 4px solid var(--green); }
+  .card.red-border { border-left: 4px solid var(--red); }
+  .card.amber-border { border-left: 4px solid var(--amber); }
+
+  /* ── BADGES ── */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; line-height: 1.4; }
+  .badge-ok { background: var(--green-bg); color: var(--green-dark); }
+  .badge-warn { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-error { background: var(--red-bg); color: #b91c1c; }
+  .badge-info { background: #eff6ff; color: #1d4ed8; }
+  .badge-gray { background: var(--gray-bg); color: var(--text-muted); }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+
+  /* ── SECTION LIST ── */
+  .section-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .section-item { display: flex; align-items: flex-start; gap: 12px; background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .section-num { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: white; font-size: 0.75rem; font-weight: 800; }
+  .section-num.missing { background: #e2e8f0; color: var(--text-muted); }
+  .section-content { flex: 1; }
+  .section-name { font-weight: 700; font-size: 0.92rem; margin-bottom: 3px; }
+  .section-desc { color: var(--text-muted); font-size: 0.83rem; }
+
+  /* ── SCORE BARS ── */
+  .score-row { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .score-label { min-width: 180px; font-size: 0.88rem; font-weight: 600; }
+  .score-bar-wrap { flex: 1; background: var(--gray-bg); border-radius: 100px; height: 8px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 100px; transition: width 0.6s ease; }
+  .score-val { min-width: 36px; text-align: right; font-weight: 800; font-size: 0.88rem; }
+
+  /* ── COPY COMPARE ── */
+  .copy-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 600px) { .copy-compare { grid-template-columns: 1fr; } }
+  .copy-box { border-radius: 10px; padding: 14px 16px; font-size: 0.87rem; line-height: 1.6; }
+  .copy-box.before { background: #fef2f2; border: 1px solid #fecaca; }
+  .copy-box.after { background: var(--green-bg); border: 1px solid var(--green-border); }
+  .copy-label { font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; opacity: 0.65; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; padding: 10px 14px; border-radius: 8px; }
+  .check-item.done { background: var(--green-bg); color: #065f46; }
+  .check-item.todo { background: var(--red-bg); color: #991b1b; }
+  .check-item.warn { background: var(--amber-bg); color: var(--amber-text); }
+  .check-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── PRIORITY TABLE ── */
+  .priority-block { margin-bottom: 24px; }
+  .priority-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .priority-title { font-weight: 800; font-size: 1rem; }
+  .action-item { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 12px; }
+  .action-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .action-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 3px; }
+  .action-desc { color: var(--text-muted); font-size: 0.83rem; line-height: 1.55; }
+
+  /* ── VC SECTION ── */
+  .vc-score-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 28px; text-align: center; }
+  .vc-big-score { font-size: 5rem; font-weight: 900; color: var(--green); line-height: 1; }
+  .vc-label { color: var(--text-muted); font-size: 0.9rem; margin-top: 6px; }
+
+  /* ── TABLE ── */
+  .pillar-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .pillar-table th { background: var(--gray-bg); padding: 10px 14px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); }
+  .pillar-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .pillar-table tr:last-child td { border-bottom: none; }
+
+  /* ── MISC ── */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  blockquote { background: var(--gray-bg); border-left: 3px solid var(--green); padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 0.9rem; color: var(--text-muted); margin: 12px 0; font-style: italic; }
+  .highlight-box { background: linear-gradient(135deg, var(--green-bg), #ecfdf5); border: 1px solid var(--green-border); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; }
+  .highlight-box p { font-size: 0.9rem; color: var(--text); line-height: 1.65; }
+
+  code { background: var(--gray-bg); padding: 2px 7px; border-radius: 4px; font-family: monospace; font-size: 0.82rem; color: var(--green-dark); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="audit-header">
+  <div class="audit-badge">🔍 AUDITORÍA COMPLETA · Abril 2026</div>
+  <h1>TIENDAONLINE — Landing Page Audit</h1>
+  <p>Análisis profesional de 10 puntos · tiendaonline.it · David Escalante</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrapper">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showPanel(0)"><span class="tab-num">1</span> Contenido</button>
+    <button class="tab-btn" onclick="showPanel(1)"><span class="tab-num">2</span> Estructura</button>
+    <button class="tab-btn" onclick="showPanel(2)"><span class="tab-num">3</span> Limpieza</button>
+    <button class="tab-btn" onclick="showPanel(3)"><span class="tab-num">4</span> Reestructura</button>
+    <button class="tab-btn" onclick="showPanel(4)"><span class="tab-num">5</span> Copywriting</button>
+    <button class="tab-btn" onclick="showPanel(5)"><span class="tab-num">6</span> Errores</button>
+    <button class="tab-btn" onclick="showPanel(6)"><span class="tab-num">7</span> Benchmarking</button>
+    <button class="tab-btn" onclick="showPanel(7)"><span class="tab-num">8</span> Mejoras</button>
+    <button class="tab-btn" onclick="showPanel(8)"><span class="tab-num">9</span> Vista VC</button>
+    <button class="tab-btn" onclick="showPanel(9)"><span class="tab-num">10</span> Versión Final</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- ════ PASO 1: CONTENIDO ════ -->
+  <div class="panel active" id="panel-0">
+    <div class="panel-title">📦 Extracción completa del contenido</div>
+    <div class="panel-subtitle">Todo el contenido presente en <code>app/page.js</code> y <code>lib/dictionaries.js</code></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🏷️ Marca y producto</div>
+        <div class="card-body">
+          <strong>Nombre de marca:</strong> TIENDAONLINE<br>
+          <strong>Dominio:</strong> tiendaonline.it<br>
+          <strong>Slogan:</strong> "La tua vetrina online in 10 minuti"<br>
+          <strong>Modelo de negocio:</strong> Freemium SaaS (B2B)<br>
+          <strong>Idiomas:</strong> IT / ES / EN<br>
+          <strong>Stack:</strong> Next.js, React, Supabase, inline styles
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Propuesta de valor principal</div>
+        <div class="card-body">
+          "I tuoi clienti ordinano già su WhatsApp. Dagli un catalogo vero — gratis, pronto in 10 minuti."<br><br>
+          <strong>Target:</strong> Pequeños comercios físicos en Italia (panetterie, fruttivendoli, bar, alimentari)<br>
+          <strong>Pain point central:</strong> Ausencia de catálogo online + desorden en WhatsApp
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 Inventario de secciones y textos</div>
+      <div class="card-body">
+        <table class="pillar-table" style="width:100%">
+          <thead><tr><th>Sección</th><th>Texto clave</th><th>CTA</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Banner</strong></td><td>🚧 "Sito in costruzione — Stiamo lavorando per voi!"</td><td>—</td></tr>
+            <tr><td><strong>Header</strong></td><td>Logo + selector idioma IT/ES/EN</td><td>"Accedi" + "Inizia gratis →"</td></tr>
+            <tr><td><strong>Hero</strong></td><td>Badge: "100% Gratuito – Nessuna carta di credito" · H1: "La tua vetrina online in 10 minuti"</td><td>"🛍️ Crea la tua bottega gratis →"</td></tr>
+            <tr><td><strong>Problema</strong></td><td>📵 Sin catálogo / 💬 WhatsApp desorganizado / 💸 Sito costoso</td><td>—</td></tr>
+            <tr><td><strong>Demo</strong></td><td>4 tabs: Panetteria / Fruttivendolo / Bar / Negozio locale</td><td>"Crea una uguale per il tuo negozio →"</td></tr>
+            <tr><td><strong>Cómo funciona</strong></td><td>3 pasos: Crea (10 min) / Condividi (2 min) / Ricevi (Immediato)</td><td>—</td></tr>
+            <tr><td><strong>Features</strong></td><td>6 cards: WhatsApp / Personalizado / Sin registro / 3 idiomas / Team / GDPR</td><td>—</td></tr>
+            <tr><td><strong>Pricing</strong></td><td>3 planes: Gratis (€0) / Avanzato (€0.50/día) / Professionale (Su misura)</td><td>"Inizia gratis →" / "Inizia gratis →" / "Contattaci →"</td></tr>
+            <tr><td><strong>Contador</strong></td><td>Número dinámico de tiendas activas (fetch /api/stats)</td><td>"Unisciti a loro →"</td></tr>
+            <tr><td><strong>FAQ</strong></td><td>7 preguntas en acordeón</td><td>—</td></tr>
+            <tr><td><strong>CTA Final</strong></td><td>"La tua bottega può essere online oggi"</td><td>"🛍️ Crea la tua bottega gratis →"</td></tr>
+            <tr><td><strong>Footer</strong></td><td>Logo + tagline + Privacy / Terms / Contatti · "© 2026 TIENDAONLINE"</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">✅ Checkmarks del Hero</div>
+        <div class="card-body">
+          ✓ Gratuito per sempre<br>
+          ✓ Nessuna carta<br>
+          ✓ Pronto in 10 min
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">❓ FAQ — 7 preguntas</div>
+        <div class="card-body">
+          1. Quanto costa?<br>
+          2. È difficile da usare?<br>
+          3. I miei clienti devono registrarsi?<br>
+          4. Come ricevo gli ordini?<br>
+          5. È sicuro? Cosa succede con i dati?<br>
+          6. Posso cancellare in qualsiasi momento?<br>
+          7. Cosa succede se il mio piano scade?
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💰 Pricing — Detalle completo</div>
+      <div class="card-body">
+        <table class="pillar-table">
+          <thead><tr><th>Plan</th><th>Precio</th><th>Features incluidas</th><th>CTA</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Gratuito</strong> <span class="badge badge-ok">Piano attuale</span></td>
+              <td>€0 / sempre</td>
+              <td>Negozio con sottodominio · Prodotti illimitati · Ordini via WhatsApp · 3 lingue · Fino a 3 utenti · GDPR compliant</td>
+              <td>Inizia gratis →</td>
+            </tr>
+            <tr>
+              <td><strong>Avanzato</strong></td>
+              <td>€0,50 / giorno</td>
+              <td>Clienti registrati con storico · Marketing automatico · Modifica design · White label · Reportistica · Codice a barre</td>
+              <td>Inizia gratis →</td>
+            </tr>
+            <tr>
+              <td><strong>Professionale</strong></td>
+              <td>Su misura</td>
+              <td>E-commerce dominio proprio · Design personalizzato · Pagamenti online · Spedizioni · Setup incluso · Supporto diretto</td>
+              <td>Contattaci →</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📁 Páginas existentes en el proyecto</div>
+      <div class="card-body">
+        <div class="tag-list">
+          <span class="badge badge-ok">/ (landing)</span>
+          <span class="badge badge-ok">/login</span>
+          <span class="badge badge-ok">/register</span>
+          <span class="badge badge-ok">/privacy</span>
+          <span class="badge badge-ok">/terms</span>
+          <span class="badge badge-ok">/contatti</span>
+          <span class="badge badge-ok">/dashboard</span>
+          <span class="badge badge-ok">/store</span>
+          <span class="badge badge-ok">/administrador</span>
+          <span class="badge badge-ok">/cookie-policy</span>
+          <span class="badge badge-ok">/api/stats</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 2: ESTRUCTURA ════ -->
+  <div class="panel" id="panel-1">
+    <div class="panel-title">🗺️ Estructura actual de la web</div>
+    <div class="panel-subtitle">Orden real de las secciones en <code>app/page.js</code> y análisis de jerarquía</div>
+
+    <ul class="section-list">
+      <li class="section-item">
+        <span class="section-num">H</span>
+        <div class="section-content">
+          <div class="section-name">Header Sticky <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">Logo + selector idioma IT/ES/EN + "Accedi" + "Inizia gratis →". Implementado correctamente con <code>position: sticky</code>. El nombre de marca aparece como "TIENDAONLINE" con logo.jpg real.</div>
+        </div>
+      </li>
+      <li class="section-item" style="border-left: 3px solid var(--red);">
+        <span class="section-num" style="background:#ef4444;">⚠</span>
+        <div class="section-content">
+          <div class="section-name">Banner "En construcción" <span class="badge badge-error">🚨 CRÍTICO</span></div>
+          <div class="section-desc">Fondo amarillo con 🚧 "Sito in costruzione — Stiamo lavorando per voi!" — Aparece entre el header y el hero, destruyendo la primera impresión. <strong>Debe eliminarse.</strong></div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">1</span>
+        <div class="section-content">
+          <div class="section-name">Hero <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">Degradado verde, badge pill, H1, subtítulo, CTA principal, 3 checkmarks, contador dinámico. Bien estructurado.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">2</span>
+        <div class="section-content">
+          <div class="section-name">El Problema <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">3 tarjetas: 📵 Sin catálogo / 💬 WhatsApp desorganizado / 💸 Sito costoso. Bien implementada.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">3</span>
+        <div class="section-content">
+          <div class="section-name">Demo Interactiva <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">4 tabs funcionales con mockup de teléfono, productos con imágenes de picsum.photos, botón WhatsApp. CTA al final.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">4</span>
+        <div class="section-content">
+          <div class="section-name">Cómo Funciona <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">3 pasos con numeración, badge de tiempo (⏱️ 10 min / 2 min / Immediato), descripción.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">5</span>
+        <div class="section-content">
+          <div class="section-name">Features <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">6 tarjetas: WhatsApp / Personalizado / Sin registro / 3 idiomas / Team / GDPR. Grid responsive.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">6</span>
+        <div class="section-content">
+          <div class="section-name">Pricing <span class="badge badge-ok">✓ Existe</span> <span class="badge badge-warn">⚠ Diferente al plan original</span></div>
+          <div class="section-desc">3 planes en lugar de los 2 del plan original. El plan Avanzato tiene precio real (€0,50/día) en lugar de "Prossimamente". El plan Professionale es "Su misura" → /contatti.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">7</span>
+        <div class="section-content">
+          <div class="section-name">Contador de Tiendas <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">Fondo verde, número grande dinámico desde /api/stats, fallback a 0. CTA "Unisciti a loro →".</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">8</span>
+        <div class="section-content">
+          <div class="section-name">FAQ <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">7 preguntas en acordeón funcional con useState. Animación de rotación en el ícono +.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">9</span>
+        <div class="section-content">
+          <div class="section-name">CTA Final <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">Degradado verde, círculos decorativos, título, subtítulo, botón blanco grande, social proof dinámico.</div>
+        </div>
+      </li>
+      <li class="section-item">
+        <span class="section-num">F</span>
+        <div class="section-content">
+          <div class="section-name">Footer <span class="badge badge-ok">✓ Existe</span></div>
+          <div class="section-desc">Fondo #047857, logo + tagline + links legales + "© 2026 TIENDAONLINE · tiendaonline.it" + crédito de autor.</div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="card amber-border" style="margin-top:20px">
+      <div class="card-title">⚠️ Análisis de jerarquía visual</div>
+      <div class="card-body">
+        <strong>Problema principal:</strong> El banner amarillo de construcción rompe la jerarquía visual completa. Un visitante ve: Logo → BANNER AMARILLO → Hero. La primera impresión es negativa antes de leer una sola palabra de marketing.<br><br>
+        <strong>Flujo de navegación del usuario:</strong> El flujo actual es lógico una vez eliminado el banner. La secuencia Problema → Demo → Cómo funciona → Features → Pricing → Contador es correcta para un SaaS de conversión.<br><br>
+        <strong>Secciones ausentes:</strong> <span class="badge badge-gray">Testimonios reales</span> <span class="badge badge-gray">Social proof con logos</span> <span class="badge badge-gray">Sección "¿Quiénes somos?"</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 3: LIMPIEZA ════ -->
+  <div class="panel" id="panel-2">
+    <div class="panel-title">🧹 Limpieza y organización</div>
+    <div class="panel-subtitle">Duplicaciones, contradicciones, ruido e inconsistencias detectadas</div>
+
+    <div class="card red-border">
+      <div class="card-title">🚨 Elemento crítico a eliminar</div>
+      <div class="card-body">
+        <strong>Banner "en construcción"</strong> — El div con fondo <code>#fef3c7</code> que muestra "🚧 Sito in costruzione" es el problema más grave de toda la landing. Aparece en producción (o al menos en el código activo) y transmite:<br><br>
+        • Que el producto NO está listo<br>
+        • Que no debes registrarte aún<br>
+        • Que el equipo no es profesional<br><br>
+        Este elemento tiene que desaparecer antes de cualquier otra acción. Está en <code>app/page.js</code> líneas 247–262.
+      </div>
+    </div>
+
+    <div class="card amber-border">
+      <div class="card-title">⚠️ Contradicción de precio: Plan Avanzato</div>
+      <div class="card-body">
+        El plan original en las instrucciones del proyecto decía que el Plan Avanzato debía mostrarse como "Prossimamente" (próximamente) con botón deshabilitado. Sin embargo, el código actual lo muestra como un plan real a <strong>€0,50/día</strong> con botón activo "Inizia gratis →".<br><br>
+        <strong>Decisión requerida:</strong> ¿El Plan Avanzato ya está disponible y tiene ese precio? Si es así, el código está correcto pero el precio "por día" es inusual en SaaS (lo normal es mensual o anual). Considera cambiarlo a <strong>€14,90/mes</strong> o <strong>€9,90/mes</strong>.
+      </div>
+    </div>
+
+    <div class="card amber-border">
+      <div class="card-title">⚠️ Duplicación del contador en el Hero y CTA Final</div>
+      <div class="card-body">
+        El contador de tiendas aparece en dos lugares:<br>
+        • Hero: <code>t('heroStores').replace('{n}', storeCount)</code> — "Già {n} negozi attivi su TIENDAONLINE"<br>
+        • CTA Final: <code>t('ctaFinalSocial').replace('{n}', storeCount)</code> — "Già {n} negozi attivi in Italia"<br><br>
+        Esto está bien como social proof repetido, pero hay una inconsistencia textual: el hero dice "su TIENDAONLINE" y el CTA final dice "in Italia". Si el valor es 0 (que puede serlo al principio), se muestra "Già 0 negozi" lo que es peor que no mostrarlo. <strong>Agrega condicional: si storeCount es 0, no muestra el texto.</strong>
+      </div>
+    </div>
+
+    <div class="card amber-border">
+      <div class="card-title">⚠️ Hardcode de idioma en el Pricing</div>
+      <div class="card-body">
+        En la sección de pricing hay código hardcodeado con comparaciones de idioma inline en lugar de usar el sistema de traducciones:<br>
+        <code>{lang === 'it' ? 'per sempre' : lang === 'es' ? 'para siempre' : 'forever'}</code><br>
+        <code>{lang === 'it' ? '/ giorno' : lang === 'es' ? '/ día' : '/ day'}</code><br>
+        <code>{lang === 'it' ? 'Aziende e grandi volumi' : ...}</code><br><br>
+        Estas cadenas deberían estar en el diccionario. El código es inconsistente con el sistema de i18n.
+      </div>
+    </div>
+
+    <div class="card green-border">
+      <div class="card-title">✅ Consistencia de marca — Bien hecho</div>
+      <div class="card-body">
+        El nombre "TIENDAONLINE" se usa consistentemente en mayúsculas en todo el código. El logo.jpg aparece en header y footer. El color verde <code>#059669</code> (theme.js) es uniforme. El sistema de traducciones en <code>lib/dictionaries.js</code> es robusto y cubre 3 idiomas.
+      </div>
+    </div>
+
+    <div class="card green-border">
+      <div class="card-title">✅ Limpieza técnica — Sin barra flotante inferior</div>
+      <div class="card-body">
+        Confirmado: no existe ninguna barra flotante (position: fixed) en la landing page. El layout es limpio. El selector de idioma está correctamente en el header. El CookieBanner es un componente separado gestionado por <code>LanguageProvider</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 4: REESTRUCTURA ════ -->
+  <div class="panel" id="panel-3">
+    <div class="panel-title">🏗️ Reestructuración tipo SaaS profesional</div>
+    <div class="panel-subtitle">Estado actual vs. estructura ideal para máxima conversión</div>
+
+    <div class="highlight-box">
+      <p><strong>Veredicto general:</strong> La estructura actual de TIENDAONLINE es <strong>sorprendentemente correcta</strong> para un SaaS en etapa temprana. El orden de las secciones sigue la fórmula estándar de alta conversión. Las acciones requeridas son de refinamiento, no de cirugía mayor.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Mapa: Estructura actual vs. ideal SaaS</div>
+      <div class="card-body">
+        <table class="pillar-table">
+          <thead><tr><th>Posición ideal</th><th>Sección</th><th>Estado actual</th><th>Acción</th></tr></thead>
+          <tbody>
+            <tr><td>H</td><td>Header sticky</td><td><span class="badge badge-ok">✓ Posición correcta</span></td><td>Solo eliminar banner debajo</td></tr>
+            <tr><td>—</td><td>Banner construcción</td><td><span class="badge badge-error">🚨 Intrusivo</span></td><td>ELIMINAR</td></tr>
+            <tr><td>1</td><td>Hero + propuesta de valor</td><td><span class="badge badge-ok">✓ Posición 1</span></td><td>Mejorar CTA (ver paso 5)</td></tr>
+            <tr><td>2</td><td>Problema / Pain</td><td><span class="badge badge-ok">✓ Posición 2</span></td><td>Mantener</td></tr>
+            <tr><td>3</td><td>Demo / Solución</td><td><span class="badge badge-ok">✓ Posición 3</span></td><td>Mantener</td></tr>
+            <tr><td>4</td><td>Cómo funciona</td><td><span class="badge badge-ok">✓ Posición 4</span></td><td>Mantener</td></tr>
+            <tr><td>5</td><td>Features</td><td><span class="badge badge-ok">✓ Posición 5</span></td><td>Mantener</td></tr>
+            <tr><td>6</td><td>Social proof / Testimonios</td><td><span class="badge badge-error">❌ Ausente</span></td><td>CREAR — o usar contador expandido</td></tr>
+            <tr><td>7</td><td>Pricing</td><td><span class="badge badge-ok">✓ Posición 6</span></td><td>Revisar estructura de 3 planes</td></tr>
+            <tr><td>8</td><td>Contador (social proof)</td><td><span class="badge badge-ok">✓ Posición 7</span></td><td>Mantener</td></tr>
+            <tr><td>9</td><td>FAQ</td><td><span class="badge badge-ok">✓ Posición 8</span></td><td>Mantener</td></tr>
+            <tr><td>10</td><td>CTA Final</td><td><span class="badge badge-ok">✓ Posición 9</span></td><td>Mantener</td></tr>
+            <tr><td>F</td><td>Footer legal</td><td><span class="badge badge-ok">✓ Completo</span></td><td>Mantener</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card amber-border">
+      <div class="card-title">⚠️ Sección ausente: Social Proof / Testimonios</div>
+      <div class="card-body">
+        Entre Features y Pricing falta una sección de social proof real. Opciones para añadirla:<br><br>
+        <strong>Opción A (corto plazo):</strong> Expandir el "Contador" actual con un panel de logos o nombres ficticios de tipos de negocio ("✓ Panetteria Rossi, Roma", etc.) — sin inventar reviews falsas.<br><br>
+        <strong>Opción B (medio plazo):</strong> Recolectar 2-3 testimonios reales de los primeros usuarios y añadirlos como cards con foto/avatar, nombre y negocio.<br><br>
+        <strong>Por qué importa:</strong> Sin social proof, el visitante llega a Pricing sin prueba de que el producto funciona. La tasa de conversión cae ~30-40% en SaaS sin testimonios.
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 5: COPYWRITING ════ -->
+  <div class="panel" id="panel-4">
+    <div class="panel-title">✍️ Mejora del copywriting</div>
+    <div class="panel-subtitle">Versión actual vs. versión mejorada para cada sección clave</div>
+
+    <div class="card">
+      <div class="card-title">🦸 Hero — H1 y subtítulo</div>
+      <div class="copy-compare">
+        <div class="copy-box before">
+          <div class="copy-label">Actual</div>
+          <strong>H1:</strong> "La tua vetrina online in 10 minuti"<br><br>
+          <strong>Subtítulo:</strong> "I tuoi clienti ordinano già su WhatsApp. Dagli un catalogo vero — gratis, pronto in 10 minuti."
+        </div>
+        <div class="copy-box after">
+          <div class="copy-label">✨ Mejorado</div>
+          <strong>H1:</strong> "La tua bottega online. Gratis. In 10 minuti." <em>(más directo, 3 beats rítmicos)</em><br><br>
+          <strong>Subtítulo:</strong> "I tuoi clienti già ti scrivono su WhatsApp. Ora puoi dargli un catalogo vero — con foto, prezzi e ordine automatico. Zero costi, pronto in 10 minuti."
+        </div>
+      </div>
+      <div class="card-body" style="margin-top:8px; font-size:0.83rem; color:var(--text-muted)">
+        <strong>Por qué:</strong> "In 10 minuti" se repite dos veces en la versión actual. La versión mejorada añade "con foto, prezzi e ordine automatico" — beneficios concretos que el comerciante entiende de inmediato.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🛍️ CTA principal</div>
+      <div class="copy-compare">
+        <div class="copy-box before">
+          <div class="copy-label">Actual</div>
+          "🛍️ Crea la tua bottega gratis →"
+        </div>
+        <div class="copy-box after">
+          <div class="copy-label">✨ Mejorado</div>
+          "🛍️ Apri la tua bottega — è gratis →"
+          <br><br>
+          <em>Alternativa más activa:</em><br>
+          "Apri gratis in 10 minuti →"
+        </div>
+      </div>
+      <div class="card-body" style="margin-top:8px; font-size:0.83rem; color:var(--text-muted)">
+        El verbo "Apri" (abre) es más activo y emocionalmente poderoso que "Crea" para comerciantes. "Apri la tua bottega" conecta con su identidad como comerciante.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📵 Sección Problema — Títulos</div>
+      <div class="copy-compare">
+        <div class="copy-box before">
+          <div class="copy-label">Actual</div>
+          Título sección: "Ogni giorno perdi ordini senza saperlo"<br><br>
+          Card 3: "Creare un sito è costoso" → "I siti web costano centinaia di euro e mesi di lavoro. TIENDAONLINE no."
+        </div>
+        <div class="copy-box after">
+          <div class="copy-label">✨ Mejorado</div>
+          Título: "Ogni giorno perdi clienti. Senza accorgertene." <em>(más emocional)</em><br><br>
+          Card 3: "Un sito normale costa migliaia di euro" → "Design, hosting, sviluppatore... e ancora non è pronto. Con TIENDAONLINE sei online oggi."
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💰 Pricing — Señalización de valor</div>
+      <div class="copy-compare">
+        <div class="copy-box before">
+          <div class="copy-label">Actual</div>
+          Plan Avanzato: "€0.50 / giorno" → Badge: "Piano Avanzato"
+        </div>
+        <div class="copy-box after">
+          <div class="copy-label">✨ Mejorado</div>
+          Plan Avanzato: "€14,90 / mese" → Badge: "Più popolare ⭐"<br><br>
+          <em>El precio diario es psicológicamente ambiguo. Un precio mensual claro aumenta la confianza y facilita la decisión.</em>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📣 CTA Final</div>
+      <div class="copy-compare">
+        <div class="copy-box before">
+          <div class="copy-label">Actual</div>
+          Título: "La tua bottega può essere online oggi"<br>
+          Subtítulo: "Gratuito. Senza carta di credito. Pronto in 10 minuti."
+        </div>
+        <div class="copy-box after">
+          <div class="copy-label">✨ Mejorado</div>
+          Título: "La tua bottega online. Oggi. Gratis."<br>
+          Subtítulo: "In 10 minuti hai il tuo catalogo, i tuoi prodotti e i tuoi ordini su WhatsApp — senza spendere un euro."
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📍 FAQ 1 — Precio (muy importante)</div>
+      <div class="copy-compare">
+        <div class="copy-box before">
+          <div class="copy-label">Actual</div>
+          "Il piano base di TIENDAONLINE è gratuito per sempre. Per negozi in crescita offriamo un piano avanzato a €0,50/giorno con funzioni extra. Hai bisogno di qualcosa di più personalizzato? Con il nostro Piano Professionale creiamo un e-commerce su misura..."
+        </div>
+        <div class="copy-box after">
+          <div class="copy-label">✨ Mejorado (más conciso)</div>
+          "TIENDAONLINE è gratuito per sempre, senza carta di credito. Se vuoi funzioni extra come clienti registrati o dominio proprio, il Piano Avanzato costa €14,90/mese. Oppure contattaci per un e-commerce su misura."
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 6: ERRORES ════ -->
+  <div class="panel" id="panel-5">
+    <div class="panel-title">🐛 Errores detectados por severidad</div>
+    <div class="panel-subtitle">Clasificación de problemas por impacto en conversión y cumplimiento legal</div>
+
+    <div class="priority-block">
+      <div class="priority-header">
+        <span class="badge badge-error" style="font-size:0.85rem; padding: 5px 14px;">🚨 CRÍTICOS — Bloquean conversión o son ilegales</span>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">🚧</div>
+        <div>
+          <div class="action-title">Banner "en construcción" activo en producción</div>
+          <div class="action-desc">El div amarillo con "Sito in costruzione" aparece antes del hero. Cualquier visitante que llegue a la landing verá este mensaje primero y asumirá que el producto no existe. Es el error más costoso de toda la página. <strong>Eliminar inmediatamente: líneas 247-262 de app/page.js.</strong></div>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">📊</div>
+        <div>
+          <div class="action-title">Contador muestra "0" si Supabase falla o no hay tiendas</div>
+          <div class="action-desc">Si /api/stats devuelve 0 o falla, el hero muestra "Già 0 negozi attivi su TIENDAONLINE" — lo cual es peor que no mostrar nada. Actualmente no hay guard: <code>if (storeCount > 0)</code>. Debe añadirse condicional para ocultar si es 0.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-block">
+      <div class="priority-header">
+        <span class="badge badge-warn" style="font-size:0.85rem; padding: 5px 14px;">⚠️ IMPORTANTES — Reducen conversión y confianza</span>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">💰</div>
+        <div>
+          <div class="action-title">Precio "€0.50/giorno" — formato inusual en SaaS</div>
+          <div class="action-desc">Los SaaS cobran mensual o anualmente. Mostrar un precio diario crea confusión ("¿tengo que pagar cada día?") y transmite precariedad. Recomendado: convertir a precio mensual (~€14,90/mes) o usar el esquema de "Prossimamente" del plan original.</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">🌍</div>
+        <div>
+          <div class="action-title">Textos hardcodeados en la sección de Pricing</div>
+          <div class="action-desc">Hay 3 comparaciones de idioma inline en el JSX del pricing (<code>lang === 'it' ? ... : lang === 'es' ? ...</code>) que no usan el sistema de diccionario. Cuando se cambia de idioma, estos textos sí cambian pero el mantenimiento es inconsistente. Mover al diccionario.</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">👥</div>
+        <div>
+          <div class="action-title">Ausencia completa de social proof real</div>
+          <div class="action-desc">No hay testimonios, reviews, logos de clientes ni nombres de negocios reales. El contador puede mostrar 0. Sin prueba social, la conversión en Pricing es muy baja. Al menos 2-3 testimonios reales (aunque sean de beta testers) son esenciales.</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">🖼️</div>
+        <div>
+          <div class="action-title">og:image apunta a una URL que puede no existir</div>
+          <div class="action-desc"><code>https://tiendaonline.it/og-image.png</code> aparece en layout.js. Si ese archivo no existe en <code>/public/og-image.png</code>, todas las previsualizaciones de redes sociales (WhatsApp, Twitter, LinkedIn) mostrarán un cuadro vacío. Verificar que el archivo existe.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-block">
+      <div class="priority-header">
+        <span class="badge badge-info" style="font-size:0.85rem; padding: 5px 14px;">🔵 UX — Reducen la experiencia</span>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">📱</div>
+        <div>
+          <div class="action-title">Demo interactiva — imágenes de picsum.photos en producción</div>
+          <div class="action-desc">Las imágenes de productos usan URLs externas de picsum.photos. Aunque funcionan, en producción real dependen de un servicio externo. Si picsum tiene caídas o latencia, las imágenes de la demo se rompen. Considerar cachear o usar imágenes propias para la demo.</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">♿</div>
+        <div>
+          <div class="action-title">Accesibilidad: atributos ARIA ausentes</div>
+          <div class="action-desc">Los botones del acordeón FAQ y los tabs de la demo no tienen <code>aria-expanded</code>, <code>aria-controls</code>, o <code>role</code> apropiados. No afecta la mayoría de usuarios, pero impacta SEO y accesibilidad web.</div>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-icon">🔤</div>
+        <div>
+          <div class="action-title">Botón del Plan Gratuito usa key 'ctaHeader' en lugar de clave propia</div>
+          <div class="action-desc">El botón dentro de la card del plan gratuito llama a <code>t('ctaHeader')</code> — la misma clave del header. Si el texto del header cambia, el botón del pricing también cambiará. Crear clave separada <code>planGratisCta</code>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 7: BENCHMARKING ════ -->
+  <div class="panel" id="panel-6">
+    <div class="panel-title">📊 Comparación con SaaS reales</div>
+    <div class="panel-subtitle">TIENDAONLINE vs. Stripe, Notion, Shopify, Webflow, Squarespace</div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="vc-score-card">
+        <div class="vc-big-score">7.2</div>
+        <div class="vc-label">Puntuación global de landing (sobre 10)</div>
+      </div>
+      <div class="card" style="margin:0">
+        <div class="card-title">🏆 Veredicto</div>
+        <div class="card-body">
+          TIENDAONLINE tiene una landing sorprendentemente bien construida para un producto en etapa early. El código es limpio, la estructura es correcta y el copywriting en italiano es natural. El único elemento que destruye la experiencia es el banner de construcción.<br><br>
+          <strong>Nivel actual:</strong> "SaaS indie bien hecho"<br>
+          <strong>Nivel objetivo:</strong> "SaaS profesional listo para escalar"
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📈 Puntuaciones por dimensión</div>
+      <div class="card-body" style="padding-top:8px">
+        <div class="score-row">
+          <div class="score-label">Propuesta de valor</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:85%;background:var(--green)"></div></div>
+          <div class="score-val" style="color:var(--green)">8.5</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Copywriting</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:75%;background:var(--green-light)"></div></div>
+          <div class="score-val" style="color:var(--green)">7.5</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Estructura de página</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:82%;background:var(--green)"></div></div>
+          <div class="score-val" style="color:var(--green)">8.2</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Confianza / Social proof</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:40%;background:var(--amber)"></div></div>
+          <div class="score-val" style="color:var(--amber-text)">4.0</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Conversión / CTAs</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:70%;background:var(--green-light)"></div></div>
+          <div class="score-val" style="color:var(--green)">7.0</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Transparencia (pricing)</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:72%;background:var(--green-light)"></div></div>
+          <div class="score-val" style="color:var(--green)">7.2</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Cumplimiento legal (GDPR)</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:88%;background:var(--green)"></div></div>
+          <div class="score-val" style="color:var(--green)">8.8</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Primera impresión (sin banner)</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:85%;background:var(--green)"></div></div>
+          <div class="score-val" style="color:var(--green)">8.5</div>
+        </div>
+        <div class="score-row">
+          <div class="score-label">Primera impresión (con banner)</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:20%;background:var(--red)"></div></div>
+          <div class="score-val" style="color:var(--red)">2.0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card green-border">
+        <div class="card-title">🌟 Lo que tiene TIENDAONLINE que muchos SaaS no tienen</div>
+        <div class="card-body">
+          <strong>1. Demo interactiva real</strong> — No es un screenshot. Es un mockup funcional con 4 tipos de negocio. Shopify no tiene esto en su landing principal.<br><br>
+          <strong>2. Precio gratuito sin fricciones</strong> — No pide tarjeta. Muchos competidores ocultan el freemium o lo limitan agresivamente.<br><br>
+          <strong>3. Multiidioma nativo</strong> — IT/ES/EN en tiempo real con un sistema de diccionario propio. La mayoría de SaaS pequeños son mono-idioma.<br><br>
+          <strong>4. Footer legal completo</strong> — Privacy, Terms, Contatti, GDPR visible en el pricing. Muchos indiemakers olvidan esto.
+        </div>
+      </div>
+      <div class="card red-border">
+        <div class="card-title">⚠️ Lo que le falta para estar al nivel profesional</div>
+        <div class="card-body">
+          <strong>1. Social proof real</strong> — Stripe tiene logos. Notion tiene citas. Shopify tiene números. TIENDAONLINE tiene 0 testimonios reales. Es el gap más grande.<br><br>
+          <strong>2. Video o GIF de producto</strong> — Webflow y Notion usan animaciones del producto real. La demo interactiva es buena pero no reemplaza un video de 30 segundos.<br><br>
+          <strong>3. Página de pricing dedicada</strong> — Stripe tiene /pricing separada con comparativa detallada. Puede ser futuro, pero eleva la percepción de producto maduro.<br><br>
+          <strong>4. Métricas de tracción</strong> — "X negozi" es bueno, pero Notion, Linear etc. muestran "X million users". Con números pequeños, mejor usar "ya confían en nosotros" con logos.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 8: MEJORAS ════ -->
+  <div class="panel" id="panel-7">
+    <div class="panel-title">🛠️ Mejoras concretas y accionables</div>
+    <div class="panel-subtitle">Ordenadas por prioridad. Cada mejora incluye qué cambiar, dónde y cómo.</div>
+
+    <div class="priority-block">
+      <div class="priority-header">
+        <span class="badge badge-error" style="font-size:0.85rem;padding:5px 14px;">🔴 Alta prioridad — Antes de distribuir o lanzar</span>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">1️⃣</div>
+        <div>
+          <div class="action-title">Eliminar el banner "en construcción"</div>
+          <div class="action-desc"><strong>Dónde:</strong> <code>app/page.js</code> líneas 247–262.<br><strong>Cómo:</strong> Borrar el div completo con fondo <code>#fef3c7</code>. Sin reemplazar con nada. También eliminar la clave <code>bannerText</code> del diccionario (aunque es inofensiva si queda).</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">2️⃣</div>
+        <div>
+          <div class="action-title">Ocultar contador si es 0</div>
+          <div class="action-desc"><strong>Dónde:</strong> Hero (línea ~339) y CTA Final (línea ~1024).<br><strong>Cómo:</strong> Añadir condicional <code>{storeCount > 0 && &lt;p&gt;...&lt;/p&gt;}</code>. Nunca mostrar "Già 0 negozi". Cuando lleguen las primeras tiendas, se mostrará automáticamente.</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">3️⃣</div>
+        <div>
+          <div class="action-title">Verificar og:image.png existe en /public</div>
+          <div class="action-desc"><strong>Dónde:</strong> <code>/public/og-image.png</code><br><strong>Cómo:</strong> Crear una imagen de 1200×630px con el logo TIENDAONLINE, slogan y fondo verde. Sin esto, cuando alguien comparte el link en WhatsApp o redes sociales, no hay imagen de preview.</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">4️⃣</div>
+        <div>
+          <div class="action-title">Revisar precio del Plan Avanzato</div>
+          <div class="action-desc"><strong>Dónde:</strong> <code>lib/dictionaries.js</code> clave <code>planAvanzatoPrice</code> y JSX del plan en <code>app/page.js</code>.<br><strong>Cómo:</strong> Decidir si el plan está disponible o es "Prossimamente". Si está disponible, cambiar €0.50/día a un precio mensual claro.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-block">
+      <div class="priority-header">
+        <span class="badge badge-warn" style="font-size:0.85rem;padding:5px 14px;">🟡 Media prioridad — Antes de escalar o hacer publicidad</span>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">5️⃣</div>
+        <div>
+          <div class="action-title">Añadir al menos 2-3 testimonios reales</div>
+          <div class="action-desc"><strong>Dónde:</strong> Nueva sección entre Features (§5) y Pricing (§6).<br><strong>Cómo:</strong> Contactar los primeros usuarios y pedirles 1-2 frases. Mostrar como cards con avatar (iniciales), nombre y tipo de negocio. Si no hay usuarios aún, usar el contador + una promesa concreta ("los primeros 100 negocios tienen soporte directo").</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">6️⃣</div>
+        <div>
+          <div class="action-title">Mover textos hardcodeados al diccionario</div>
+          <div class="action-desc"><strong>Dónde:</strong> <code>app/page.js</code> sección Pricing (~líneas 669, 755, 823).<br><strong>Cómo:</strong> Crear claves en el diccionario: <code>planGratisFreq</code>, <code>planAvanzatoFreq</code>, <code>planProAudience</code> con traducciones IT/ES/EN.</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">7️⃣</div>
+        <div>
+          <div class="action-title">Crear clave separada para el botón del Plan Gratuito</div>
+          <div class="action-desc"><strong>Dónde:</strong> <code>app/page.js</code> línea ~717 y <code>lib/dictionaries.js</code>.<br><strong>Cómo:</strong> Reemplazar <code>t('ctaHeader')</code> por <code>t('planGratisCta')</code> y añadir la clave al diccionario con los 3 idiomas.</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">8️⃣</div>
+        <div>
+          <div class="action-title">Mejorar el copywriting del Hero y CTA</div>
+          <div class="action-desc"><strong>Dónde:</strong> <code>lib/dictionaries.js</code> claves <code>heroTitle</code>, <code>heroSubtitle</code>, <code>heroCtaMain</code>.<br><strong>Cómo:</strong> Ver sugerencias detalladas en la pestaña "Copywriting" (Paso 5). Cambio mínimo: añadir el verbo "Apri" al CTA.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="priority-block">
+      <div class="priority-header">
+        <span class="badge badge-info" style="font-size:0.85rem;padding:5px 14px;">🔵 Baja prioridad — Después del primer lanzamiento</span>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">9️⃣</div>
+        <div>
+          <div class="action-title">Añadir atributos ARIA al FAQ y tabs de demo</div>
+          <div class="action-desc">Para accesibilidad y SEO. Añadir <code>aria-expanded</code> en los botones del acordeón, <code>role="tablist"</code> en los tabs de la demo, <code>aria-label</code> en los botones del selector de idioma.</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">🔟</div>
+        <div>
+          <div class="action-title">Reemplazar imágenes de picsum.photos con imágenes propias</div>
+          <div class="action-desc">Para la demo interactiva. Subir imágenes reales de panadería, fruta, café y tienda a <code>/public/demo/</code>. Mejora la velocidad de carga y elimina dependencia de un servicio externo.</div>
+        </div>
+      </div>
+
+      <div class="action-item">
+        <div class="action-icon">📹</div>
+        <div>
+          <div class="action-title">Añadir video corto de 30-60 segundos del producto</div>
+          <div class="action-desc">Un GIF o video mostrando el flujo completo (registro → añadir producto → compartir link → pedido en WhatsApp) duplica la conversión en SaaS según estudios de Wyzowl (2024). Puede ir en el Hero o después de "Cómo funciona".</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 9: VISTA VC ════ -->
+  <div class="panel" id="panel-8">
+    <div class="panel-title">💼 Evaluación como inversor (VC)</div>
+    <div class="panel-subtitle">Análisis de potencial de inversión, tracción y riesgos</div>
+
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="vc-score-card">
+        <div class="vc-big-score" style="font-size:3.5rem">7</div>
+        <div class="vc-label">Potencial general (1-10)</div>
+      </div>
+      <div class="vc-score-card">
+        <div class="vc-big-score" style="font-size:3.5rem">8</div>
+        <div class="vc-label">Claridad del producto (1-10)</div>
+      </div>
+      <div class="vc-score-card">
+        <div class="vc-big-score" style="font-size:3.5rem; color:var(--amber)">4</div>
+        <div class="vc-label">Listo para invertir (1-10)</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card green-border">
+        <div class="card-title">💪 Lo que convence a un VC (máx. 4 puntos)</div>
+        <div class="card-body">
+          <strong>1. Mercado grande y desatendido</strong><br>
+          Italia tiene ~4.5 millones de PYME. El comercio físico sin presencia digital es masivo. El canal WhatsApp es la realidad, no una hipótesis — ya está validado que los clientes piden por ahí.<br><br>
+          <strong>2. Modelo freemium con upgrade natural</strong><br>
+          El plan gratuito reduce la fricción de adquisición. La progresión a Avanzado y Professionale tiene lógica comercial. El Plan Professionale (e-commerce completo) podría ser un ACV de €3.000-10.000.<br><br>
+          <strong>3. Producto funcional ya construido</strong><br>
+          Next.js + Supabase + autenticación + dashboard + gestión de productos + multi-tenant. No es un pitch deck, es código que funciona. Para un VC seed, esto es una enorme ventaja vs. founders que solo tienen slides.<br><br>
+          <strong>4. Defensabilidad vía network effects</strong><br>
+          Si los clientes de las tiendas empiezan a reconocer el "Ordina su tiendaonline.it", el reconocimiento de marca en el segmento crea una ventaja modesta pero real.
+        </div>
+      </div>
+      <div class="card red-border">
+        <div class="card-title">⚠️ Lo que preocupa a un VC (máx. 4 riesgos)</div>
+        <div class="card-body">
+          <strong>1. Cero tracción demostrada</strong><br>
+          El contador puede mostrar 0 tiendas. Sin métricas de uso (registros, tiendas activas, pedidos procesados), no hay tesis de inversión. El primer hito debe ser 100 tiendas activas con ≥1 pedido/semana.<br><br>
+          <strong>2. Competencia establecida</strong><br>
+          Shopify, Wix, GloriaFood, Gloriafood, Orderman. La diferenciación por "ordini via WhatsApp" es real pero imitable. Ningún moat técnico visible.<br><br>
+          <strong>3. Un solo fundador sin equipo</strong><br>
+          El crédito dice "Sviluppato da David Escalante". Un solo dev/founder sin co-founder comercial es un riesgo de ejecución clásico para inversores seed.<br><br>
+          <strong>4. Precio por día (€0,50/día)</strong><br>
+          Señal de que el modelo de monetización no está completamente pensado. Un VC querrá ver LTV claro, CAC estimado y payback period.
+        </div>
+      </div>
+    </div>
+
+    <div class="card amber-border">
+      <div class="card-title">🚀 De "interesante" a "invertible" — métricas concretas</div>
+      <div class="card-body">
+        Para que TIENDAONLINE pase de "proyecto promisorio" a "viable para una ronda seed de €100k-500k", se necesitan estas métricas en el próximo año:<br><br>
+        <table class="pillar-table">
+          <thead><tr><th>Métrica</th><th>Mínimo (interesante)</th><th>Objetivo (invertible)</th></tr></thead>
+          <tbody>
+            <tr><td>Tiendas registradas</td><td>100</td><td>500+</td></tr>
+            <tr><td>Tiendas activas (≥1 pedido/mes)</td><td>30%</td><td>50%+</td></tr>
+            <tr><td>Pedidos procesados / mes</td><td>500</td><td>5.000+</td></tr>
+            <tr><td>MRR (ingresos recurrentes)</td><td>€500/mes</td><td>€5.000+/mes</td></tr>
+            <tr><td>Churn mensual</td><td>&lt;15%</td><td>&lt;5%</td></tr>
+            <tr><td>NPS (Net Promoter Score)</td><td>30+</td><td>50+</td></tr>
+          </tbody>
+        </table>
+        <br>
+        <strong>Consejo:</strong> Instala PostHog (ya disponible en las herramientas conectadas) para trackear estas métricas desde hoy. Sin datos, no hay historia.
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PASO 10: VERSIÓN FINAL ════ -->
+  <div class="panel" id="panel-9">
+    <div class="panel-title">🏁 Versión final limpia — Lista para producción</div>
+    <div class="panel-subtitle">Estructura definitiva + checklist de producción completo</div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">📋 Estructura definitiva de la landing (orden final)</div>
+      <div class="card-body">
+        <table class="pillar-table">
+          <thead><tr><th>#</th><th>Sección</th><th>Contenido</th></tr></thead>
+          <tbody>
+            <tr><td>H</td><td><strong>Header sticky</strong></td><td>Logo + TIENDAONLINE (mayúsculas) + selector IT/ES/EN + "Accedi" + "Inizia gratis →" — sin ningún banner</td></tr>
+            <tr><td>1</td><td><strong>Hero</strong></td><td>Badge pill (100% Gratuito) + H1 optimizado + subtítulo con beneficios concretos + CTA "Apri gratis" + 3 checkmarks + contador (solo si &gt; 0)</td></tr>
+            <tr><td>2</td><td><strong>El Problema</strong></td><td>3 cards: Sin catálogo / WhatsApp desorganizado / Sito costoso — fondo blanco</td></tr>
+            <tr><td>3</td><td><strong>Demo Interactiva</strong></td><td>4 tabs funcionales con mockup mobile — imágenes propias idealmente</td></tr>
+            <tr><td>4</td><td><strong>Cómo Funciona</strong></td><td>3 pasos con tiempo: Crea (10 min) / Condividi (2 min) / Ricevi (Immediato)</td></tr>
+            <tr><td>5</td><td><strong>Features</strong></td><td>6 cards: WhatsApp / Personalizado / Sin registro / 3 idiomas / Team / GDPR</td></tr>
+            <tr><td>6</td><td><strong>Social Proof</strong></td><td>2-3 testimonios reales con avatar, nombre y tipo de negocio — o contador expandido con logos de tipos de negocio</td></tr>
+            <tr><td>7</td><td><strong>Pricing</strong></td><td>3 planes: Gratis (€0) / Avanzato (precio mensual claro) / Professionale (Su misura) — sin precios diarios</td></tr>
+            <tr><td>8</td><td><strong>Contador</strong></td><td>Solo visible si storeCount &gt; 0. Fondo verde, número grande, "Unisciti a loro →"</td></tr>
+            <tr><td>9</td><td><strong>FAQ</strong></td><td>7 preguntas acordeón. FAQ 1 actualizada con precio mensual si cambia.</td></tr>
+            <tr><td>10</td><td><strong>CTA Final</strong></td><td>Degradado verde, título emocional, subtítulo con beneficios, botón blanco grande, social proof condicional</td></tr>
+            <tr><td>F</td><td><strong>Footer</strong></td><td>Logo + tagline + Privacy / Terms / Contatti + © 2026 + crédito autor</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Checklist de producción</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Header completo</strong> — Logo + selector idioma + Accedi + CTA. Correcto.</div></li>
+          <li class="check-item todo"><span class="check-icon">❌</span><div><strong>Banner "en construcción" eliminado</strong> — Todavía existe en el código. Eliminar líneas 247-262.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Hero con propuesta de valor clara</strong> — Badge, H1, subtítulo, CTA, checkmarks. Correcto.</div></li>
+          <li class="check-item warn"><span class="check-icon">⚠️</span><div><strong>Contador condicional (no mostrar si = 0)</strong> — Falta la guarda. Añadir <code>storeCount > 0 &&</code>.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Sección Problema</strong> — 3 cards implementadas correctamente.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Demo interactiva funcional</strong> — 4 tabs, mockup mobile, productos.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Cómo funciona</strong> — 3 pasos con tiempo. Correcto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>6 Features</strong> — Cards con íconos y descripciones. Correcto.</div></li>
+          <li class="check-item todo"><span class="check-icon">❌</span><div><strong>Social proof real</strong> — Ausente. Crear con testimonios reales o beta users.</div></li>
+          <li class="check-item warn"><span class="check-icon">⚠️</span><div><strong>Pricing con precio mensual claro</strong> — El precio €0,50/día es confuso. Revisar formato.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>FAQ acordeón funcional</strong> — 7 preguntas, animación, useState. Correcto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>CTA Final</strong> — Degradado, título, subtítulo, botón, social proof. Correcto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Footer completo con links legales</strong> — Privacy, Terms, Contatti. Correcto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Páginas /privacy y /terms creadas</strong> — Existen en el proyecto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Meta tags OG en layout.js</strong> — title, description, og:image configurados.</div></li>
+          <li class="check-item todo"><span class="check-icon">❌</span><div><strong>/public/og-image.png existe</strong> — Sin confirmar. Verificar que el archivo existe y tiene 1200×630px.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>3 idiomas funcionando</strong> — IT/ES/EN con sistema DICTIONARY. Correcto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Nombre "TIENDAONLINE" consistente</strong> — Mayúsculas en todo el código y UI.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Sin barra flotante inferior</strong> — Confirmado, no existe en la landing.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>Mobile-first con maxWidth y padding lateral</strong> — Implementado correctamente.</div></li>
+          <li class="check-item warn"><span class="check-icon">⚠️</span><div><strong>Textos hardcodeados del pricing en diccionario</strong> — 3 comparaciones inline. Mover al DICTIONARY.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>API /api/stats conectada a Supabase</strong> — Existe en el proyecto.</div></li>
+          <li class="check-item done"><span class="check-icon">✅</span><div><strong>GDPR — CookieBanner implementado</strong> — Componente CookieBanner en layout.</div></li>
+        </ul>
+
+        <div class="divider"></div>
+
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:4px">
+          <div style="display:flex; align-items:center; gap:6px; font-size:0.88rem"><span style="color:var(--green)">✅</span> <strong>15 ítems completados</strong></div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:0.88rem"><span style="color:var(--amber-text)">⚠️</span> <strong>3 pendientes menores</strong></div>
+          <div style="display:flex; align-items:center; gap:6px; font-size:0.88rem"><span style="color:var(--red)">❌</span> <strong>3 pendientes críticos</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <p><strong>Resumen ejecutivo:</strong> TIENDAONLINE es una landing bien construida con una estructura correcta y código limpio. Con 3 cambios críticos (eliminar banner, ocultar contador si es 0, verificar og:image) puede estar lista para distribución pública inmediatamente. Con 3-4 cambios medios adicionales (social proof, precio mensual, copywriting) llega al nivel de SaaS profesional. La base técnica es sólida — el trabajo que queda es de producto y marketing, no de arquitectura.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showPanel(idx) {
+    document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  }
+</script>
+</body>
+</html>

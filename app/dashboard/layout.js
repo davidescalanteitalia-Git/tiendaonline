@@ -7,7 +7,7 @@ import { useLang } from '../../components/LanguageProvider'
 import { DICTIONARY } from '../../lib/dictionaries'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
-import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X } from 'lucide-react'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users } from 'lucide-react'
 
 async function fetchTienda() {
   const { data: { session } } = await supabase.auth.getSession()
@@ -60,6 +60,7 @@ export default function DashboardLayout({ children }) {
     { icon: ShoppingBag, label: dict.compras || 'Compras', href: '/dashboard/compras' },
     { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
     { icon: ShoppingCart, label: dict.ordini || 'Pedidos', href: '/dashboard/pedidos' },
+    { icon: Users, label: dict.clienti || 'Clientes', href: '/dashboard/clientes' },
     { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
     { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
   ]
