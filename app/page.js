@@ -101,6 +101,11 @@ export default function Home() {
     t('planAdv4'), t('planAdv5'), t('planAdv6'),
   ]
 
+  const proFeatures = [
+    t('planPro1'), t('planPro2'), t('planPro3'),
+    t('planPro4'), t('planPro5'), t('planPro6'),
+  ]
+
   const faqs = [
     { q: t('faq1Q'), a: t('faq1A') },
     { q: t('faq2Q'), a: t('faq2A') },
@@ -778,6 +783,78 @@ export default function Home() {
                 fontSize:      '0.98rem',
               }}>
                 {t('planAvanzatoCta')} →
+              </div>
+            </a>
+
+            {/* ── Plan Profesional ── */}
+            <a href="/contatti" className="premium-shadow" style={{
+              flex:           '1 1 300px',
+              maxWidth:       '380px',
+              border:         `2px solid ${C.grayBorder}`,
+              borderRadius:   '20px',
+              padding:        '36px 32px',
+              background:     C.white,
+              display:        'block',
+              textDecoration: 'none',
+              color:          'inherit',
+              cursor:         'pointer',
+              transition:     'transform 0.15s, box-shadow 0.15s',
+            }}
+              onMouseOver={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow=`0 16px 40px rgba(0,0,0,0.1)` }}
+              onMouseOut={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='' }}
+            >
+              <div style={{
+                display:      'inline-block',
+                background:   C.text,
+                color:        C.white,
+                padding:      '4px 14px',
+                borderRadius: '100px',
+                fontSize:     '0.78rem',
+                fontWeight:   700,
+                marginBottom: '18px',
+              }}>
+                {t('planProLabel')}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '3rem', fontWeight: 900, color: C.text, lineHeight: 1.2 }}>{t('planProPrice')}</span>
+              </div>
+              <div style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>
+                {lang === 'it' ? 'Aziende e grandi volumi' : lang === 'es' ? 'Empresas y grandes volúmenes' : 'Enterprises and large volumes'}
+              </div>
+
+              <div style={{ borderTop: `1px solid ${C.grayBorder}`, paddingTop: '20px', marginBottom: '28px' }}>
+                {proFeatures.map((feat, i) => (
+                  <div key={i} style={{
+                    display:    'flex',
+                    alignItems: 'center',
+                    gap:        '10px',
+                    padding:    '7px 0',
+                    fontSize:   '0.92rem',
+                    color:      C.text,
+                  }}>
+                    <span style={{ color: C.text, fontWeight: 800, fontSize: '1rem' }}>✓</span>
+                    {feat}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{
+                display:       'block',
+                background:    C.white,
+                color:         C.text,
+                border:        `2px solid ${C.text}`,
+                padding:       '12px',
+                borderRadius:  '10px',
+                fontWeight:    700,
+                textAlign:     'center',
+                fontSize:      '0.98rem',
+                transition:    'background 0.2s, color 0.2s',
+              }}
+              onMouseOver={e => { e.currentTarget.style.background=C.text; e.currentTarget.style.color=C.white; }}
+              onMouseOut={e => { e.currentTarget.style.background=C.white; e.currentTarget.style.color=C.text; }}
+              >
+                {t('planProCta')} →
               </div>
             </a>
 

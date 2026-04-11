@@ -4,6 +4,38 @@ Este documento centraliza la evolución técnica, auditorías y cambios realizad
 
 ---
 
+## 📅 11 de Abril 2026 — Rediseño Catálogo Público (Estilo Kyte)
+
+### Archivo modificado: `components/StoreClient.js`
+
+**Objetivo**: Adaptar la página de tienda pública (`/store/[domain]`) al layout de Kyte, añadiendo una sidebar izquierda con información contextual y mejorando la presentación de productos.
+
+**Cambios realizados:**
+
+| Elemento | Antes | Después |
+|---|---|---|
+| Layout | 1 columna (categ. como tabs top) | 2 columnas: sidebar + contenido principal |
+| Sidebar | Solo categorías horizontales | Info tienda + Contacto + Entrega + Categorías |
+| Tabs categorías | Siempre visibles (sticky) | Solo en móvil (< 768px), en desktop usa sidebar |
+| Tarjetas producto | Grid 2-3-4 col básico | Cards con hover + botón + precio en color primario |
+| Vista lista | Card horizontal básica | Nuevo componente `ProductCardList` mejorado |
+
+**Sidebar izquierda — Secciones:**
+- **CONÓCENOS**: Logo/emoji, nombre y descripción de la tienda
+- **ENTRA EN CONTACTO**: WhatsApp (link directo), Instagram, Email, Dirección
+- **ENTREGA**: Retiro / Domicilio según configuración `config.envios`
+- **CATEGORÍAS**: Lista vertical, activa en color primario, scroll suave al click
+
+**Comportamiento responsive:**
+- `>= 768px`: Sidebar fija de 265px + área principal con tabs ocultos
+- `< 768px`: Sidebar oculta + tabs horizontales (comportamiento previo)
+
+**Componentes nuevos:**
+- `ProductCard` → kyte-card con hover animation + botón "+" flotante
+- `ProductCardList` → fila compacta para modo lista
+
+---
+
 ## 🔍 AUDITORÍA TÉCNICA (Abril 2026)
 
 ### 1. Arquitectura Base
@@ -248,6 +280,38 @@ Revisión completa de todas las páginas del dashboard para unificar funcionalid
 
 #### ✅ Verificado
 - Dashboard store link ya usa `/store/[subdominio]` (fix de sesión anterior confirmado).
+
+---
+
+### [2026-04-11] - Plan Profesional: Tercer Nivel de Pricing
+
+**Objetivo:** Añadir un tercer plan en la Landing Page orientado a clientes que quieren un e-commerce más personalizado y de mayor nivel, sin tecnicismos de tipo empresarial.
+
+#### 🆕 Cambios aplicados
+
+**`app/page.js` — Nueva tarjeta "Plan Profesional" en Pricing**
+- Añadida una tercera tarjeta junto a "Plan Gratuito" y "Plan Avanzado".
+- Precio: **"A medida"** (precio personalizado tras contacto).
+- Botón **"Contáctanos"** con enlace directo a `/contatti`.
+- Diseño diferenciado: borde oscuro (no verde) y botón outline con hover invertido.
+- Lista de features: `proFeatures[]` conectado al diccionario global.
+
+**`lib/dictionaries.js` — Features del Plan Profesional actualizadas (IT / ES / EN)**
+
+| Antes (demasiado técnico) | Ahora (práctico y vendible) |
+|---|---|
+| App nativa iOS/Android | E-commerce con dominio propio |
+| Multi-tienda | Diseño personalizado para tu marca |
+| Integraciones ERP/POS | Pagos online (tarjeta, PayPal, etc.) |
+| Servidor dedicado | Envíos configurados para tu negocio |
+| Account manager | Configuración y puesta en marcha incluida |
+| Soporte 24/7 | Soporte directo y personalizado |
+
+**`lib/dictionaries.js` — `faq1A` actualizado (IT / ES / EN)**
+- El texto de la FAQ "¿Cuánto cuesta?" ahora explica los 3 planes de forma progresiva:
+  1. Plan gratuito → siempre gratis.
+  2. Plan Avanzado → €0,50/día para crecer.
+  3. Plan Profesional → e-commerce a medida, contactar por email.
 
 ---
 
