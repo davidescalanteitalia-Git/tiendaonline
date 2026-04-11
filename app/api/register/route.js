@@ -30,7 +30,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'whatsapp_taken' }, { status: 400 })
     }
 
-    // 3. Crear usuario en Supabase Auth (con email ya confirmado)
+    // 3. Crear usuario en Supabase Auth
     const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -45,18 +45,18 @@ export async function POST(req) {
       return NextResponse.json({ error: 'user_error', message: userError.message }, { status: 400 })
     }
 
-    // 4. Insertar tienda en la base de datos
+    // 4. Insertar tienda en la base de datos con columnas en español SaaS
     const { error: tiendaError } = await supabaseAdmin
       .from('tiendas')
       .insert({
-        nombre,
-        subdominio,
-        whatsapp,
+        nombre: nombre,
+        subdominio: subdominio,
+        whatsapp: whatsapp,
         user_id: userData.user.id,
         estado:  'activo',
         config_diseno: {
           publicado: true,
-          color_principal: '#2563EB',
+          color_principal: '#000000',
           version_catalogo: 'nuevo',
           modo_exhibicion: 'cuadricula',
           mostrar_sin_stock: 'normal'
@@ -64,7 +64,6 @@ export async function POST(req) {
       })
 
     if (tiendaError) {
-      // Si falla la tienda, borramos el usuario creado para no dejar basura
       await supabaseAdmin.auth.admin.deleteUser(userData.user.id)
       const msg = tiendaError.message?.toLowerCase() || ''
       if (msg.includes('duplicate') || tiendaError.code === '23505') {
