@@ -35,6 +35,9 @@ export default function PosPage() {
   // Payment State
   const [metodoPago, setMetodoPago] = useState('efectivo')
   const [clienteNombre, setClienteNombre] = useState('Cliente Local')
+  const [descuento, setDescuento] = useState(0)
+  const [showReciboPreview, setShowReciboPreview] = useState(false)
+  const [lastOrderDetails, setLastOrderDetails] = useState(null)
 
   useEffect(() => {
     loadCatalog()
@@ -95,6 +98,7 @@ export default function PosPage() {
   const removeFromCart = (id) => setCart(prev => prev.filter(i => i.id !== id))
 
   const subtotal = cart.reduce((acc, item) => acc + (parseFloat(item.precio || item.price) * item.quantity), 0)
+  const total = Math.max(0, subtotal - parseFloat(descuento || 0))
   
   const showError = (msg) => {
     setErrorMsg(msg)
@@ -129,15 +133,27 @@ export default function PosPage() {
         body: JSON.stringify({
           clienteNombre: clienteNombre,
           items: items,
-          total: subtotal,
-          estado: 'confirmado' // Venta de caja se asume cobrada y confirmada
+          total: total,
+          subtotal: subtotal,
+          descuento: parseFloat(descuento || 0),
+          estado: 'confirmado', // Venta de caja se asume cobrada y confirmada
+          fiado: metodoPago === 'fiado'
         })
       })
 
       if (res.ok) {
+        setLastOrderDetails({
+           cliente: clienteNombre,
+           items: cart,
+           total: total,
+           metodo: metodoPago,
+           fecha: new Date().toLocaleString()
+        })
         setSuccessMsg('Venta registrada con éxito')
         setCart([])
         setClienteNombre('Cliente Local')
+        setDescuento(0)
+        setShowReciboPreview(true)
         loadCatalog() // recargar para actualizar stock
         setTimeout(() => setSuccessMsg(null), 3000)
       } else {
@@ -170,6 +186,49 @@ export default function PosPage() {
         <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
           <CheckCircle2 size={18} /> <span className="text-sm font-bold">{successMsg}</span>
         </div>
+      )}
+
+
+
+      {showReciboPreview && lastOrderDetails && (
+         <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+            <div className="bg-white max-w-sm w-full rounded-3xl p-8 shadow-2xl relative animate-in fade-in zoom-in duration-300">
+               <button onClick={() => setShowReciboPreview(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                  <X size={20} />
+               </button>
+               <div className="text-center mb-6">
+                  <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-3" />
+                  <h2 className="text-2xl font-black text-slate-800">¡Cobro Exitoso!</h2>
+                  <p className="text-slate-500 font-medium text-sm">Ticket guardado en el sistema.</p>
+               </div>
+               
+               <div className="bg-slate-50 p-4 rounded-xl mb-6 text-sm font-mono text-slate-600 border border-slate-200">
+                  <div className="flex justify-between border-b border-slate-200 pb-2 mb-2"><span>Fecha:</span><span>{lastOrderDetails.fecha}</span></div>
+                  <div className="flex justify-between border-b border-slate-200 pb-2 mb-2"><span>Cliente:</span><span>{lastOrderDetails.cliente}</span></div>
+                  <div className="flex justify-between border-b border-slate-200 pb-2 mb-2 uppercase"><span>Método:</span><span>{lastOrderDetails.metodo}</span></div>
+                  <div className="space-y-1 mb-2">
+                     {lastOrderDetails.items.map((i, idx) => (
+                       <div key={idx} className="flex justify-between"><span>{i.quantity}x {i.nombre}</span><span>€{(parseFloat(i.precio || i.price)*i.quantity).toFixed(2)}</span></div>
+                     ))}
+                  </div>
+                  <div className="flex justify-between font-black text-slate-900 text-base pt-2 border-t border-slate-200">
+                    <span>Total:</span><span>€{lastOrderDetails.total.toFixed(2)}</span>
+                  </div>
+               </div>
+               
+               <div className="flex gap-3">
+                  <button onClick={() => setShowReciboPreview(false)} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+                     Volver
+                  </button>
+                  <button onClick={() => {
+                     const text = `🧾 *TICKET DE COMPRA*\nFecha: ${lastOrderDetails.fecha}\nCliente: ${lastOrderDetails.cliente}\nTotal: *€${lastOrderDetails.total.toFixed(2)}*\n\n¡Gracias por tu compra!`;
+                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                  }} className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition-colors flex justify-center items-center gap-2">
+                     <Smartphone size={18} /> WhatsApp
+                  </button>
+               </div>
+            </div>
+         </div>
       )}
 
       {/* LEFT PANEL: CATALOG */}
@@ -310,14 +369,24 @@ export default function PosPage() {
                   <span className="font-bold text-slate-400">Subtotal</span>
                   <span className="font-bold text-slate-800">€{subtotal.toFixed(2)}</span>
                </div>
+               <div className="flex items-center justify-between text-sm py-1">
+                  <span className="font-bold text-slate-400">Descuento (€)</span>
+                  <input 
+                    type="number"
+                    value={descuento}
+                    onChange={(e) => setDescuento(e.target.value)}
+                    className="w-24 text-right bg-slate-50 border border-slate-200 rounded-[10px] px-3 py-1.5 outline-none focus:border-blue-500 font-bold text-slate-700 transition-all font-mono"
+                    placeholder="0.00"
+                  />
+               </div>
                <div className="w-full h-px bg-slate-100 my-2 border-dashed border-b border-t-0"></div>
                <div className="flex items-center justify-between">
                   <span className="text-lg font-black text-slate-800">Total</span>
-                  <span className="text-3xl font-black text-blue-600">€{subtotal.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-blue-600">€{total.toFixed(2)}</span>
                </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mb-6">
+            <div className="grid grid-cols-4 gap-2 mb-6">
                <button 
                  onClick={() => setMetodoPago('efectivo')}
                  className={`py-3 rounded-xl flex flex-col items-center gap-1 border-2 transition-all ${metodoPago === 'efectivo' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
@@ -339,6 +408,13 @@ export default function PosPage() {
                   <Smartphone size={20} />
                   <span className="text-[10px] font-black uppercase tracking-wider">Transf.</span>
                </button>
+               <button 
+                 onClick={() => setMetodoPago('fiado')}
+                 className={`py-3 rounded-xl flex flex-col items-center gap-1 border-2 transition-all ${metodoPago === 'fiado' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+               >
+                  <User size={20} />
+                  <span className="text-[10px] font-black uppercase tracking-wider">Fiado</span>
+               </button>
             </div>
 
             <button 
@@ -348,7 +424,7 @@ export default function PosPage() {
             >
                {isProcessing ? <Loader2 className="animate-spin" size={24} /> : (
                  <>
-                   Cobrar <ArrowRight size={20}/> €{subtotal.toFixed(2)}
+                   Cobrar <ArrowRight size={20}/> €{total.toFixed(2)}
                  </>
                )}
             </button>

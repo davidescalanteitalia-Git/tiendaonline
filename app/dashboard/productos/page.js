@@ -30,6 +30,7 @@ export default function ProductosPage() {
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [precio, setPrecio] = useState('')
+  const [costo, setCosto] = useState('')
   const [emoji, setEmoji] = useState('📦')
   const [categoriaId, setCategoriaId] = useState('')
   const [estado, setEstado] = useState('activo')
@@ -125,7 +126,7 @@ export default function ProductosPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const body = { 
-        nombre, descripcion, precio: parseFloat(precio) || 0, emoji, 
+        nombre, descripcion, precio: parseFloat(precio) || 0, costo: parseFloat(costo) || 0, emoji, 
         categoria_id: categoriaId || null, estado, imagen_url: imagenUrl,
         stock: parseInt(stock) || 0, fecha_vencimiento: fechaVencimiento || null
       }
@@ -172,6 +173,7 @@ export default function ProductosPage() {
     setNombre(p.nombre)
     setDescripcion(p.descripcion || '')
     setPrecio(p.precio)
+    setCosto(p.costo || '')
     setEmoji(p.emoji || '📦')
     setCategoriaId(p.categoria_id || '')
     setEstado(p.estado || 'activo')
@@ -186,6 +188,7 @@ export default function ProductosPage() {
     setNombre('')
     setDescripcion('')
     setPrecio('')
+    setCosto('')
     setEmoji('📦')
     setCategoriaId('')
     setEstado('activo')
@@ -439,8 +442,8 @@ export default function ProductosPage() {
                     </div>
                  </div>
 
-                 {/* Basic Info */}
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Basic Info */}
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="md:col-span-2 space-y-2">
                        <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Nombre del producto</label>
                        <input 
@@ -452,7 +455,7 @@ export default function ProductosPage() {
                        />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] font-black text-slate-400 uppercase ml-2">Precio</label>
+                       <label className="text-[10px] font-black text-slate-400 uppercase ml-2">P. Venta</label>
                        <input 
                          required
                          type="number"
@@ -460,6 +463,24 @@ export default function ProductosPage() {
                          value={precio}
                          onChange={(e) => setPrecio(e.target.value)}
                          className="w-full px-6 py-4 rounded-2xl bg-white border border-slate-100 focus:border-emerald-500 outline-none font-black text-slate-900 shadow-sm transition-all"
+                         placeholder="0.00"
+                       />
+                    </div>
+                    <div className="space-y-2 relative">
+                       <label className="text-[10px] font-black text-emerald-600 uppercase ml-2 flex items-center justify-between">
+                         Costo Neto
+                         {parseFloat(precio) > 0 && parseFloat(costo) > 0 && (
+                           <span className="text-[9px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full">
+                             {(((parseFloat(precio) - parseFloat(costo)) / parseFloat(costo)) * 100).toFixed(0)}% Utilidad
+                           </span>
+                         )}
+                       </label>
+                       <input 
+                         type="number"
+                         step="0.01"
+                         value={costo}
+                         onChange={(e) => setCosto(e.target.value)}
+                         className="w-full px-6 py-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 focus:border-emerald-500 outline-none font-black text-emerald-900 shadow-sm transition-all"
                          placeholder="0.00"
                        />
                     </div>

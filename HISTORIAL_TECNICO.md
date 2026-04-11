@@ -339,9 +339,37 @@ Revisión completa de todas las páginas del dashboard para unificar funcionalid
 
 ---
 
+### [2026-04-11] - Fase 3: Operaciones Avanzadas e Inteligencia de Negocio (SaaS)
+
+**Objetivo:** Elevar la plataforma a un SaaS completo con paridad total frente a AppKyte. Integración modular de reportería financiera real, seguimiento de costos y gestión avanzada de cuentas corrientes (fiados).
+
+#### 🆕 Cambios Aplicados
+
+**`app/dashboard/productos/page.js` — Control de Costos y Margen**
+- Añadido nuevo campo numérico `costo` (Costo Neto).
+- Feedback visual instantáneo para el "Margen de Utilidad (%)" calculado matemáticamente. Reestructuración de la base de datos `productos` añadiendo la columna.
+
+**`app/dashboard/pos/page.js` y `api/pos/route.js` — Caja Avanzada**
+- **Soporte de Descuentos:** Entrada nativa para descontar montos fijos del subtotal.
+- **Botón Fiado:** Integración del método de pago "Fiado" conectado directamente a la base de datos de Clientes.
+- **Generador de Recibos:** Modal tras procesar el pago con visualización del ticket impreso en pantalla y botón para *Compartir por WhatsApp*.
+
+**`app/dashboard/clientes/page.js` y `api/clientes/route.js` — Módulo CRM y Fiados**
+- Lista integral de clientes.
+- Control de **Deuda Actual** (Fiado en calle).
+- Modal para gestión activa de "Abonos", logrando transaccionalidad de cuentas corrientes (ej. si el cliente abona su fiado disminuye deuda).
+
+**`app/dashboard/reportes/page.js` y `api/reportes/route.js` — Finanzas**
+- Dashboards analíticos hiper-optimizados (diseño Glassmorphism Pro Max).
+- Cálculo en tiempo real de **Utilidad Neta**, restando los costos incurridos sobre los totales de ventas de pedidos finalizados.
+- Top 5 Productos más rotativos.
+- Resumen Operativo de Volumen de Venta y ticket emitidos.
+
+---
+
 ## 🚀 PRÓXIMOS PASOS
+- [x] Gestión Contable y Márgenes (Completado).
+- [x] Módulo de Clientes (CRM) y Fiados (Completado).
+- [ ] Módulo Pasarela de Pagos SaaS (Stripe) para facturación y cobro de planes Premium/Avanzados.
 - [ ] Completar verificación DNS de Resend y configurar SMTP en Supabase.
-- [ ] Activar "Leaked Password Protection" en Supabase una vez SMTP configurado.
-- [ ] Módulo de Clientes (CRM Simple) - Listado de clientes recurrentes basado en pedidos físicos (Caja) y online.
 - [ ] Integración de Catálogos Automáticos (IG/FB).
-- [ ] Módulo Pasarela de Pagos SaaS (Stripe) para facturar planes a las tiendas inquilinos.

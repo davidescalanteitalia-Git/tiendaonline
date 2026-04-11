@@ -25,7 +25,7 @@ export async function POST(req) {
 
     if (!tienda) throw new Error('No store found')
 
-    const { clienteNombre, items, total, estado } = await req.json()
+    const { clienteNombre, items, total, estado, subtotal, descuento, fiado } = await req.json()
 
     // 2. Reduce Stock
     const cartItems = items.filter(i => i.id !== 'ORDER_META')
@@ -70,6 +70,39 @@ export async function POST(req) {
       .single()
 
     if (error) throw error
+
+    // 5. Gestor de Clientes (CRM) y Fiado (Cuentas Corrientes)
+    const nomCli = clienteNombre || 'Caja Local'
+    // Solo registramos como cliente si nos dieron un nombre real
+    if (nomCli !== 'Caja Local' && nomCli.trim() !== '') {
+      const { data: bClient } = await supabaseAdmin
+        .from('clientes')
+        .select('*')
+        .eq('tienda_id', tienda.id)
+        .ilike('nombre', nomCli.trim())
+        .maybeSingle()
+
+      const newDebt = fiado ? parseFloat(total) : 0
+
+      if (bClient) {
+        await supabaseAdmin
+          .from('clientes')
+          .update({
+            deuda_actual: parseFloat(bClient.deuda_actual || 0) + newDebt,
+            total_gastado: parseFloat(bClient.total_gastado || 0) + parseFloat(total)
+          })
+          .eq('id', bClient.id)
+      } else {
+        await supabaseAdmin
+          .from('clientes')
+          .insert({
+            tienda_id: tienda.id,
+            nombre: nomCli.trim(),
+            deuda_actual: newDebt,
+            total_gastado: parseFloat(total)
+          })
+      }
+    }
 
     return NextResponse.json({ success: true, pedido: newOrder })
   } catch (err) {

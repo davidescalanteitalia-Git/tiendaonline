@@ -1,348 +1,318 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useLang } from '../../../components/LanguageProvider'
-import { DICTIONARY } from '../../../lib/dictionaries'
+import React, { useState, useEffect } from 'react'
 import {
   Users,
   Search,
-  MessageCircle,
-  ShoppingBag,
-  TrendingUp,
-  Calendar,
-  ChevronRight,
-  X,
+  Plus,
+  CreditCard,
   Phone,
-  Star,
+  Mail,
   Loader2,
-  ArrowUpRight
+  X,
+  CheckCircle2,
+  ArrowRight,
+  User as UserIcon,
+  ShoppingBag
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
-// Extrae el metadata oculto en los items del pedido
-function getMeta(items) {
-  if (!Array.isArray(items)) return {}
-  return items.find(i => i.id === 'ORDER_META') || {}
-}
-
-// Agrupa pedidos por nombre de cliente y construye perfil
-function buildClientes(pedidos) {
-  const map = {}
-  pedidos.forEach(p => {
-    const key = p.cliente_nombre?.trim().toLowerCase()
-    if (!key) return
-    const meta = getMeta(p.items)
-    if (!map[key]) {
-      map[key] = {
-        nombre: p.cliente_nombre,
-        whatsapp: meta.whatsapp || null,
-        pedidos: [],
-        totalGastado: 0,
-        ultimoPedido: null,
-      }
-    }
-    map[key].pedidos.push(p)
-    map[key].totalGastado += parseFloat(p.total) || 0
-    if (!map[key].ultimoPedido || new Date(p.created_at) > new Date(map[key].ultimoPedido)) {
-      map[key].ultimoPedido = p.created_at
-      if (meta.whatsapp) map[key].whatsapp = meta.whatsapp
-    }
-  })
-
-  return Object.values(map).sort((a, b) => b.totalGastado - a.totalGastado)
-}
-
-// Etiqueta de valor del cliente
-function getTag(total, count) {
-  if (count >= 5 || total >= 200) return { label: 'VIP', color: 'bg-amber-100 text-amber-700 border-amber-200' }
-  if (count >= 2 || total >= 50)  return { label: 'Frecuente', color: 'bg-blue-100 text-blue-700 border-blue-200' }
-  return { label: 'Nuevo', color: 'bg-slate-100 text-slate-500 border-slate-200' }
-}
-
 export default function ClientesPage() {
-  const { lang } = useLang()
-  const dict = DICTIONARY[lang] || DICTIONARY['es']
-
   const [clientes, setClientes] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState(null)
+  
+  const [showModal, setShowModal] = useState(false)
+  const [showAbonoModal, setShowAbonoModal] = useState(null)
+  
+  const [formData, setFormData] = useState({ nombre: '', telefono: '', email: '' })
+  const [abono, setAbono] = useState('')
+  
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [successMsg, setSuccessMsg] = useState(null)
+  const [errorMsg, setErrorMsg] = useState(null)
 
   useEffect(() => {
-    async function load() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return
-        const res = await fetch('/api/pedidos', {
-          headers: { Authorization: `Bearer ${session.access_token}` }
-        })
-        const data = await res.json()
-        const pedidos = data.pedidos || []
-        setClientes(buildClientes(pedidos))
-      } catch (err) {
-        console.error('Error loading clients:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
+    loadClientes()
   }, [])
 
-  const filtered = clientes.filter(c =>
-    c.nombre.toLowerCase().includes(search.toLowerCase()) ||
-    (c.whatsapp && c.whatsapp.includes(search))
+  async function loadClientes() {
+    try {
+      setLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const res = await fetch('/api/clientes', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      })
+      if (res.ok) {
+        setClientes(await res.json())
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const showError = (msg) => {
+    setErrorMsg(msg)
+    setTimeout(() => setErrorMsg(null), 3000)
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setIsProcessing(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/clientes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (!res.ok) throw new Error('Error al guardar cliente')
+      
+      setSuccessMsg('Cliente registrado')
+      setShowModal(false)
+      setFormData({ nombre: '', telefono: '', email: '' })
+      loadClientes()
+      setTimeout(() => setSuccessMsg(null), 3000)
+    } catch (err) {
+      showError(err.message)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleAbono = async (e) => {
+    e.preventDefault()
+    if (!abono || parseFloat(abono) <= 0) return
+
+    setIsProcessing(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/clientes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ id: showAbonoModal.id, abono: parseFloat(abono) })
+      })
+
+      if (!res.ok) throw new Error('Error al procesar abono')
+      
+      setSuccessMsg('Abono registrado con éxito')
+      setShowAbonoModal(null)
+      setAbono('')
+      loadClientes()
+      setTimeout(() => setSuccessMsg(null), 3000)
+    } catch (err) {
+      showError(err.message)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const filtered = clientes.filter(c => 
+    c.nombre.toLowerCase().includes(search.toLowerCase()) || 
+    (c.telefono && c.telefono.includes(search))
   )
 
-  // ── Stats globales ──
-  const totalClientes  = clientes.length
-  const totalVentas    = clientes.reduce((s, c) => s + c.totalGastado, 0)
-  const vipCount       = clientes.filter(c => getTag(c.totalGastado, c.pedidos.length).label === 'VIP').length
-  const frecuenteCount = clientes.filter(c => getTag(c.totalGastado, c.pedidos.length).label === 'Frecuente').length
+  const deudoresCount = clientes.filter(c => parseFloat(c.deuda_actual) > 0).length
+  const deudaTotal = clientes.reduce((acc, c) => acc + parseFloat(c.deuda_actual || 0), 0)
 
   return (
-    <div className="max-w-[1200px] mx-auto p-4 md:p-8 animate-in fade-in duration-500 font-sans">
+    <div className="max-w-6xl mx-auto space-y-6">
+      
+      {/* Toasts */}
+      {errorMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+          <X size={18} /> <span className="text-sm font-bold">{errorMsg}</span>
+        </div>
+      )}
+      {successMsg && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+          <CheckCircle2 size={18} /> <span className="text-sm font-bold">{successMsg}</span>
+        </div>
+      )}
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      {/* Header & Stats */}
+      <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-end">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <Users className="text-blue-500" size={32} />
-            {lang === 'it' ? 'Clienti' : lang === 'en' ? 'Customers' : 'Clientes'}
-          </h1>
-          <p className="text-slate-500 mt-2 font-medium">
-            {lang === 'it' ? 'Storico acquisti e contatti dei tuoi clienti.' : lang === 'en' ? 'Purchase history and contact info for your customers.' : 'Historial de compras y contactos de tus clientes.'}
-          </p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Clientes y Fiados</h1>
+          <p className="text-slate-500 font-medium">Gestiona tu cartera de clientes y cuentas corrientes</p>
+        </div>
+        
+        <div className="flex gap-4 w-full md:w-auto">
+           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex-1 md:w-48 shadow-sm">
+             <p className="text-amber-600 text-xs font-bold uppercase tracking-wider mb-1">Deuda Pendiente</p>
+             <p className="text-2xl font-black text-amber-700">€{deudaTotal.toFixed(2)}</p>
+           </div>
+           <button 
+            onClick={() => setShowModal(true)}
+            className="flex-1 md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+          >
+            <Plus size={20} /> Nuevo Cliente
+          </button>
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        {[
-          { label: lang === 'it' ? 'Clienti totali' : lang === 'en' ? 'Total customers' : 'Clientes totales', value: totalClientes, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: lang === 'it' ? 'Fatturato totale' : lang === 'en' ? 'Total revenue' : 'Facturación total', value: `€${totalVentas.toFixed(2)}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-          { label: 'VIP', value: vipCount, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: lang === 'it' ? 'Frequenti' : lang === 'en' ? 'Frequent' : 'Frecuentes', value: frecuenteCount, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-[28px] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all">
-            <div className={`w-10 h-10 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center mb-4`}>
-              <s.icon size={20} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{s.label}</p>
-            <p className="text-2xl font-black text-slate-900 tracking-tight">{s.value}</p>
-          </div>
-        ))}
+      {/* Toolbar */}
+      <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:w-96 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre o teléfono..." 
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none border border-slate-200 focus:border-blue-500 focus:bg-white transition-all font-medium text-slate-700"
+          />
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm font-bold text-slate-500 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
+           <Users size={16} /> {clientes.length} Totales <span className="mx-2 text-slate-300">|</span> <CreditCard size={16} className="text-amber-500" /> {deudoresCount} Fiados
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="relative mb-6">
-        <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder={lang === 'it' ? 'Cerca per nome o WhatsApp...' : lang === 'en' ? 'Search by name or WhatsApp...' : 'Buscar por nombre o WhatsApp...'}
-          className="w-full pl-12 pr-5 py-4 rounded-2xl bg-white border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all font-medium text-slate-700 shadow-sm"
-        />
-      </div>
-
-      {/* Content */}
+      {/* List */}
       {loading ? (
-        <div className="flex items-center justify-center py-24">
+        <div className="py-20 flex flex-col justify-center items-center gap-4 text-slate-400">
           <Loader2 className="animate-spin text-blue-500" size={40} />
+          <p className="font-bold">Cargando clientes...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-[32px] p-16 border-2 border-dashed border-slate-200 text-center shadow-sm">
-          <Users size={52} className="mx-auto mb-4 text-slate-200" />
-          <h3 className="text-xl font-bold text-slate-700 mb-2">
-            {clientes.length === 0
-              ? (lang === 'it' ? 'Nessun cliente ancora' : lang === 'en' ? 'No customers yet' : 'Sin clientes aún')
-              : (lang === 'it' ? 'Nessun risultato' : lang === 'en' ? 'No results' : 'Sin resultados')}
-          </h3>
-          <p className="text-slate-400 font-medium text-sm">
-            {clientes.length === 0
-              ? (lang === 'it' ? 'I clienti appariranno qui dopo il primo ordine.' : lang === 'en' ? 'Customers will appear here after the first order.' : 'Los clientes aparecerán aquí tras el primer pedido.')
-              : (lang === 'it' ? 'Prova con un\'altra ricerca.' : lang === 'en' ? 'Try a different search.' : 'Intenta con otra búsqueda.')}
-          </p>
+        <div className="py-20 flex flex-col justify-center items-center gap-4 text-slate-400 bg-white rounded-3xl border border-slate-200 border-dashed">
+          <Users size={48} className="opacity-20" />
+          <p className="font-bold">No se encontraron clientes.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
-          {/* Table header */}
-          <div className="hidden md:grid grid-cols-12 px-8 py-4 border-b border-slate-50 bg-slate-50/60">
-            <span className="col-span-4 text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === 'it' ? 'Cliente' : lang === 'en' ? 'Customer' : 'Cliente'}
-            </span>
-            <span className="col-span-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === 'it' ? 'Pedidos' : lang === 'en' ? 'Orders' : 'Pedidos'}
-            </span>
-            <span className="col-span-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === 'it' ? 'Totale speso' : lang === 'en' ? 'Total spent' : 'Total gastado'}
-            </span>
-            <span className="col-span-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-              {lang === 'it' ? 'Tipo' : lang === 'en' ? 'Type' : 'Tipo'}
-            </span>
-            <span className="col-span-1" />
-          </div>
-
-          <div className="divide-y divide-slate-50">
-            {filtered.map((c, idx) => {
-              const tag = getTag(c.totalGastado, c.pedidos.length)
-              const fechaUltimo = c.ultimoPedido
-                ? new Date(c.ultimoPedido).toLocaleDateString(
-                    lang === 'it' ? 'it-IT' : lang === 'en' ? 'en-GB' : 'es-ES',
-                    { day: '2-digit', month: 'short', year: 'numeric' }
-                  )
-                : '—'
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setSelected(selected?.nombre === c.nombre ? null : c)}
-                  className="w-full text-left px-8 py-5 hover:bg-blue-50/30 transition-all group"
-                >
-                  {/* Mobile layout */}
-                  <div className="md:hidden flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-black text-slate-600 text-sm">
-                        {c.nombre.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800">{c.nombre}</p>
-                        <p className="text-xs text-slate-400">{c.pedidos.length} pedidos · €{c.totalGastado.toFixed(2)}</p>
-                      </div>
-                    </div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${tag.color}`}>
-                      {tag.label}
-                    </span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {filtered.map(c => {
+             const deuda = parseFloat(c.deuda_actual || 0)
+             const hasDeuda = deuda > 0
+             return (
+              <div key={c.id} className="bg-white p-6 rounded-[24px] shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center hover:shadow-md transition-shadow">
+                
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shadow-inner ${hasDeuda ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'}`}>
+                    {c.nombre.charAt(0).toUpperCase()}
                   </div>
-
-                  {/* Desktop layout */}
-                  <div className="hidden md:grid grid-cols-12 items-center">
-                    <div className="col-span-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-black text-slate-600 group-hover:from-blue-100 group-hover:to-blue-200 group-hover:text-blue-700 transition-all">
-                        {c.nombre.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors">{c.nombre}</p>
-                        {c.whatsapp && (
-                          <p className="text-xs text-slate-400 font-mono">{c.whatsapp}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="col-span-2">
-                      <span className="font-black text-slate-800">{c.pedidos.length}</span>
-                      <span className="text-slate-400 text-sm ml-1">
-                        {c.pedidos.length === 1
-                          ? (lang === 'it' ? 'ordine' : lang === 'en' ? 'order' : 'pedido')
-                          : (lang === 'it' ? 'ordini' : lang === 'en' ? 'orders' : 'pedidos')}
-                      </span>
-                    </div>
-                    <div className="col-span-3">
-                      <span className="font-black text-slate-800">€{c.totalGastado.toFixed(2)}</span>
-                    </div>
-                    <div className="col-span-2">
-                      <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${tag.color}`}>
-                        {tag.label}
-                      </span>
-                    </div>
-                    <div className="col-span-1 flex justify-end">
-                      <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                  <div>
+                    <h3 className="font-black text-slate-800 text-lg">{c.nombre}</h3>
+                    <div className="flex gap-3 text-sm text-slate-500 font-medium mt-1">
+                       {c.telefono && <span className="flex items-center gap-1"><Phone size={12} /> {c.telefono}</span>}
+                       {c.email && <span className="flex items-center gap-1"><Mail size={12} /> {c.email}</span>}
                     </div>
                   </div>
+                </div>
 
-                  {/* Expanded detail panel */}
-                  {selected?.nombre === c.nombre && (
-                    <div className="mt-5 pt-5 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                        {/* Último pedido */}
-                        <div className="bg-slate-50 rounded-2xl p-4">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
-                            <Calendar size={11} /> {lang === 'it' ? 'Ultimo ordine' : lang === 'en' ? 'Last order' : 'Último pedido'}
-                          </p>
-                          <p className="font-bold text-slate-700">{fechaUltimo}</p>
-                        </div>
-
-                        {/* Ticket promedio */}
-                        <div className="bg-slate-50 rounded-2xl p-4">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
-                            <TrendingUp size={11} /> {lang === 'it' ? 'Scontrino medio' : lang === 'en' ? 'Avg. ticket' : 'Ticket promedio'}
-                          </p>
-                          <p className="font-bold text-slate-700">
-                            €{(c.totalGastado / c.pedidos.length).toFixed(2)}
-                          </p>
-                        </div>
-
-                        {/* WhatsApp */}
-                        <div className="bg-slate-50 rounded-2xl p-4">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
-                            <Phone size={11} /> WhatsApp
-                          </p>
-                          {c.whatsapp ? (
-                            <a
-                              href={`https://wa.me/${c.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${c.nombre}! 👋`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black px-4 py-2.5 rounded-xl transition-all active:scale-95 shadow-sm"
-                            >
-                              <MessageCircle size={14} />
-                              {lang === 'it' ? 'Scrivi su WhatsApp' : lang === 'en' ? 'Message on WhatsApp' : 'Escribir por WhatsApp'}
-                            </a>
-                          ) : (
-                            <p className="text-sm text-slate-400 font-medium">
-                              {lang === 'it' ? 'Non disponibile' : lang === 'en' ? 'Not available' : 'No disponible'}
-                            </p>
-                          )}
-                        </div>
-
-                      </div>
-
-                      {/* Mini historial de pedidos */}
-                      <div className="mt-4">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">
-                          {lang === 'it' ? 'Storico ordini' : lang === 'en' ? 'Order history' : 'Historial de pedidos'}
-                        </p>
-                        <div className="space-y-2">
-                          {c.pedidos.slice(0, 4).map((p, pidx) => (
-                            <div key={pidx} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-slate-100">
-                              <div className="flex items-center gap-3">
-                                <span className="text-xs font-black text-slate-400 font-mono">{p.codigo}</span>
-                                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-                                  p.estado === 'confirmado'
-                                    ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-                                    : p.estado === 'cancelado'
-                                      ? 'bg-red-50 border-red-100 text-red-500'
-                                      : 'bg-amber-50 border-amber-100 text-amber-600'
-                                }`}>
-                                  {p.estado}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="text-xs text-slate-400">
-                                  {new Date(p.created_at).toLocaleDateString(
-                                    lang === 'it' ? 'it-IT' : lang === 'en' ? 'en-GB' : 'es-ES',
-                                    { day: '2-digit', month: 'short' }
-                                  )}
-                                </span>
-                                <span className="font-black text-slate-800 text-sm">€{parseFloat(p.total).toFixed(2)}</span>
-                              </div>
-                            </div>
-                          ))}
-                          {c.pedidos.length > 4 && (
-                            <p className="text-xs text-slate-400 font-bold text-center py-1">
-                              +{c.pedidos.length - 4} {lang === 'it' ? 'ordini precedenti' : lang === 'en' ? 'more orders' : 'pedidos más'}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex items-center justify-between w-full md:w-auto gap-6 bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-xl">
+                  <div className="text-left md:text-right">
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Deuda Pendiente</p>
+                     <p className={`text-xl font-black ${hasDeuda ? 'text-amber-600' : 'text-slate-300'}`}>€{deuda.toFixed(2)}</p>
+                  </div>
+                  {hasDeuda && (
+                     <button 
+                       onClick={() => {
+                          setAbono(deuda.toString()) // Por defecto prerellena el total de la deuda
+                          setShowAbonoModal(c)
+                       }}
+                       className="bg-amber-500 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20"
+                     >
+                       Abonar
+                     </button>
                   )}
-                </button>
-              )
-            })}
+                </div>
+
+              </div>
+             )
+          })}
+        </div>
+      )}
+
+      {/* New Client Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+               <h2 className="text-xl font-black text-slate-900">Nuevo Cliente</h2>
+               <button onClick={() => setShowModal(false)} className="w-8 h-8 flex justify-center items-center bg-white border border-slate-200 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-all">
+                 <X size={16} />
+               </button>
+            </div>
+            <form onSubmit={handleSave} className="p-6 space-y-4">
+               <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Nombre Completo *</label>
+                  <input required type="text" value={formData.nombre} onChange={e=>setFormData({...formData, nombre: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-medium transition-all" placeholder="Ej. Juan Pérez" />
+               </div>
+               <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Teléfono</label>
+                  <input type="tel" value={formData.telefono} onChange={e=>setFormData({...formData, telefono: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-medium transition-all" placeholder="+34 600 000 000" />
+               </div>
+               <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email</label>
+                  <input type="email" value={formData.email} onChange={e=>setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 font-medium transition-all" placeholder="cliente@email.com" />
+               </div>
+               
+               <button type="submit" disabled={isProcessing} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl mt-6 flex justify-center items-center gap-2 transition-all">
+                  {isProcessing ? <Loader2 size={20} className="animate-spin" /> : 'Guardar Cliente'}
+               </button>
+            </form>
           </div>
         </div>
       )}
+
+      {/* Abono Modal */}
+      {showAbonoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200 relative">
+            
+            <button onClick={() => setShowAbonoModal(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 z-10 p-2">
+               <X size={20} />
+            </button>
+            
+            <div className="p-8 text-center pb-4">
+               <div className="w-16 h-16 bg-amber-100 text-amber-500 flex items-center justify-center rounded-2xl mx-auto mb-4 rotate-12">
+                  <CreditCard size={32} />
+               </div>
+               <h2 className="text-2xl font-black text-slate-900 mb-1">Registrar Abono</h2>
+               <p className="text-slate-500 font-medium text-sm">Cliente: <span className="font-bold text-slate-800">{showAbonoModal.nombre}</span></p>
+               <div className="mt-4 bg-slate-50 rounded-xl py-3 border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Deuda Restante</p>
+                  <p className="text-xl font-black text-slate-800">€{parseFloat(showAbonoModal.deuda_actual).toFixed(2)}</p>
+               </div>
+            </div>
+
+            <form onSubmit={handleAbono} className="p-6 pt-0 space-y-4">
+               <div className="relative">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">Monto a Abonar (€)</label>
+                  <input 
+                    required 
+                    type="number" 
+                    step="0.01"
+                    min="0.01"
+                    max={showAbonoModal.deuda_actual}
+                    value={abono} 
+                    onChange={e => setAbono(e.target.value)} 
+                    className="w-full text-center text-3xl px-4 py-4 bg-slate-50 border-2 border-amber-200 focus:border-amber-500 rounded-2xl outline-none font-black text-amber-700 transition-all font-mono shadow-inner mb-2" 
+                    autoFocus
+                  />
+               </div>
+               
+               <button type="submit" disabled={isProcessing} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4 rounded-2xl mt-4 flex justify-center items-center gap-2 transition-all shadow-xl shadow-slate-900/10 active:scale-95">
+                  {isProcessing ? <Loader2 size={20} className="animate-spin" /> : <>Confirmar Pago <ArrowRight size={18} /></>}
+               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
