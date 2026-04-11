@@ -315,9 +315,33 @@ Revisión completa de todas las páginas del dashboard para unificar funcionalid
 
 ---
 
+### [2026-04-11] - Fase Operativa: Módulo Punto de Venta (POS)
+
+**Objetivo:** Implementar un sistema de caja rápida (Terminal POS) para ventas físicas en mostrador, emulando la fluidez de herramientas como AppKyte, logrando un control de inventario en tiempo real independiente de los pedidos "online".
+
+#### 🆕 Cambios Aplicados
+
+**`app/dashboard/pos/page.js` — Nueva Interfaz de Caja (POS)**
+- Interfaz dividida en dos paneles:
+  1. **Catálogo (Izquierda):** Grid de productos estilo tablet con emojis, stock real y filtrado por categorías. Los productos sin stock se inhabilitan automáticamente.
+  2. **Ticket (Derecha):** Sumariza los ítems (ajuste +, -), nombre del comprador y cálculo total inmediato.
+- Botones rápidos de pago: "Efectivo", "Tarjeta" y "Transferencia".
+- Interacción responsiva optimizada para tablets y pantallas táctiles (sin barras de scroll innecesarias).
+
+**`app/api/pos/route.js` — Nuevo endpoint protegido**
+- API de consumo interno para ventas físicas.
+- Lee el JWT session y cruza la capa de seguridad usando el Admin Role transitorio pero atado a `auth.uid()`.
+- Descuenta automáticamente la cantidad `quantity` del stock (`productos`).
+- Guarda un nuevo pedido confirmado (`pedidos`), marcándolo con meta-data *POS* en lugar de delivery.
+
+**`app/dashboard/layout.js` — Integración en la Navegación**
+- Nuevo ítem `Calculator` ("Caja (POS)") añadido debajo de "Inicio" para acceso rápido permanente.
+
+---
+
 ## 🚀 PRÓXIMOS PASOS
 - [ ] Completar verificación DNS de Resend y configurar SMTP en Supabase.
 - [ ] Activar "Leaked Password Protection" en Supabase una vez SMTP configurado.
-- [ ] Módulo de Clientes (CRM Simple) - Listado de clientes recurrentes basado en pedidos.
+- [ ] Módulo de Clientes (CRM Simple) - Listado de clientes recurrentes basado en pedidos físicos (Caja) y online.
 - [ ] Integración de Catálogos Automáticos (IG/FB).
-- [ ] Notificaciones Push/Email para nuevos pedidos (usar Resend una vez configurado).
+- [ ] Módulo Pasarela de Pagos SaaS (Stripe) para facturar planes a las tiendas inquilinos.
