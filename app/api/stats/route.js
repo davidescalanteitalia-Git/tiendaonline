@@ -1,17 +1,11 @@
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_KEY
-
-    // Si no hay variables de entorno configuradas, devolver 0
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ total: 0 })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = getSupabaseAdmin()
 
     const { count, error } = await supabase
       .from('tiendas')

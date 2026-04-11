@@ -1,0 +1,43 @@
+{
+  "name": "TIENDAONLINE",
+  "short_name": "Tienda",
+  "description": "Gestiona tu tienda y punto de venta desde el celular",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "lang": "es",
+  "categories": ["business", "shopping"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Abrir Caja (POS)",
+      "short_name": "POS",
+      "description": "Ir directamente al punto de venta",
+      "url": "/dashboard/pos",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver Pedidos",
+      "short_name": "Pedidos",
+      "description": "Ver los pedidos recientes",
+      "url": "/dashboard/pedidos",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    }
+  ]
+}

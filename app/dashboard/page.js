@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [tienda, setTienda] = useState(null)
   const [pedidos, setPedidos] = useState([])
   const [productos, setProductos] = useState([])
+  const [clientes, setClientes] = useState([])
   const [loading, setLoading] = useState(true)
   const [copiedLink, setCopiedLink] = useState(false)
   const [showWizard, setShowWizard] = useState(false)
@@ -33,10 +34,11 @@ export default function DashboardPage() {
         const headers = { Authorization: `Bearer ${session.access_token}` }
 
         // Fetch en paralelo
-        const [meRes, pedidosRes, productosRes] = await Promise.all([
+        const [meRes, pedidosRes, productosRes, clientesRes] = await Promise.all([
           fetch('/api/me', { headers }),
           fetch('/api/pedidos', { headers }),
           fetch('/api/productos', { headers }),
+          fetch('/api/clientes', { headers }),
         ])
 
         let loadedTienda = null
@@ -55,6 +57,10 @@ export default function DashboardPage() {
           const json = await productosRes.json()
           loadedProductos = Array.isArray(json) ? json : []
           setProductos(loadedProductos)
+        }
+        if (clientesRes.ok) {
+          const json = await clientesRes.json()
+          setClientes(Array.isArray(json) ? json : [])
         }
 
         // Mostrar wizard si algún paso de onboarding no está completado
@@ -100,6 +106,11 @@ export default function DashboardPage() {
     .reduce((acc, p) => acc + (parseFloat(p.total) || 0), 0)
   const productosActivos = productos.filter(p => p.estado === 'activo').length
   const recentPedidos = pedidos.slice(0, 4)
+
+  // KPI Clientes: porcentaje de clientes sin deuda pendiente (al día)
+  const totalClientes = clientes.length
+  const clientesAlDia = clientes.filter(c => parseFloat(c.deuda_actual || 0) === 0).length
+  const lealtadPct = totalClientes > 0 ? Math.round((clientesAlDia / totalClientes) * 100) : 0
 
   // ─── Operational Checklist ───
   const config = tienda?.config_diseno || {}
@@ -204,8 +215,13 @@ export default function DashboardPage() {
                   <Users size={24} />
                </div>
                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Lealtad</p>
-                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">82%</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Clientes al Día</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                    {totalClientes === 0 ? '—' : `${lealtadPct}%`}
+                  </h3>
+                  {totalClientes > 0 && (
+                    <p className="text-[10px] text-slate-400 font-bold mt-1">{clientesAlDia} de {totalClientes}</p>
+                  )}
                </div>
             </div>
          </div>
