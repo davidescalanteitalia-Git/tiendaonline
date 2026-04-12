@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
+import { capturarError } from '../../../lib/sentry'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,14 +43,17 @@ export async function GET(req) {
 
     return NextResponse.json({ pedidos })
   } catch (err) {
+    capturarError(err, { modulo: 'Pedidos', extra: { endpoint: 'GET /api/pedidos' } })
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
 // POST: Create a new order (from customer store)
 export async function POST(req) {
+  let body = {}
   try {
-    const { tienda_id, cliente_nombre, items, total, metodo_envio, metodo_pago, direccion, shipping_cost, whatsapp } = await req.json()
+    body = await req.json()
+    const { tienda_id, cliente_nombre, items, total, metodo_envio, metodo_pago, direccion, shipping_cost, whatsapp } = body
     const supabaseAdmin = getSupabaseAdmin()
 
     if (!tienda_id || !cliente_nombre || !items || !total) {
@@ -98,6 +102,15 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, pedido: newOrder })
   } catch (err) {
+    capturarError(err, {
+      modulo: 'Checkout',
+      tiendaId: body?.tienda_id,
+      extra: {
+        endpoint: 'POST /api/pedidos',
+        cliente: body?.cliente_nombre,
+        total: body?.total,
+      }
+    })
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

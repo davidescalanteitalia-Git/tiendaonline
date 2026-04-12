@@ -13,7 +13,7 @@ export const metadata = {
     siteName: 'TIENDAONLINE',
     images: [
       {
-        url: 'https://tiendaonline.it/og-image.png',
+        url: 'https://tiendaonline.it/og-image.svg',
         width: 1200,
         height: 630,
         alt: 'TIENDAONLINE — La tua vetrina online in 10 minuti',

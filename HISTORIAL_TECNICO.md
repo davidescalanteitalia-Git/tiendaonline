@@ -1,413 +1,689 @@
-# HISTORIAL TÉCNICO - TIENDA_ONLINE (SaaS)
-
-Este documento centraliza el estado actual, la evolución reciente, la arquitectura detallada de cada módulo, y la visión a futuro de la plataforma de e-commerce y gestión financiera **TIENDA_ONLINE**.
-
----
-
-## 🎯 LA DIRECCIÓN ESTRATÉGICA (Hacia Dónde Vamos)
-
-El objetivo central actual de **TIENDA_ONLINE** es consolidarse como un producto de **Software como Servicio (SaaS)** multi-inquilino. Hemos dejado atrás la concepción de "una simple tienda online" para evolucionar hacia un ecosistema de gestión empresarial integral diseñado para la agilidad móvil — similar a como operan plataformas de talla mundial como Square o Shopify POS, pero optimizadas para micronegocios latinoamericanos y europeos.
-
-**La visión arquitectónica persigue tres pilares:**
-1. **Fricción Cero en Ventas:** Terminal de Punto de Venta (POS) ultrarrápida combinada con un catálogo web automatizado vía WhatsApp.
-2. **Empoderamiento Financiero:** Otorgarle a los dueños de negocios reportes financieros de nivel corporativo calculados en tiempo real (márgenes de utilidad bruta y neta).
-3. **Multi-Tenant Seguro:** La base de datos está securizada con Row Level Security para que cientos de comerciantes puedan usar la app bajo suscripción con un subdominio propio, sin que los datos se crucen jamás.
+# HISTORIAL TÉCNICO — TIENDAONLINE SaaS
+> Documento vivo. Actualizar al final de cada sesión de trabajo.  
+> Propósito: que cualquier desarrollador (o Claude en una nueva sesión) pueda entender el sistema completo sin leer el código.
 
 ---
 
-## 🗂️ DESCRIPCIÓN COMPLETA DE TODOS LOS MÓDULOS
+## 1. VISIÓN Y ESTRATEGIA DEL PRODUCTO
 
-La plataforma TIENDA_ONLINE se divide en **dos grandes áreas**: la **Tienda Pública** (visible al cliente comprador) y el **Panel de Administración** (solo visible al dueño del negocio).
+TIENDAONLINE es una plataforma **SaaS multi-inquilino** de e-commerce + punto de venta (POS) para micronegocios. Modelo tipo Kyte / Shopify Lite pero orientado a Italia y Latinoamérica.
 
----
+**Tres pilares:**
+1. **Fricción cero en ventas** — POS ultrarrápido en móvil + catálogo web con checkout por WhatsApp.
+2. **Empoderamiento financiero** — Reportes de utilidad neta real (ventas − costos de mercancía).
+3. **Multi-tenant seguro** — Cada comercio aislado por `tienda_id` con RLS en Supabase.
 
-### 📦 ÁREA 1 — TIENDA PÚBLICA (E-commerce del Comerciante)
-**Ruta de código:** `app/store/[subdominio]/`
-
-Esta es la cara visible del negocio en Internet. Un comprador puede acceder a ella a través de la URL única del comercio (`subdominio.tiendaonline.it` o `/store/nombre_tienda`).
-
-#### 🔹 1.1 — Catálogo de Productos
-- Muestra todos los productos del negocio en un formato de **Grid de tarjetas visuales** con foto/emoji, nombre y precio.
-- Puede alternar entre vista de **cuadrícula (Grid)** y **vista de lista compacta**.
-- **Filtros por categoría:** Barra superior de botones horizontales, en móvil como scroll. En Desktop, aparecen como lista vertical en la Sidebar izquierda.
-- Los artículos **sin stock** aparecen bloqueados o marcados visualmente para indicar "agotado".
-
-#### 🔹 1.2 — Sidebar de Información de la Tienda
-- Visible en pantallas de Desktop (≥ 768px), oculta en móvil.
-- Muestra: Logo o emoji del negocio, nombre, descripción corta, estado de apertura (Abierto/Cerrado), horario, y links de contacto (WhatsApp, Instagram, Email, Dirección física).
-- El botón de WhatsApp lanza un mensaje predefinido de "Hola, quisiera información sobre..." para capturar leads instantáneamente.
-
-#### 🔹 1.3 — Carrito de Compras Visual
-- Botón flotante o barra inferior (según dispositivo) con el contador de ítems en tiempo real.
-- Al abrir el carrito se listan los artículos seleccionados con su cantidad, precio unitario y subtotal.
-- El cliente puede incrementar o reducir la cantidad de cualquier ítem.
-
-#### 🔹 1.4 — Proceso de Checkout (2 Pasos Sin Fricción)
-- **Paso 1 — Datos del cliente:** Nombre, teléfono (WhatsApp del comprador). Opcionalmente email.
-- **Paso 2 — Método de Entrega:**
-  - **Retiro en tienda (gratis):** El cliente pasa a buscarlo.
-  - **Envío a domicilio:** Selección de zona geográfica con precio de envío automático según tarifas configuradas por el dueño.
-- El botón final **no requiere pago en línea** para la versión base: Genera un mensaje pre-formateado que se abre directamente en WhatsApp con el pedido completo para que el dueño lo confirme manualmente. Este modelo elimina barreras de adopción en negocios pequeños.
+**Stack técnico:**
+- **Frontend + Backend:** Next.js 14 App Router (Server + Client Components)
+- **Base de datos + Auth + Storage + Realtime:** Supabase (PostgreSQL)
+- **Estilos:** Tailwind CSS 3 + glassmorphism + `animate-in` de Tailwind
+- **Íconos:** Lucide React
+- **Internacionalización:** 3 idiomas manuales vía `lib/dictionaries.js` (ES / IT / EN)
+- **Deploy:** Vercel (subdominios wildcard `*.tiendaonline.it`)
 
 ---
 
-### 🛠️ ÁREA 2 — PANEL DE ADMINISTRACIÓN (Backoffice del Dueño)
-**Ruta de código:** `app/dashboard/`
+## 2. INFRAESTRUCTURA Y CONFIGURACIÓN
 
-Exclusivo para el dueño autenticado. Está protegido por Supabase Auth (JWT). Diseño "Glassmorphism Pro Max" con Tailwind CSS.
-
----
-
-#### 🔹 2.1 — Módulo: Inicio / Centro de Comando
-**Ruta:** `app/dashboard/page.js`
-
-- Panel de bienvenida con el nombre de la tienda.
-- **Estadísticas rápidas en tiempo real:** Total de pedidos del día, ingresos del mes, productos con bajo stock, y clientes nuevos.
-- **Checklist de configuración inicial** que guía al nuevo comerciante a completar su perfil: subir logo, añadir primer producto, configurar WhatsApp, etc.
-- Accesos directos a los módulos más usados (POS, Productos, Pedidos).
-
----
-
-#### 🔹 2.2 — Módulo: Caja / Terminal POS
-**Ruta:** `app/dashboard/pos/page.js` | `app/api/pos/route.js`
-
-El módulo más crítico para operaciones físicas en mostrador.
-
-**Panel Izquierdo — Catálogo Táctil:**
-- Grid de botones grandes con emoji/foto, nombre y precio de cada producto.
-- **Filtrado por categoría** con barra de botones en la parte superior.
-- **Barra de búsqueda** con ícono de escáner (preparado para lectores de código de barras).
-- Los productos **sin stock** se bloquean automáticamente y se muestran en escala de grises.
-- Al tocar un producto, se añade instantáneamente al ticket de la derecha.
-
-**Panel Derecho — Ticket de Venta:**
-- Muestra el nombre del cliente (editable en tiempo real).
-- Lista de artículos seleccionados con controles de cantidad `(+)` y `(-)`.
-- Botón para eliminar cualquier ítem del ticket con ícono de papelera.
-- **Sección de Totales:**
-  - Subtotal calculado automáticamente.
-  - **Campo de Descuento directo (€):** Permite ingresar un valor de descuento fijo que se resta al subtotal al instante.
-  - Total Final (en azul destacado): Subtotal − Descuento.
-- **Selector de Método de Pago** (4 botones rápidos):
-  - 💵 **Efectivo** — Pago en cash.
-  - 💳 **Tarjeta** — Terminal física externa.
-  - 📱 **Transferencia** — Bizum / PayPal / Wire.
-  - 🤝 **Fiado** — Venta a crédito. Registra la deuda en el CRM de Clientes.
-- **Botón "Cobrar":** Confirma la venta. Acciones que dispara automáticamente:
-  1. Resta el `stock` de cada producto vendido en la base de datos.
-  2. Guarda el pedido en la tabla `pedidos` marcado como `confirmado` / TIPO "POS".
-  3. Si el método fue "Fiado", actualiza (o crea) el registro del cliente en la tabla `clientes` con el monto de la deuda.
-  4. Muestra un **Modal de Ticket Post-Venta** con todos los detalles, y un botón para **Compartir el Recibo por WhatsApp**.
-
----
-
-#### 🔹 2.3 — Módulo: Gestión de Productos / Inventario
-**Ruta:** `app/dashboard/productos/page.js` | `app/api/productos/route.js`
-
-- Lista todos los productos del comercio con su nombre, precio, stock, categoría y emoji/imagen.
-- **Vista Dual:** Alternancia entre grid de tarjetas y tabla de lista compacta.
-- **Panel Lateral (Slide-over) de Edición Rápida:** Al tocar un producto se abre un panel deslizante desde la derecha para editar en línea sin cambiar de página.
-- **Formulario de Nuevo Producto** con los siguientes campos:
-  - Nombre del producto.
-  - **Precio de Venta (€)** — Visible al cliente.
-  - **Costo Neto (€)** — Costo real de compra/producción. **Oculto al público.** Usado para los reportes financieros.
-  - **Margen de Utilidad (% Calculado Automáticamente):** Muestra en tiempo real el porcentaje de ganancia del producto: `((Precio - Costo) / Precio) × 100`. Se colorea en verde si es rentable, rojo si es negativo.
-  - Stock disponible.
-  - Selector de Categoría.
-  - Selector de Emoji.
-  - Carga de imagen con **compresión automática** (max 1MB).
-  - Fecha de vencimiento (opcional para productos perecederos).
-- **Barra de búsqueda** y filtros por categoría en la parte superior.
-- **Acciones por producto:** Editar, Eliminar, cambiar stock directamente.
-
----
-
-#### 🔹 2.4 — Módulo: Gestión de Categorías
-**Ruta:** `app/dashboard/categorias/` | `app/api/categorias/route.js`
-
-- Lista las categorías del negocio.
-- CRUD completo: Crear, ver, editar y eliminar categorías.
-- Las categorías se usan como filtros tanto en el POS como en la tienda pública.
-- Orden personalizable por drag-and-drop (planeado).
-
----
-
-#### 🔹 2.5 — Módulo: Gestión de Pedidos Online
-**Ruta:** `app/dashboard/pedidos/` | `app/api/pedidos/route.js`
-
-- Lista todos los pedidos recibidos (Online y POS).
-- **KPIs superiores dinámicos:** Total Pendientes, Confirmados, Cancelados, e Ingresos del Período.
-- **Panel Lateral (Slide-over) de Detalle:** Al hacer clic en un pedido se abre un panel con info completa del cliente, los ítems pedidos, método de envío, método de pago y estado.
-- **Cambio de Estado:** El dueño puede mover el pedido entre `pendiente → confirmado → enviado → cancelado`.
-- Diferencia visualmente pedidos de caja (POS) y pedidos del catálogo online.
-
----
-
-#### 🔹 2.6 — Módulo: CRM de Clientes y Fiados
-**Ruta:** `app/dashboard/clientes/` | `app/api/clientes/route.js`
-
-- Lista de todos los clientes registrados en la tienda (creados automáticamente al usar "Fiado" en el POS, o manualmente).
-- **Vista de Deuda Pendiente (Fiado):** Destaca en color ámbar los clientes que tienen saldo pendiente con el comercio.
-- **Contador Global:** El header muestra el total de dinero "en calle" sumado de todos los clientes deudores.
-- **Modal de Abono:** Al tocar "Abonar" en un cliente, se abre un modal dedicado donde el dueño ingresa el monto que el cliente pagó. El sistema:
-  1. Resta automáticamente ese monto de la `deuda_actual`.
-  2. Actualiza el registro en la base de datos.
-  3. Si la deuda llega a 0, el cliente queda "en cero" y desaparece del resaltado ámbar.
-- **Creación manual de clientes** con nombre, teléfono y email.
-- Búsqueda por nombre o teléfono.
-
----
-
-#### 🔹 2.7 — Módulo: Reportes Financieros y Analítica
-**Ruta:** `app/dashboard/reportes/` | `app/api/reportes/route.js`
-
-El cerebro contable de la plataforma.
-
-**KPIs Principales (tarjetas destacadas):**
-- 💰 **Ventas Brutas Totales:** Suma de todos los pedidos confirmados.
-- 📈 **Utilidad Neta Real:** `Ventas Totales − Costos de Mercancía Vendida`. El primer número verdadero de ganancia.
-- **% de Margen:** Porcentaje de rentabilidad real. Colorimetría dinámica (verde si es sano, rojo si es deficitario).
-- 📉 **Costo de Inversión:** Total de costos incurridos en los productos vendidos.
-- 🤝 **Total en Fiado:** Suma de ventas que quedaron registradas como crédito sin cobrar.
-
-**Ranking de Productos:**
-- Top 5 productos más vendidos por rotación (unidades) y por ingresos generados.
-- Iconos visuales con emoji de cada producto para facilitar lectura rápida.
-
-**Resumen Operativo:**
-- Total de pedidos completados registrados en el sistema.
-
----
-
-#### 🔹 2.8 — Módulo: Diseño y Personalización de la Tienda
-**Ruta:** `app/dashboard/diseno/` | `app/api/me/route.js`
-
-- **Branding:** Subir logo, imagen de portada (banner), color primario de la tienda (picker hexadecimal).
-- **Configuración del Catálogo:** Mostrar/ocultar stock público, activar/desactivar el carrito de compras, modo solo consulta.
-- **Métodos de Pago Aceptados:** Configura cuáles métodos verá el comprador en el checkout (Transferencia, Efectivo, QR, etc.).
-- **Zonas de Envío:** Configuración de zonas con costos personalizados por zona geográfica.
-- **Horarios de Atención:** Define los días y horarios en que la tienda aparece como "Abierta" o "Cerrada" en el catálogo público.
-
----
-
-#### 🔹 2.9 — Módulo: Ajustes de la Cuenta
-**Ruta:** `app/dashboard/ajustes/`
-
-- Datos del comerciante: Nombre del negocio, subdominio, descripción.
-- Datos de contacto: WhatsApp, Instagram, Email, Dirección física.
-- **Subdominio personalizado:** Define la URL pública de su tienda (`mitienda.tiendaonline.it`).
-- Selector de idioma de la interfaz (Español, Italiano, Inglés).
-- **Gestión de cuenta:** Cambiar contraseña, cerrar sesión.
-
----
-
-## ✅ PASOS EJECUTADOS RECIENTEMENTE
-
-| # | Módulo | Estado | Detalles |
-|---|---|---|---|
-| 1 | **POS — Descuentos** | ✅ Completado | Input de descuento fijo (€) que ajusta el total en tiempo real antes de cobrar |
-| 2 | **POS — Método de Pago Fiado** | ✅ Completado | Conectado al módulo CRM para registrar la deuda automáticamente |
-| 3 | **POS — Ticket Post-Venta** | ✅ Completado | Modal de resumen de cobro con botón "Compartir por WhatsApp" |
-| 4 | **Productos — Campo Costo** | ✅ Completado | Costo oculto al público + Cálculo automático de % de Margen de Ganancia |
-| 5 | **CRM Clientes / Fiados** | ✅ Completado | Vista, deuda en tiempo real, modal de Abono, creación manual de clientes |
-| 6 | **Reportes Financieros** | ✅ Completado | Ventas Brutas, Costos, Utilidad Neta, Margen %, Ranking de productos |
-| 7 | **Navegación Actualizada** | ✅ Completado | Módulos CRM y Reportes añadidos al sidebar del dashboard |
-| 8 | **Git / Deploy** | ✅ Completado | Todos los cambios subidos a GitHub rama `main` |
-
----
-
-## 👁️ OBSERVACIONES TÉCNICAS Y RIESGOS
-
-- **Row Level Security (RLS) en Supabase:** Al ser un SaaS, toda nueva tabla que se cree debe llevavar el filtro `tienda_id` obligatorio, de lo contrario existe riesgo de fuga de datos entre inquilinos.
-- **Costos en Reportes:** El cálculo de Utilidad Neta cruza los costos que tenía el producto en el momento de la venta. Si el dueño edita el costo de un producto después de venderlo, el reporte histórico se verá afectado. Para mayor precisión futura debería guardarse una snapshot del costo en el momento de la transacción.
-- **Fiado sin nombre completo:** Si el dueño no ingresa el nombre real del cliente en el POS (deja "Cliente Local"), el sistema no registra la deuda en el CRM. Esto es por diseño para ventas anónimas, pero puede generar fiados que no quedan registrados si el operador no coloca el nombre.
-- **JSONB en pedidos:** La información del método de pago y envío se guarda dentro del array `items` como un ítem especial `ORDER_META`. Esto es flexible pero puede dificultar queries SQL directas en reportes futuros avanzados.
-
----
-
-## 🚀 ROADMAP — Próximos Sprints
-
-| Prioridad | Módulo | Descripción |
-|---|---|---|
-| 🔴 Alta | **Stripe Billing / Suscripciones** | Cobros B2B mensuales/anuales a los comerciantes por usar la plataforma (planes Free, Pro, Grow). Desbloquea módulos premium según plan. |
-| 🟡 Media | **Notificaciones de Email** | Integración con Resend para emails transaccionales: confirmación de pedido, recibo de pago, registro de abono. |
-| 🟡 Media | **Lector de Código de Barras** | Activar la cámara del dispositivo para escanear barcodes directamente desde el POS usando librerías HTML5. |
-| 🟢 Baja | **PWA / App Instalable** | Añadir `manifest.json` y Service Worker para que el dashboard sea instalable como app nativa en iOS/Android. |
-| 🟢 Baja | **Catálogos Automáticos IG/FB** | Exportar el catálogo de productos como feed compatible para Instagram Shopping y Facebook Marketplace. |
-
----
-
----
-
-### [2026-04-12] — Auditoría Global de Conexión Supabase + Correcciones de Calidad
-
-**Objetivo:** Revisar que todas las páginas y APIs estén correctamente conectadas a Supabase, sin fugas de datos, y con patrones de código consistentes en toda la plataforma.
-
-#### ✅ Estado global confirmado (sin errores)
-
-| Módulo | Auth | API | Supabase | Estado |
-|--------|------|-----|----------|--------|
-| `lib/supabase.js` | — | — | `createClient` con vars públicas | ✅ OK |
-| `lib/supabase-admin.js` | JWT `getUser()` | Singleton lazy | `SERVICE_KEY` con `autoRefreshToken: false` | ✅ OK |
-| `dashboard/layout.js` | `getSession()` → redirect `/login` | `/api/me` | Bearer token | ✅ OK |
-| `dashboard/page.js` | `getSession()` | `/api/me` + `/api/pedidos` + `/api/productos` | Bearer token | ✅ OK |
-| `dashboard/productos` | `getSession()` | `/api/productos` + `/api/categorias` | Bearer token | ✅ OK |
-| `dashboard/compras` | `getSession()` | `/api/compras` + `/api/productos` + `/api/categorias` | Bearer token | ✅ OK |
-| `dashboard/categorias` | `getSession()` | `/api/categorias` | Bearer token | ✅ OK |
-| `dashboard/pedidos` | `getSession()` | `/api/pedidos` + `/api/pedidos/[id]` | Bearer token | ✅ OK |
-| `dashboard/pos` | `getSession()` | `/api/pos` | Bearer token | ✅ OK |
-| `dashboard/clientes` | `getSession()` | `/api/clientes` | Bearer token | ✅ OK |
-| `dashboard/reportes` | `getSession()` | `/api/reportes` | Bearer token | ✅ OK |
-| `dashboard/diseno` | `getSession()` | `/api/tienda` PATCH | Bearer token | ✅ OK |
-| `dashboard/ajustes` | `getSession()` | `/api/tienda` PATCH | Bearer token | ✅ OK |
-| `store/[domain]` | — (público) | `getSupabaseAdmin()` directo (Server Component) | `SERVICE_KEY` server-side | ✅ OK |
-| `administrador/layout.js` | `getSession()` + email check | — | — | ✅ OK |
-| `administrador/page.js` | Cookie/session | `/api/admin/stats` | `verifyAdmin()` | ✅ OK |
-| `administrador/tiendas` | Cookie/session | `/api/admin/tiendas` | `verifyAdmin()` | ✅ OK |
-| `administrador/usuarios` | Cookie/session | `/api/admin/usuarios` | `verifyAdmin()` | ✅ OK |
-| `login/page.js` | `signInWithPassword()` | — | Supabase Auth client | ✅ OK |
-| `register/page.js` | — | `/api/register` | `admin.createUser()` | ✅ OK |
-
-#### 🔧 Bugs corregidos
-
-**`app/dashboard/pos/page.js` — ArrowRight SVG duplicado eliminado**
-- El ícono `ArrowRight` estaba definido como función SVG manual al final del archivo, conflictando con el import potencial de lucide-react.
-- Fix: añadido `ArrowRight` al import de lucide-react. Eliminada la función SVG manual.
-
-**`app/dashboard/page.js` — KPI "Lealtad" hardcodeado al 82%**
-- El cuarto KPI del Centro de Comando mostraba `82%` fijo, sin ninguna conexión con datos reales.
-- Fix: se añadió fetch a `/api/clientes` en el `Promise.all()` inicial. El KPI ahora calcula el porcentaje de clientes sin deuda pendiente vs. total de clientes registrados. Título cambiado a "Clientes al Día".
-
-**`app/api/stats/route.js` — Cliente Supabase instanciado directamente**
-- Esta API creaba su propio `createClient()` en lugar de usar el singleton `getSupabaseAdmin()`.
-- Fix: migrado a `getSupabaseAdmin()`. Añadido `export const dynamic = 'force-dynamic'` para evitar respuestas cacheadas en producción.
-
-#### 📋 Script de seguridad RLS generado
-
-Creado `supabase/rls_check_and_fix.sql` con:
-- Query para verificar políticas activas en `pedidos` y `clientes`.
-- Fix idempotente para crear la política `"Public can insert orders"` en `pedidos` si no existe (necesaria para el checkout del catálogo público donde el comprador es anónimo).
-- Fix para habilitar RLS y crear política `"Dueño gestiona sus clientes"` en la tabla `clientes`.
-- Query final de verificación del estado de RLS en todas las tablas del sistema.
-
-**✅ Ejecutado directamente vía MCP de Supabase** — Ver sección siguiente.
-
-#### Estado de .env.local
-
-El archivo `.env.local` está vacío. Las variables de entorno están configuradas directamente en el entorno de despliegue (Vercel). Para desarrollo local se deben copiar desde Supabase → Project Settings → API:
+### Variables de entorno requeridas
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://[proyecto].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]
-SUPABASE_SERVICE_KEY=[service-role-key]
+NEXT_PUBLIC_SUPABASE_URL=https://bripfrfkwahsxtegmils.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]        # usada en el cliente (lib/supabase.js)
+SUPABASE_SERVICE_KEY=[service-role-key]           # usada solo en server/API (lib/supabase-admin.js)
+```
+> ⚠️ El `.env.local` está vacío. Las vars están configuradas en Vercel directamente.
+
+### Proyecto Supabase
+- **ID:** `bripfrfkwahsxtegmils`
+- **Región:** `eu-west-2` (Irlanda)
+- **Estado:** `ACTIVE_HEALTHY`
+
+### Next.js config (`next.config.mjs`)
+- `remotePatterns` configurado para: `picsum.photos`, `bripfrfkwahsxtegmils.supabase.co`, `*.tiendaonline.it`
+- (migrado desde `domains` deprecado)
+
+### Tailwind config (`tailwind.config.js`)
+```js
+colors: {
+  primary:    '#2563EB',   // azul principal del dashboard
+  secondary:  '#3B82F6',
+  cta:        '#F97316',   // naranja CTA
+  background: '#F8FAFC',
+  textDark:   '#1E293B',
+}
+fontFamily: { sans: ['Fira Sans'], mono: ['Fira Code'] }
+```
+
+### PWA (`public/manifest.json`)
+- `start_url: /dashboard`, `display: standalone`
+- `theme_color: #0f172a` (barra de estado oscura)
+- Shortcuts a POS y Pedidos (Android)
+- Meta tags iOS en `app/layout.js`: `apple-mobile-web-app-capable`, `viewport-fit=cover`, `apple-touch-icon`
+
+### Middleware (`middleware.js`)
+Detecta subdominios y redirige a `/store/[subdominio]`:
+```
+mitienda.tiendaonline.it  →  rewrite → /store/mitienda
+tiendaonline.it           →  pasa normal (home, login, register, etc.)
+localhost:3000            →  pasa normal (dev)
+```
+Excluye: `api`, `_next/static`, `_next/image`, `favicon`, `.png`, `.jpg`
+
+### Storage Supabase
+- **Bucket:** `productos` — imágenes de productos Y logos de tiendas (misma bucket por simplicidad)
+- Path logos: `logos/logo-{timestamp}.jpg`
+- Path productos: `images/{timestamp}.jpg` (o similar)
+- Compresión automática antes de subir (canvas en cliente, max 400px logos / max 800px productos)
+
+---
+
+## 3. ARQUITECTURA MULTI-TENANT
+
+### Principio fundamental
+Cada recurso tiene `tienda_id`. RLS en Supabase filtra automáticamente por `tienda_id` del usuario autenticado. **Nunca hay lecturas cruzadas entre comercios.**
+
+### Patrón de autenticación en APIs
+```
+Cliente → getSession() → access_token JWT
+       → fetch('/api/ruta', { headers: { Authorization: 'Bearer {token}' } })
+       → API Server → getSupabaseAdmin().auth.getUser(token) → user.id
+       → SELECT tiendas WHERE user_id = user.id → tienda_id
+       → Todas las queries filtran por tienda_id
+```
+
+### Singleton Supabase Admin (`lib/supabase-admin.js`)
+```js
+let _client = null
+export function getSupabaseAdmin() {
+  if (!_client) {
+    _client = createClient(URL, SERVICE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
+  }
+  return _client
+}
+```
+- `autoRefreshToken: false` y `persistSession: false` porque es server-side, sin sesión de usuario.
+- Toda API route que necesite permisos admin usa esta función.
+
+### Verificación de administrador
+```js
+// lib/supabase-admin.js
+export async function verifyAdmin(req) {
+  // Verifica JWT + compara email con ADMIN_EMAIL hardcodeado
+  return user.email === 'davidescalanteitalia@gmail.com'
+}
+```
+> ⚠️ El email del superadmin está hardcodeado. Si cambia el propietario hay que actualizarlo en:
+> - `lib/supabase-admin.js` (función `verifyAdmin`)
+> - `app/administrador/layout.js` (constante `ADMIN_EMAIL`)
+> - `app/login/page.js` (redirección al panel admin)
+
+---
+
+## 4. ESQUEMA DE BASE DE DATOS
+
+### Tabla: `tiendas`
+El perfil del comercio. Una por usuario.
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | `gen_random_uuid()` |
+| `user_id` | uuid | FK → `auth.users` |
+| `subdominio` | text NOT NULL UNIQUE | URL del catálogo |
+| `nombre` | text NOT NULL | Nombre del negocio |
+| `descripcion` | text | Bio pública |
+| `whatsapp` | text | Número con código de país |
+| `instagram` | text | Handle sin @ |
+| `email` | text | Email de contacto público |
+| `direccion` | text | Dirección física |
+| `horario` | text | Texto libre, ej: "Lun-Vie 9:00-18:00" |
+| `logo_url` | text | URL de Supabase Storage |
+| `emoji` | text | Default '🏪' |
+| `config_diseno` | jsonb | Ver estructura abajo |
+| `aceptar_pedidos` | boolean | Default true |
+| `enviar_whatsapp` | boolean | Default true |
+| `mensaje_post_pedido` | text | Mensaje al comprador al finalizar |
+| `estado` | text | 'activo' o 'suspendido' |
+| `plan_suscripcion` | text | 'free', 'pro', 'grow' (futuro Stripe) |
+| `created_at` | timestamptz | |
+| `updated_at` | timestamptz | |
+
+**Estructura de `config_diseno` (JSONB):**
+```json
+{
+  "publicado": true,
+  "color_principal": "#2563EB",
+  "modo_exhibicion": "cuadricula",
+  "mostrar_sin_stock": "normal",
+  "banner_url": null,
+  "logo_url": null,
+  "pagos": {
+    "efectivo":     { "habilitado": true,  "instrucciones": "" },
+    "transferencia":{ "habilitado": false, "cbu": "", "titular": "", "banco": "" },
+    "mercado_pago": { "habilitado": false, "link": "" }
+  },
+  "envios": {
+    "retiro":    { "habilitado": true, "tipo": "coordinar", "direccion": "" },
+    "domicilio": { "habilitado": false, "zonas": [] }
+  }
+}
 ```
 
 ---
 
-### [2026-04-12] — Auditoría y Migración Directa en Supabase (vía MCP)
+### Tabla: `productos`
+Inventario del comercio.
 
-**Proyecto Supabase:** `bripfrfkwahsxtegmils` · Región: `eu-west-2` · Estado: `ACTIVE_HEALTHY`
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `tienda_id` | uuid | FK → tiendas |
+| `nombre` | text | |
+| `descripcion` | text | |
+| `precio` | numeric | Precio de venta público |
+| `costo` | numeric | Costo real, OCULTO al público |
+| `stock` | integer | |
+| `emoji` | text | |
+| `imagen_url` | text | |
+| `categoria_id` | uuid | FK → categorias (nullable) |
+| `codigo_barras` | text | Para escáner en POS |
+| `estado` | text | 'activo' / 'inactivo' |
+| `fecha_vencimiento` | date | Para perecederos |
+| `orden` | integer | Para reordenar (drag-drop futuro) |
 
-#### 🔴 CRÍTICO resuelto — Desincronización total entre esquema DB y código
+> ⚠️ Columnas huérfanas en inglés (`barcode`, `description`, `is_active`) — mantenidas por retrocompatibilidad pero NO se usan. Usar las columnas en español.
 
-Al conectar el MCP de Supabase directamente, se descubrió que el esquema real de la base de datos no tenía las columnas que el código espera. Esto causaba que **ningún módulo funcionara correctamente** con datos reales.
+---
 
-##### Columnas faltantes añadidas por tabla:
+### Tabla: `categorias`
 
-**`productos`** — Añadidas: `emoji`, `imagen_url`, `estado` (text, default 'activo'), `categoria_id` (FK → categorias). Sincronizado `is_active` → `estado` en registros existentes.
+| Columna | Tipo | |
+|---------|------|-|
+| `id` | uuid PK | |
+| `tienda_id` | uuid FK | |
+| `nombre` | text | |
+| `emoji` | text | |
+| `orden` | integer | |
 
-**`clientes`** — La tabla tenía `full_name`, `phone`, `total_spent` en inglés. El código usa `nombre`, `telefono`, `deuda_actual`, `total_gastado`. Añadidas las columnas en español + `updated_at`. Datos existentes migrados.
+---
 
-**`pedidos`** — La tabla tenía `status`, `order_type`, `payment_method` en inglés. El código usa `codigo`, `cliente_nombre`, `items` (JSONB), `estado`. Añadidas todas las columnas. `status` → `estado` sincronizado.
+### Tabla: `pedidos`
 
-**`tiendas`** — Faltaban: `descripcion`, `instagram`, `email`, `direccion`, `emoji`, `aceptar_pedidos`, `enviar_whatsapp`, `mensaje_post_pedido`, `updated_at`. Todas añadidas con valores por defecto correctos.
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `tienda_id` | uuid FK | |
+| `codigo` | text | Ej: `#POS-102` o `#WEB-844` |
+| `cliente_nombre` | text | |
+| `cliente_telefono` | text | WhatsApp del comprador |
+| `items` | jsonb | Array de ítems del carrito |
+| `total` | numeric | |
+| `estado` | text | 'pendiente' / 'confirmado' / 'enviado' / 'cancelado' |
+| `tipo_venta` | text | 'POS' o 'Online' |
+| `metodo_pago` | text | 'efectivo', 'tarjeta', 'transferencia', 'fiado' |
+| `metodo_envio` | text | 'retiro' o 'domicilio' |
+| `created_at` | timestamptz | |
 
-#### 🔴 CRÍTICO resuelto — Políticas RLS incompletas
+**Estructura de `items` (JSONB array):**
+```json
+[
+  { "id": "uuid", "nombre": "Producto X", "precio": 10.00, "costo": 5.00, "quantity": 2 }
+]
+```
+> ⚠️ El `costo` se guarda en el momento de la venta. Si el dueño cambia el costo del producto después, el histórico refleja el costo original correcto.
 
-Estado real encontrado vs. lo esperado:
+---
 
-| Tabla | Problema encontrado | Fix aplicado |
-|-------|--------------------|-|
-| `pedidos` | Sin política INSERT pública → pedidos online no se grababan | ✅ Creada `"Público puede crear pedidos"` (anon + authenticated) |
-| `compras` | Sin ninguna política → módulo de compras completamente bloqueado | ✅ Creada `"Dueño gestiona sus compras"` (ALL authenticated) |
-| `categorias` | Solo SELECT público, sin política para el dueño → el dueño no podía crear/editar categorías | ✅ Creada `"Dueño gestiona sus categorias"` (ALL authenticated) |
-| `pedidos`, `productos`, `clientes`, `tiendas` | Usaban `auth.uid()` sin wrapper → re-evaluación por fila, lento a escala | ✅ Migradas a `(select auth.uid())` optimizado |
+### Tabla: `clientes` (CRM + Fiados)
 
-#### ⚡ Índices de rendimiento añadidos
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `tienda_id` | uuid FK | |
+| `nombre` | text | |
+| `telefono` | text | |
+| `email` | text | |
+| `deuda_actual` | numeric | Saldo de fiado pendiente |
+| `total_gastado` | numeric | Historial de compras totales |
+| `full_name` | text | Columna legacy (NOT NULL removido) — usar `nombre` |
+| `phone` | text | Columna legacy — usar `telefono` |
+| `updated_at` | timestamptz | |
 
-| Índice | Tabla | Columna |
-|--------|-------|---------|
-| `idx_tiendas_user_id` | tiendas | user_id |
-| `idx_productos_tienda_id` | productos | tienda_id |
-| `idx_productos_categoria_id` | productos | categoria_id |
-| `idx_pedidos_tienda_id` | pedidos | tienda_id |
-| `idx_pedidos_created_at` | pedidos | created_at DESC |
-| `idx_clientes_tienda_id` | clientes | tienda_id |
+---
 
-#### Estado final de políticas RLS (todas las tablas):
+### Tabla: `compras` (Registro de insumos/restock)
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `tienda_id` | uuid FK | |
+| `producto_id` | uuid FK → productos | |
+| `cantidad` | integer | Unidades compradas |
+| `costo` | numeric | Costo unitario de esta compra |
+| `fecha_vencimiento` | date | Actualiza la fecha en el producto |
+| `created_at` | timestamptz | |
+
+Al registrar una compra: el `stock` del producto se incrementa automáticamente.
+
+---
+
+### Políticas RLS activas (todas las tablas)
 
 | Tabla | RLS | Políticas |
 |-------|-----|-----------|
-| `tiendas` | ✅ | Dueño maneja su tienda (ALL) + Publico lee tiendas (SELECT) |
-| `productos` | ✅ | Dueño maneja sus productos (ALL) + Publico lee productos (SELECT) |
-| `categorias` | ✅ | Dueño gestiona sus categorias (ALL) + Lectura pública (SELECT) |
-| `pedidos` | ✅ | Dueño maneja sus pedidos (ALL) + Público puede crear pedidos (INSERT) |
-| `compras` | ✅ | Dueño gestiona sus compras (ALL) ← **nuevo** |
-| `clientes` | ✅ | Dueño maneja sus clientes (ALL) |
+| `tiendas` | ✅ | Dueño: ALL donde `user_id = auth.uid()` · Público: SELECT |
+| `productos` | ✅ | Dueño: ALL por `tienda_id` · Público: SELECT |
+| `categorias` | ✅ | Dueño: ALL por `tienda_id` · Público: SELECT |
+| `pedidos` | ✅ | Dueño: ALL por `tienda_id` · Anónimo/Público: INSERT (checkout web) |
+| `clientes` | ✅ | Dueño: ALL por `tienda_id` |
+| `compras` | ✅ | Dueño: ALL por `tienda_id` |
+
+> ✅ Todas usan `(select auth.uid())` con paréntesis (optimización: evita re-evaluación por fila).
+
+### Índices de rendimiento
+```sql
+idx_tiendas_user_id          ON tiendas(user_id)
+idx_productos_tienda_id      ON productos(tienda_id)
+idx_productos_categoria_id   ON productos(categoria_id)
+idx_pedidos_tienda_id        ON pedidos(tienda_id)
+idx_pedidos_created_at       ON pedidos(created_at DESC)
+idx_clientes_tienda_id       ON clientes(tienda_id)
+```
 
 ---
 
-## Sesión 2026-04-12 — Verificación completa + PWA + Migraciones adicionales vía MCP
+## 5. MAPA DE RUTAS Y RESPONSABILIDADES
 
-### Verificación en vivo con MCP Supabase (project: `bripfrfkwahsxtegmils`)
+### Rutas públicas (sin auth)
+| Ruta | Archivo | Descripción |
+|------|---------|-------------|
+| `/` | `app/page.js` | Landing page de TIENDAONLINE |
+| `/login` | `app/login/page.js` | Login con Supabase Auth |
+| `/register` | `app/register/page.js` | Registro de nuevos comercios |
+| `/store/[domain]` | `app/store/[domain]/page.js` | Catálogo público del comercio (Server Component) |
+| `/privacy` | `app/privacy/page.js` | Política de privacidad |
+| `/terms` | `app/terms/page.js` | Términos de uso |
+| `/cookie-policy` | `app/cookie-policy/page.js` | Política de cookies |
+| `/contatti` | `app/contatti/page.js` | Contacto |
+| `/not-found` | `app/not-found.js` | 404 personalizada |
 
-Se conectó directamente el MCP de Supabase y se auditaron todas las tablas y políticas en tiempo real. Resultado del scan:
+### Rutas del dashboard (requieren auth)
+| Ruta | Archivo | Descripción |
+|------|---------|-------------|
+| `/dashboard` | `page.js` | Centro de mando: KPIs, actividad reciente, checklist |
+| `/dashboard/pos` | `pos/page.js` | Terminal POS táctil |
+| `/dashboard/productos` | `productos/page.js` | CRUD inventario |
+| `/dashboard/compras` | `compras/page.js` | Registro de restock e insumos |
+| `/dashboard/categorias` | `categorias/page.js` | CRUD categorías |
+| `/dashboard/pedidos` | `pedidos/page.js` | Gestión de pedidos + Realtime |
+| `/dashboard/clientes` | `clientes/page.js` | CRM + gestión de fiados |
+| `/dashboard/reportes` | `reportes/page.js` | Analítica financiera |
+| `/dashboard/diseno` | `diseno/page.js` | Personalización de la tienda |
+| `/dashboard/ajustes` | `ajustes/page.js` | Perfil: nombre, WhatsApp, Instagram, horario |
+| `/dashboard/ajustes/pagos` | `ajustes/pagos/page.js` | Métodos de pago del catálogo |
+| `/dashboard/ajustes/envios` | `ajustes/envios/page.js` | Zonas de envío |
+| `/dashboard/cuenta` | `cuenta/page.js` | Cambiar email y contraseña |
 
-**Esquema confirmado como OK:**
-- `fecha_vencimiento` (date) ya existe en `productos` y `compras` — no requirió migración
-- Todas las 10 políticas RLS confirmadas activas y correctas
-- Las 6 tablas tienen RLS habilitado
+### Rutas de superadmin (solo `davidescalanteitalia@gmail.com`)
+| Ruta | Archivo | |
+|------|---------|--|
+| `/administrador` | `page.js` | Stats globales de la plataforma |
+| `/administrador/tiendas` | `tiendas/page.js` | Ver/suspender/eliminar tiendas |
+| `/administrador/usuarios` | `usuarios/page.js` | Ver/bloquear/eliminar usuarios |
 
-**3 problemas nuevos detectados y resueltos:**
-
-| Problema | Impacto | Fix aplicado |
+### API Routes (`app/api/`)
+| Endpoint | Métodos | Descripción |
 |----------|---------|-------------|
-| `clientes.full_name` tenía `NOT NULL` constraint | Cada INSERT desde POS/CRM fallaba silenciosamente porque el código inserta en `nombre`, no en `full_name` | ✅ Dropped NOT NULL, set DEFAULT '' + sincronizados datos existentes `full_name → nombre`, `phone → telefono` |
-| `productos` no tenía `codigo_barras` ni `descripcion` | El POS scanner no puede guardar/buscar por código de barras. La descripción de productos en español se perdía | ✅ Añadidas columnas `codigo_barras` y `descripcion`. Datos migrados desde `barcode` y `description` |
-| Columnas inglesas huérfanas (`barcode`, `description`, `is_active`) | Columnas muertas que confunden el esquema pero no bloquean operaciones | Mantenidas para retrocompatibilidad. Las columnas españolas son las activas |
+| `/api/me` | GET | Devuelve la tienda del usuario autenticado |
+| `/api/tienda` | GET, PATCH | Leer y actualizar perfil de tienda |
+| `/api/productos` | GET, POST, PATCH, DELETE | CRUD completo de productos |
+| `/api/categorias` | GET, POST, PATCH, DELETE | CRUD de categorías |
+| `/api/pedidos` | GET, POST | Listar pedidos / crear pedido (checkout) |
+| `/api/pedidos/[id]` | PATCH | Actualizar estado de un pedido |
+| `/api/pos` | POST | Procesar cobro del POS (descuenta stock, crea pedido, maneja fiado) |
+| `/api/clientes` | GET, POST | Listar clientes / crear cliente o registrar abono |
+| `/api/compras` | GET, POST | Listar compras / registrar restock |
+| `/api/reportes` | GET | KPIs financieros (ventas, costos, utilidad, top productos) |
+| `/api/stats` | GET | Stats simples del dashboard |
+| `/api/register` | POST | Crear usuario Auth + tienda en la misma transacción |
+| `/api/admin/stats` | GET | Stats globales (solo admin) |
+| `/api/admin/tiendas` | GET, PATCH, DELETE | Gestión de tiendas (solo admin) |
+| `/api/admin/usuarios` | GET, PATCH, DELETE | Gestión de usuarios (solo admin) |
 
-### PWA instalable — añadido en esta sesión
+> Todas las API routes tienen `export const dynamic = 'force-dynamic'` para evitar respuestas cacheadas en Vercel.
 
-**`/public/manifest.json`** — Creado con:
-- `start_url: /dashboard` → abre directo en el panel
-- `display: standalone` → pantalla completa sin barra del navegador
-- `theme_color: #0f172a` → barra de estado oscura, acorde al diseño
-- **Shortcuts:** acceso directo a POS y Pedidos al mantener pulsado el ícono (Android)
+---
 
-**`app/layout.js`** — Actualizado con:
-- `manifest: '/manifest.json'` en metadata de Next.js
-- `viewport-fit=cover` para iPhone con notch
-- `apple-mobile-web-app-capable` + `status-bar-style: black-translucent`
-- `apple-touch-icon` → `/logo.png`
+## 6. COMPONENTES CLAVE
 
-Resultado: los dueños de tiendas pueden instalar TIENDAONLINE como app nativa en iPhone y Android desde el navegador, accediendo a pantalla completa y con atajos directos al POS.
+### `components/StoreClient.js`
+Client Component del catálogo público. Recibe props del Server Component (`store/[domain]/page.js`).
 
-### Estado del proyecto tras esta sesión
+**Responsabilidades:**
+- Carrito de compras (estado local)
+- Checkout 2 pasos: datos del cliente → método de envío + pago
+- Detección de método de envío (retiro / domicilio) y cálculo de costo
+- Envío del pedido a `/api/pedidos` (POST)
+- Redirección a WhatsApp con pedido formateado si `enviar_whatsapp = true`
+- Sidebar con: logo/emoji, descripción, **horario + badge Abierto/Cerrado**, contacto (WhatsApp/Instagram/email/dirección), zonas de entrega, categorías
+- Footer "Desarrollado con TIENDAONLINE" → `https://tiendaonline.it` (viral marketing)
 
-**Completado (Sprints 1-4):**
-- ✅ Arquitectura multi-tenant con Supabase + RLS
-- ✅ Auth JWT completo (login, registro, admin)
-- ✅ CRUD inventario completo (productos + categorías + compras)
-- ✅ POS móvil (caja, fiado, recibo por WhatsApp)
-- ✅ Catálogo público por subdominio (`/store/[domain]`)
-- ✅ CRM clientes + sistema de fiados/abonos
-- ✅ Reportes de rentabilidad (ventas, costos, utilidad neta, top productos)
-- ✅ Ajustes de tienda + diseño personalizable
-- ✅ Panel de administración SaaS (gestión de tiendas y usuarios)
-- ✅ PWA instalable (manifest.json + meta tags iOS/Android)
+**Lógica de horario:**
+```js
+// Parsea "HH:MM – HH:MM" del texto de horario y compara con hora local del cliente
+getEstadoTienda() → { abierto: boolean | null, texto: string }
+```
 
-**Pendiente (Sprint 5 + operaciones):**
-- ⏳ Stripe — suscripciones para planes Pro/Grow
-- ⏳ SMTP → activar Leaked Password Protection en Supabase Auth
-- ⏳ DNS Resend → emails transaccionales
-- ⏳ `og-image.png` → imagen social para compartir en WhatsApp/redes
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+### `components/OnboardingWizard.js`
+Wizard modal de 3 pasos para nuevos usuarios. Se muestra encima del dashboard.
+
+**Pasos:**
+1. Subdominio (siempre completado si el usuario tiene tienda)
+2. Método de pago (detecta `config_diseno.pagos.*.habilitado`)
+3. Primer producto (detecta `productos.length > 0`)
+
+**Comportamiento:**
+- El X de cerrar solo aparece cuando `completedCount >= 1`
+- Al descartar: `sessionStorage.setItem('onboarding_dismissed', '1')`
+- Si todos los pasos están completos: botón "Ir al Dashboard" en lugar del X
+- Se muestra si: NO descartado en sesión Y (sin pago habilitado O sin productos)
+
+> ⚠️ Bug corregido: antes `some(k => cfg.pagos[k])` era siempre true. Correcto: `some(k => cfg.pagos[k]?.habilitado)`.
+
+### `components/LanguageProvider.js`
+Context que provee `lang` (ES/IT/EN) a toda la app. Persiste en `localStorage`.
+
+### `lib/dictionaries.js`
+Objeto con todas las cadenas de texto en los 3 idiomas. Estructura: `DICTIONARY.es`, `DICTIONARY.it`, `DICTIONARY.en`. Se importa en cada página con `const dict = DICTIONARY[lang] || DICTIONARY['es']`.
+
+---
+
+## 7. SUPABASE REALTIME
+
+### Canal 1 — Badge de pedidos pendientes (sidebar)
+**Archivo:** `app/dashboard/layout.js`
+```js
+supabase.channel(`layout-pedidos-${tienda.id}`)
+  .on('postgres_changes', { event: '*', table: 'pedidos', filter: `tienda_id=eq.${tienda.id}` }, callback)
+  .subscribe()
+```
+- Escucha INSERT y UPDATE
+- En cada cambio: re-fetchea `/api/pedidos` y recontabiliza pendientes
+- Badge verde `animate-pulse` sobre el ítem "Pedidos" del sidebar
+
+### Canal 2 — Notificación de nuevo pedido
+**Archivo:** `app/dashboard/pedidos/page.js`
+```js
+supabase.channel(`pedidos-realtime-${tienda.id}`)
+  .on('postgres_changes', { event: 'INSERT', table: 'pedidos', filter: `tienda_id=eq.${tienda.id}` }, callback)
+  .subscribe()
+```
+- Solo INSERT
+- Inserta el nuevo pedido al estado local sin recargar
+- Dispara sonido via **Web Audio API** (oscilador 3 notas, 880→660→880 Hz, sin npm)
+- Muestra toast verde 6 segundos con código y nombre del cliente
+- Cleanup correcto: `supabase.removeChannel(channelRef.current)` en `useEffect` return
+
+---
+
+## 8. FLUJOS CRÍTICOS DEL NEGOCIO
+
+### Flujo 1: Registro de un nuevo comercio
+```
+/register → POST /api/register
+  1. Sanitiza subdominio (minúsculas, a-z0-9-)
+  2. Verifica subdominio único en tiendas
+  3. Verifica WhatsApp único en tiendas
+  4. supabaseAdmin.auth.createUser({ email, password, email_confirm: true })
+  5. INSERT tiendas({ user_id, nombre, subdominio, whatsapp })
+  6. Responde con success
+→ /login → auto-login → /dashboard
+```
+
+### Flujo 2: Cobro en POS
+```
+/dashboard/pos → POST /api/pos
+  1. Por cada item: SELECT stock, decrementa stock (Math.max(0, stock - qty))
+  2. INSERT pedidos({ tipo_venta: 'POS', estado: 'confirmado', ... })
+  3. Si método = 'fiado':
+     - Busca cliente por nombre en clientes
+     - Si no existe: INSERT clientes({ nombre, deuda_actual: total })
+     - Si existe: UPDATE clientes SET deuda_actual = deuda_actual + total
+  4. Responde con pedido creado
+→ Modal de éxito → botón "Compartir recibo por WhatsApp"
+```
+
+### Flujo 3: Checkout del catálogo público (online)
+```
+StoreClient → POST /api/pedidos (anónimo — RLS permite INSERT público)
+  { cliente_nombre, cliente_telefono, items, total, metodo_envio, zona, metodo_pago, tipo_venta: 'Online' }
+  → INSERT pedidos (estado: 'pendiente')
+  → Si enviar_whatsapp: window.open(wa.me/{tienda.whatsapp}?text=...)
+  → El dueño recibe el pedido en el dashboard (Realtime) y lo confirma manualmente
+```
+
+### Flujo 4: Registro de abono en fiado
+```
+/dashboard/clientes → POST /api/clientes { id: clienteId, abono: monto }
+  → SELECT deuda_actual del cliente
+  → nueva_deuda = Math.max(0, deuda_actual - abono)
+  → UPDATE clientes SET deuda_actual = nueva_deuda
+```
+
+### Flujo 5: Restock de producto
+```
+/dashboard/compras → POST /api/compras { producto_id, cantidad, costo, fecha_vencimiento }
+  → INSERT compras(...)
+  → SELECT stock actual del producto
+  → UPDATE productos SET stock = stock + cantidad, fecha_vencimiento = nueva_fecha
+```
+
+---
+
+## 9. MÓDULO DE REPORTES FINANCIEROS
+
+**Endpoint:** `GET /api/reportes`
+
+**Lógica de cálculo:**
+```
+1. Fetch todos los pedidos confirmados y POS de la tienda
+2. Por cada pedido → por cada ítem del JSONB:
+   - ventasTotales += item.precio * item.quantity
+   - costoTotal   += item.costo  * item.quantity   (costo guardado en el momento de la venta)
+3. utilidadNeta = ventasTotales - costoTotal
+4. margen = (utilidadNeta / ventasTotales) * 100
+5. topProductos = top 5 por unidades vendidas (rank por rotación)
+```
+
+**KPIs que devuelve:** `ventasTotales`, `costoTotal`, `utilidadNeta`, `margen`, `totalPedidos`, `topProductos[]`, `fiadoTotal`
+
+> ⚠️ **Limitación conocida:** No hay filtro por fecha. Muestra todo el historial. Pendiente: selector de rango temporal.
+
+---
+
+## 10. OG IMAGE Y SEO
+
+- **`public/og-image.svg`** — SVG 1200×630px. Funciona en Telegram, Twitter, WhatsApp. Puede fallar en Facebook/LinkedIn.
+- **`app/layout.js`** — Metadata con `og:image`, `og:title`, `og:description`, `manifest`, apple meta tags.
+- > Alternativa futura: `@vercel/og` (Edge Function) para generar PNG real e incluso OG image dinámica por tienda con nombre y logo del comercio.
+
+---
+
+## 11. PANEL DE SUPERADMIN (`/administrador`)
+
+Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email comparison).
+
+**Capacidades:**
+- Ver stats globales: total tiendas, total pedidos de toda la plataforma, usuarios registrados
+- Listar todas las tiendas con su estado y usuario dueño
+- Suspender / activar / eliminar tiendas
+- Listar todos los usuarios con su tienda asociada
+- Bloquear / desbloquear / eliminar usuarios
+
+> ⚠️ El email admin está hardcodeado en 3 lugares. Si cambia el propietario: `lib/supabase-admin.js`, `app/administrador/layout.js`, `app/login/page.js`.
+
+---
+
+## 12. INTERNACIONALIZACIÓN (i18n)
+
+- **Idiomas:** Español (ES), Italiano (IT), Inglés (EN)
+- **Método:** Manual. `lib/dictionaries.js` exporta `DICTIONARY` con las 3 claves.
+- **Selector:** `components/LanguageSelector.js` guarda en `localStorage`.
+- **Provider:** `components/LanguageProvider.js` (Context) envuelve toda la app.
+- **Uso en páginas:** `const dict = DICTIONARY[lang] || DICTIONARY['es']`
+- > ⚠️ No usa `next-intl` ni `i18next`. Si el proyecto escala mucho en texto, considerar migración.
+
+---
+
+## 13. DECISIONES DE ARQUITECTURA DOCUMENTADAS
+
+| Decisión | Razón | Alternativa descartada |
+|----------|-------|----------------------|
+| SVG para OG image | `canvas` npm requiere compilación nativa (gyp error) | PNG con `canvas` |
+| Web Audio API para sonido en pedidos | Sin dependencias externas, 3 líneas | `howler.js`, `tone.js` |
+| `sessionStorage` para dismissal del OnboardingWizard | Reaparece al reiniciar el browser hasta completar setup | `localStorage` (nunca volvería) |
+| Costo guardado en el ítem del pedido (JSONB) | Reportes históricos correctos aunque cambie el costo del producto | JOIN a productos (costo actual, no histórico) |
+| Mismo bucket `productos` para logos y fotos | Simplicidad, evitar configurar múltiples buckets | Bucket separado `tienda-assets` |
+| `getSupabaseAdmin()` singleton lazy | Una sola instancia por proceso, evita memory leaks en serverless | Nueva instancia por request |
+| `(select auth.uid())` en RLS | Optimización: evaluado una vez por query, no por fila | `auth.uid()` directo (más lento a escala) |
+| Checkout sin pago online (WhatsApp) | Elimina barrera de adopción en micronegocios. Acepta pedido → pago se coordina humanamente | Integración Stripe en checkout público |
+| Hardcode email admin | Simplicidad — un solo superadmin | Tabla `admins` en DB con roles |
+
+---
+
+## 14. RIESGOS Y DEUDA TÉCNICA CONOCIDA
+
+| Riesgo | Impacto | Mitigación actual |
+|--------|---------|-------------------|
+| Email admin hardcodeado | Si cambia propietario → rompe acceso admin | Documentado arriba. Cambiar en 3 archivos. |
+| OG image en SVG | No renderiza en Facebook/LinkedIn | Pendiente migrar a `@vercel/og` |
+| Horario detectado en TZ del cliente | El dueño en Madrid, cliente en NY → estado incorrecto | Pendiente campo TZ en ajustes |
+| Sin filtro de fechas en reportes | No puedes ver ventas de esta semana vs. el mes | Pendiente selector de rango |
+| `items` como JSONB | Dificulta queries SQL avanzadas en reportes | Aceptable por ahora. Migrar si escala. |
+| Columnas huérfanas en inglés | Confunden el esquema DB | Mantener para retrocompatibilidad |
+| Sin emails transaccionales | Ningún email sale del sistema | Pendiente Resend integration |
+| Sin lector de barras activo | `codigo_barras` existe en DB pero cámara no se activa | Pendiente `@zxing/browser` |
+| Sin filtro de rango en reportes | Todo el historial siempre | Pendiente UI de filtro |
+| Stripe no integrado | Sin modelo de negocio activo | Pendiente Sprint 5 |
+
+---
+
+## 15. ROADMAP — SPRINTS PENDIENTES
+
+| Prioridad | Feature | Descripción |
+|-----------|---------|-------------|
+| 🔴 Alta | **Stripe B2B** | Cobro mensual a comercios. Planes: Free / Pro (€9/mes) / Grow (€19/mes). Desbloquea: subdominios propios, analítica avanzada, catálogos automáticos IG. |
+| 🔴 Alta | **Resend (emails transaccionales)** | Confirmación de registro, resumen de pedido al comprador, notificación al vendedor, recibo de abono de fiado. |
+| 🟡 Media | **`@vercel/og` — OG Image PNG** | Edge Function que genera imagen 1200×630 con el nombre y logo de cada tienda dinámicamente. |
+| 🟡 Media | **Lector código de barras** | Activar cámara en POS con `BarcodeDetector` API nativa o `@zxing/browser`. El campo `codigo_barras` ya existe en la DB. |
+| 🟡 Media | **Filtro de fechas en Reportes** | Selector: Hoy / Esta semana / Este mes / Personalizado. Pasar `desde` y `hasta` como query params a `/api/reportes`. |
+| 🟡 Media | **Drag-and-drop para orden** | El campo `orden` ya existe en `productos` y `categorias`. Falta UI con `@dnd-kit` o similar. |
+| 🟢 Baja | **Export CSV/PDF de reportes** | Para contabilidad e impuestos del comerciante. |
+| 🟢 Baja | **Feed para Instagram Shopping / Facebook** | Exportar catálogo en formato compatible. |
+| 🟢 Baja | **TZ del dueño en ajustes** | Para que el badge Abierto/Cerrado use la zona horaria del negocio, no del cliente. |
+| 🟢 Baja | **Auditoría y mejora de landing** | Conversión de `/` (home) — la página que convierte visitantes en comercios registrados. |
+
+---
+
+## 17. MONITOREO DE ERRORES — SENTRY
+
+### Proyecto Sentry
+- **Organización:** `deibys-david-escalante-rodrigu`
+- **Proyecto:** `tiendaonline` (slug: `tiendaonline`)
+- **Plataforma:** `javascript-nextjs`
+- **Región:** `de.sentry.io` (Europa)
+- **Dashboard:** https://deibys-david-escalante-rodrigu.sentry.io
+- **DSN:** `https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984`
+
+> ⚠️ El DSN está hardcodeado en los archivos de config (no en `.env`). Si se rota el DSN, actualizar en `sentry.client.config.js`, `sentry.server.config.js`, `sentry.edge.config.js` y `next.config.mjs`.
+
+### Versión instalada
+- `@sentry/nextjs` v10.48.0
+
+### Archivos de configuración
+| Archivo | Propósito |
+|---------|-----------|
+| `sentry.client.config.js` | Errores del navegador (React, carrito, checkout). Incluye Session Replay |
+| `sentry.server.config.js` | Errores de API routes (Node.js server-side) |
+| `sentry.edge.config.js` | Errores del middleware (Edge runtime — routing de subdominios) |
+| `next.config.mjs` | Envuelto con `withSentryConfig()` — habilita source maps en builds de Vercel |
+| `lib/sentry.js` | Utilidades para capturar errores con contexto de negocio |
+
+### Utilidades (`lib/sentry.js`)
+```js
+// Captura error con contexto del comercio afectado
+capturarError(err, { modulo: 'POS', tiendaId, userId, extra: { ... } })
+
+// Captura aviso (warning, no error)
+capturarAviso('mensaje', { modulo: 'Checkout', tiendaId, extra: { ... } })
+```
+
+### APIs instrumentadas con `capturarError`
+| API | Módulo Sentry | Contexto capturado |
+|-----|--------------|-------------------|
+| `POST /api/pos` | `POS` | `tienda_id`, `user_id` |
+| `GET /api/pedidos` | `Pedidos` | — |
+| `POST /api/pedidos` | `Checkout` | `tienda_id`, `cliente_nombre`, `total` |
+| `GET/POST/PATCH/DELETE /api/productos` | `Productos` | — |
+| `GET /api/reportes` | `Reportes` | — |
+
+### Configuración de Session Replay (cliente)
+- `replaysOnErrorSampleRate: 1.0` — Graba el 100% de sesiones que terminan en error
+- `replaysSessionSampleRate: 0.05` — Graba el 5% de sesiones normales (para UX insights)
+- `maskAllInputs: true` — Oculta campos de texto en las grabaciones (protege datos de clientes)
+
+### Errores ignorados (ruido del navegador)
+- `ResizeObserver loop limit exceeded`
+- `Non-Error promise rejection captured`
+- Errores de red (`Network Error`)
+- `ChunkLoadError` (fallos de carga de JS — típico en deploy)
+
+### Source Maps
+- Sentry sube source maps automáticamente al hacer `npm run build` en Vercel
+- `deleteSourcemapsAfterUpload: true` — Los source maps no quedan expuestos en producción
+- Esto permite ver el stack trace con código real (no minificado) en el dashboard de Sentry
+
+### Comportamiento por entorno
+- `enabled: process.env.NODE_ENV === 'production'` — Sentry NO captura errores en desarrollo local, solo en producción (Vercel)
+
+---
+
+## 16. HISTORIAL DE SESIONES DE TRABAJO
+
+### [2026-04-12] Sesión 1 — Auditoría global de Supabase + correcciones críticas
+- Conectado MCP de Supabase directo. Proyecto correcto: `bripfrfkwahsxtegmils` (no `bpkeqkfbotmbombpubqb`)
+- Descubierta desincronización total entre esquema DB y código → añadidas columnas faltantes en `productos`, `clientes`, `pedidos`, `tiendas`
+- Corregidas políticas RLS incompletas: INSERT público en pedidos, compras sin política, categorías sin policy de dueño
+- Optimizadas policies a `(select auth.uid())`
+- Añadidos 6 índices de rendimiento
+- Corregido `clientes.full_name NOT NULL` → bloqueaba inserts desde POS
+- Añadidas columnas `codigo_barras` y `descripcion` a `productos`
+- Corregidos 6 archivos con URLs de subdominio incorrectas para producción
+- Migrado `next.config.mjs` de `domains` a `remotePatterns`
+- Footer de StoreClient ahora es link viral a tiendaonline.it
+
+### [2026-04-12] Sesión 2 — PWA + Realtime + OG + 404 + OnboardingWizard
+- Creado `public/manifest.json` → PWA instalable en iOS/Android
+- Creado `public/og-image.svg` → preview social (SVG, no PNG)
+- Creado `app/not-found.js` → 404 personalizada con branding
+- Activado Supabase Realtime en `pedidos/page.js` → sonido + toast + insert local
+- Activado badge de pendientes en `layout.js` → Realtime en sidebar
+- Activado OnboardingWizard en `dashboard/page.js`
+- Corregido bug en wizard: `some(k => cfg.pagos[k])` → `some(k => cfg.pagos[k]?.habilitado)`
+
+### [2026-04-12] Sesión 4 — Sentry: monitoreo de errores en producción
+- Creado team y proyecto `tiendaonline` en Sentry (org: `deibys-david-escalante-rodrigu`, región Europa)
+- Instalado `@sentry/nextjs` v10.48.0
+- Creados `sentry.client.config.js`, `sentry.server.config.js`, `sentry.edge.config.js`
+- `next.config.mjs` envuelto con `withSentryConfig()` — source maps automáticos en Vercel
+- Creado `lib/sentry.js` — utilidades `capturarError()` y `capturarAviso()` con contexto de `tienda_id`
+- Instrumentadas 5 APIs críticas: POS, Pedidos (GET+POST), Productos, Reportes
+- Session Replay activado: 100% en errores, 5% en sesiones normales, inputs enmascarados
+- Sentry desactivado en desarrollo local (`enabled: NODE_ENV === 'production'`)
+
+### [2026-04-12] Sesión 3 — Campos faltantes + Catálogo + Cuenta
+- Migración DB: `ALTER TABLE tiendas ADD COLUMN horario TEXT`
+- `ajustes/page.js` → añadidos campos Instagram (con @ automático) y Horario
+- `StoreClient.js` → sidebar del catálogo ahora muestra badge Abierto/Cerrado detectado por hora local
+- Creada `dashboard/cuenta/page.js` → cambio de email, cambio de contraseña con re-auth, indicador fortaleza, zona de peligro
+- Sidebar del dashboard → añadido link "Mi Cuenta" con icono `UserCircle`
+- Actualizado `HISTORIAL_TECNICO.md` con documentación completa del sistema

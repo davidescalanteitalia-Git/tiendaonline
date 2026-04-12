@@ -152,7 +152,7 @@ export default function UsuariosPage() {
               {/* Subdominio */}
               <div>
                 {u.tienda ? (
-                  <a href={`http://${u.tienda.subdominio}.tiendaonline.it`} target="_blank" rel="noreferrer"
+                  <a href={`https://${u.tienda.subdominio}.tiendaonline.it`} target="_blank" rel="noreferrer"
                     style={{ color: C.green, fontSize: '0.8rem', textDecoration: 'none', fontWeight: 600 }}>
                     {u.tienda.subdominio} ↗
                   </a>

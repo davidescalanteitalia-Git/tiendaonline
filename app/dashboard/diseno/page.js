@@ -180,9 +180,12 @@ export default function DisenoPage() {
     )
   }
 
-  // URL interna para el botón "Ver Tienda" (funciona sin DNS wildcard)
-  const storeVisitUrl = `/store/${tienda?.subdominio}`
-  // URL pública con subdominio, para mostrar y copiar (una vez DNS configurado)
+  // En producción usamos el subdominio real; en desarrollo la ruta interna /store/
+  const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('tiendaonline.it')
+  const storeVisitUrl = isProduction
+    ? `https://${tienda?.subdominio}.tiendaonline.it`
+    : `/store/${tienda?.subdominio}`
+  // URL pública siempre con HTTPS para copiar y compartir con clientes
   const storeUrl = `https://${tienda?.subdominio}.tiendaonline.it`
 
   return (

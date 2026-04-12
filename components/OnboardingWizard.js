@@ -51,7 +51,7 @@ export default function OnboardingWizard({ tienda, productos, onDismiss }) {
       completedDesc: 'Métodos de pago configurados correctamente.',
       action: '/dashboard/ajustes/pagos',
       actionLabel: 'Configurar pago →',
-      done: !!config.pagos && Object.keys(config.pagos).some(k => config.pagos[k]),
+      done: !!config.pagos && Object.keys(config.pagos).some(k => config.pagos[k]?.habilitado),
     },
     {
       id: 'producto',

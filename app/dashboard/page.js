@@ -68,7 +68,7 @@ export default function DashboardPage() {
         const wizardDismissed = sessionStorage.getItem('onboarding_dismissed')
         if (!wizardDismissed) {
           const cfg = loadedTienda?.config_diseno || {}
-          const hasPayment = !!cfg.pagos && Object.keys(cfg.pagos).some(k => cfg.pagos[k])
+          const hasPayment = !!cfg.pagos && Object.keys(cfg.pagos).some(k => cfg.pagos[k]?.habilitado)
           const hasProduct = loadedProductos.length > 0
           if (!hasPayment || !hasProduct) {
             setShowWizard(true)
@@ -83,11 +83,14 @@ export default function DashboardPage() {
     load()
   }, [])
 
-  // URL para visitar internamente (sin necesitar DNS wildcard)
+  // Siempre usamos el subdominio real — funciona en producción y en desarrollo vía /store/
+  const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('tiendaonline.it')
   const storeUrl = tienda?.subdominio
-    ? `/store/${tienda.subdominio}`
+    ? isProduction
+      ? `https://${tienda.subdominio}.tiendaonline.it`
+      : `/store/${tienda.subdominio}`
     : null
-  // URL real con subdominio, para copiar y compartir con clientes
+  // URL pública siempre con HTTPS para copiar y compartir con clientes
   const storePublicUrl = tienda?.subdominio
     ? `https://${tienda.subdominio}.tiendaonline.it`
     : null
@@ -167,8 +170,8 @@ export default function DashboardPage() {
                   >
                      {copiedLink ? <CheckCircle2 size={18} /> : <Copy size={18} />}
                   </button>
-                  <a 
-                    href={`/store/${tienda?.subdominio}`} 
+                  <a
+                    href={storeUrl || '#'}
                     target="_blank"
                     className="p-2.5 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
                   >

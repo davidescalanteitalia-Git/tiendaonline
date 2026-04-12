@@ -569,32 +569,4 @@ export default function ProductosPage() {
               <div className="p-8 border-t border-slate-100 bg-white grid grid-cols-2 gap-4">
                  <button 
                    onClick={() => setIsSlideOpen(false)}
-                   className="py-4 rounded-2xl border border-slate-200 font-bold text-slate-400 hover:bg-slate-50 transition-all"
-                 >
-                    Cancelar
-                 </button>
-                 <button 
-                   onClick={handleSave}
-                   disabled={saving || uploading}
-                   className="py-4 rounded-2xl bg-emerald-600 text-white font-black hover:bg-emerald-700 shadow-xl shadow-emerald-100 disabled:opacity-50 flex items-center justify-center gap-3 transition-all transform active:scale-95"
-                 >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Check size={20} />}
-                    Guardar Cambios
-                 </button>
-              </div>
-
-           </div>
-        </div>
-      )}
-
-      {/* Global Style */}
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .animate-in { animation-duration: 0.3s; animation-fill-mode: both; }
-        .slide-in-from-right { animation-name: slideInRight; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-      `}</style>
-    </div>
-  )
-}
+                   className="py-4 rounded-2xl border border-sl

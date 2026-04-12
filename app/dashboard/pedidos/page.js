@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useLang } from '../../../components/LanguageProvider'
 import { DICTIONARY } from '../../../lib/dictionaries'
 import {
@@ -46,6 +46,27 @@ export default function PedidosPage() {
     pendingCount: 0,
     totalOrders: 0
   })
+  const [newOrderAlert, setNewOrderAlert] = useState(null) // { codigo, cliente }
+  const tiendaIdRef = useRef(null)
+  const channelRef = useRef(null)
+
+  // Sonido de notificación (Web Audio API — sin dependencias externas)
+  const playNotificationSound = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1)
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2)
+      gain.gain.setValueAtTime(0.3, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.4)
+    } catch (e) { /* Silencioso si el navegador bloquea audio */ }
+  }, [])
 
   useEffect(() => {
     fetchPedidos()
@@ -56,6 +77,62 @@ export default function PedidosPage() {
       calculateStats(pedidos)
     }
   }, [pedidos])
+
+  // Supabase Realtime — escucha nuevos pedidos en tiempo real
+  useEffect(() => {
+    let mounted = true
+
+    async function setupRealtime() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session || !mounted) return
+
+      // Obtener tienda_id del usuario actual
+      const res = await fetch('/api/me', { headers: { Authorization: `Bearer ${session.access_token}` } })
+      if (!res.ok) return
+      const { tienda } = await res.json()
+      if (!tienda?.id || !mounted) return
+
+      tiendaIdRef.current = tienda.id
+
+      // Suscribirse a INSERT en la tabla pedidos filtrado por tienda_id
+      channelRef.current = supabase
+        .channel(`pedidos-realtime-${tienda.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'pedidos',
+            filter: `tienda_id=eq.${tienda.id}`,
+          },
+          (payload) => {
+            if (!mounted) return
+            const nuevoPedido = payload.new
+            // Agregar al estado local sin recargar
+            setPedidos(prev => [nuevoPedido, ...prev])
+            // Mostrar alerta visual
+            setNewOrderAlert({
+              codigo: nuevoPedido.codigo || '#Nuevo',
+              cliente: nuevoPedido.cliente_nombre || 'Cliente',
+            })
+            // Sonido
+            playNotificationSound()
+            // Auto-cerrar alerta después de 6 segundos
+            setTimeout(() => setNewOrderAlert(null), 6000)
+          }
+        )
+        .subscribe()
+    }
+
+    setupRealtime()
+
+    return () => {
+      mounted = false
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+      }
+    }
+  }, [playNotificationSound])
 
   const fetchPedidos = async () => {
     try {
@@ -190,6 +267,24 @@ export default function PedidosPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] p-6 lg:p-10 font-sans text-slate-900 pb-20">
+
+      {/* 🔔 Realtime — Alerta de nuevo pedido */}
+      {newOrderAlert && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[320px]">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl shrink-0 animate-bounce">
+              🛍️
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold uppercase tracking-widest opacity-75 mb-0.5">¡Nuevo pedido!</p>
+              <p className="font-black text-base leading-tight">{newOrderAlert.codigo} — {newOrderAlert.cliente}</p>
+            </div>
+            <button onClick={() => setNewOrderAlert(null)} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Warning Toast */}
       {warnMsg && (

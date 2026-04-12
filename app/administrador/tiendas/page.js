@@ -136,7 +136,7 @@ export default function TiendasPage() {
                   </div>
                   <div>
                     <div style={{ color: C.text, fontWeight: 700, fontSize: '0.95rem' }}>{t.nombre}</div>
-                    <a href={`http://${t.subdominio}.tiendaonline.it`} target="_blank" rel="noreferrer"
+                    <a href={`https://${t.subdominio}.tiendaonline.it`} target="_blank" rel="noreferrer"
                       style={{ color: C.green, fontSize: '0.75rem', textDecoration: 'none', fontWeight: 600 }}>
                       {t.subdominio}.tiendaonline.it ↗
                     </a>

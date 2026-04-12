@@ -19,6 +19,21 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
   const aceptarPedidos = tienda.aceptar_pedidos ?? true
   const enviarWhatsapp = tienda.enviar_whatsapp ?? true
+
+  // ── Lógica de horario: detectar si está abierto ────────────────────────────
+  const getEstadoTienda = () => {
+    const horario = tienda.horario || ''
+    if (!horario) return null
+    // Intenta detectar si la hora actual está dentro del horario texto
+    // Formato esperado: "Lun–Vie 9:00–18:00" o "09:00 - 20:00"
+    const now = new Date()
+    const horaActual = now.getHours() * 60 + now.getMinutes()
+    const match = horario.match(/(\d{1,2}):(\d{2})\s*[–\-]\s*(\d{1,2}):(\d{2})/)
+    if (!match) return { abierto: null, texto: horario }
+    const inicio = parseInt(match[1]) * 60 + parseInt(match[2])
+    const fin    = parseInt(match[3]) * 60 + parseInt(match[4])
+    return { abierto: horaActual >= inicio && horaActual < fin, texto: horario }
+  }
   const modoCatalogo = config.modo_exhibicion || tienda.modo_catalogo || 'cuadricula'
   const stockBehavior = config.mostrar_sin_stock || 'normal'
 
@@ -175,6 +190,31 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             )}
           </div>
 
+          {/* Bloque: HORARIO + ESTADO */}
+          {tienda.horario && (() => {
+            const estado = getEstadoTienda()
+            return (
+              <div className="sidebar-block">
+                <p className="sidebar-label">HORARIO</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {estado?.abierto !== null && (
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontWeight: 800,
+                      background: estado.abierto ? '#dcfce7' : '#fee2e2',
+                      color: estado.abierto ? '#15803d' : '#dc2626',
+                      letterSpacing: '0.05em', textTransform: 'uppercase'
+                    }}>
+                      <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: estado.abierto ? '#22c55e' : '#ef4444', display: 'inline-block', animation: estado.abierto ? 'pulse 2s infinite' : 'none' }} />
+                      {estado.abierto ? 'Abierto' : 'Cerrado'}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '0.82rem', color: '#64748b' }}>{estado?.texto}</span>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Bloque: CONTACTO */}
           {(tienda.whatsapp || tienda.instagram || tienda.email || configEnvios.retiro?.direccion) && (
             <div className="sidebar-block">
@@ -252,11 +292,23 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             </div>
           )}
 
-          {/* Footer sidebar */}
+          {/* Footer sidebar — Powered by TIENDAONLINE (viral marketing) */}
           <div style={{ padding: '16px 20px', borderTop: '1px solid #f1f5f9', marginTop: 'auto' }}>
-            <p style={{ margin: 0, fontSize: '0.7rem', color: '#cbd5e1', textAlign: 'center', fontWeight: 500 }}>
-              Desarrollado por <span style={{ color: C.primary, fontWeight: 700 }}>TIENDAONLINE</span>
-            </p>
+            <a
+              href="https://tiendaonline.it"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}
+            >
+              <p style={{ margin: 0, fontSize: '0.7rem', color: '#cbd5e1', fontWeight: 500, transition: 'color 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.primary}
+                onMouseLeave={e => e.currentTarget.style.color = '#cbd5e1'}
+              >
+                Desarrollado con{' '}
+                <span style={{ color: C.primary, fontWeight: 800 }}>TIENDAONLINE</span>
+                {' '}🛍️
+              </p>
+            </a>
           </div>
         </aside>
 

@@ -1,9 +1,12 @@
 import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
+import { capturarError } from '../../../lib/sentry'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req) {
+  let tiendaId = null
+  let userId = null
   try {
     const authHeader = req.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
@@ -16,6 +19,7 @@ export async function POST(req) {
     // 1. Get user and store
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) throw new Error('Unauthorized')
+    userId = user.id
 
     const { data: tienda } = await supabaseAdmin
       .from('tiendas')
@@ -24,6 +28,7 @@ export async function POST(req) {
       .single()
 
     if (!tienda) throw new Error('No store found')
+    tiendaId = tienda.id
 
     const { clienteNombre, items, total, estado, subtotal, descuento, fiado } = await req.json()
 
@@ -106,6 +111,12 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, pedido: newOrder })
   } catch (err) {
+    capturarError(err, {
+      modulo: 'POS',
+      tiendaId,
+      userId,
+      extra: { endpoint: 'POST /api/pos' }
+    })
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
-
+import { capturarError } from '../../../lib/sentry'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req) {
@@ -84,6 +84,7 @@ export async function GET(req) {
     })
 
   } catch (err) {
+    capturarError(err, { modulo: 'Reportes', extra: { endpoint: 'GET /api/reportes' } })
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

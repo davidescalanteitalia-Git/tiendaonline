@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
-
+import { capturarError } from '../../../lib/sentry'
 export const dynamic = 'force-dynamic'
 
 async function getUserId(req) {

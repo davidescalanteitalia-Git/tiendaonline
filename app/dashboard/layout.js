@@ -7,7 +7,7 @@ import { useLang } from '../../components/LanguageProvider'
 import { DICTIONARY } from '../../lib/dictionaries'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
-import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart } from 'lucide-react'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle } from 'lucide-react'
 
 async function fetchTienda() {
   const { data: { session } } = await supabase.auth.getSession()
@@ -29,8 +29,10 @@ export default function DashboardLayout({ children }) {
   const [tienda, setTienda] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
 
   useEffect(() => {
+    let channel = null
     async function init() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -40,8 +42,36 @@ export default function DashboardLayout({ children }) {
       const t = await fetchTienda()
       setTienda(t)
       setLoading(false)
+
+      // Realtime badge — contar pedidos pendientes y actualizar en tiempo real
+      if (t?.id) {
+        // Carga inicial de pendientes
+        const res = await fetch('/api/pedidos', { headers: { Authorization: `Bearer ${session.access_token}` } })
+        if (res.ok) {
+          const data = await res.json()
+          const count = (data.pedidos || []).filter(p => p.estado === 'pendiente').length
+          setPendingCount(count)
+        }
+        // Suscribir a cambios en tiempo real
+        channel = supabase
+          .channel(`layout-pedidos-${t.id}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `tienda_id=eq.${t.id}` },
+            async () => {
+              // Recontamos desde la API cuando hay cualquier cambio
+              const { data: { session: s } } = await supabase.auth.getSession()
+              if (!s) return
+              const r = await fetch('/api/pedidos', { headers: { Authorization: `Bearer ${s.access_token}` } })
+              if (r.ok) {
+                const d = await r.json()
+                setPendingCount((d.pedidos || []).filter(p => p.estado === 'pendiente').length)
+              }
+            }
+          )
+          .subscribe()
+      }
     }
     init()
+    return () => { if (channel) supabase.removeChannel(channel) }
   }, [router])
 
   // Cerrar sidebar al cambiar de ruta
@@ -65,12 +95,15 @@ export default function DashboardLayout({ children }) {
     { icon: PieChart, label: 'Reportes', href: '/dashboard/reportes' },
     { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
     { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
+    { icon: UserCircle, label: 'Mi Cuenta', href: '/dashboard/cuenta' },
   ]
 
-  // Para "visitar tienda" usamos la ruta interna /store/ (funciona sin DNS wildcard).
-  // La URL con subdominio (prueba5.tiendaonline.it) es solo para compartir con clientes.
+  // En producción usamos el subdominio real; en desarrollo la ruta interna /store/
+  const isProduction = typeof window !== 'undefined' && window.location.hostname.includes('tiendaonline.it')
   const storeUrl = tienda?.subdominio
-    ? `/store/${tienda.subdominio}`
+    ? isProduction
+      ? `https://${tienda.subdominio}.tiendaonline.it`
+      : `/store/${tienda.subdominio}`
     : null
 
   const inicial = tienda?.nombre ? tienda.nombre.charAt(0).toUpperCase() : '?'
@@ -103,7 +136,12 @@ export default function DashboardLayout({ children }) {
                   }`}
               >
                 <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-400'} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.href === '/dashboard/pedidos' && pendingCount > 0 && (
+                  <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
+                    {pendingCount}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -215,12 +253,4 @@ export default function DashboardLayout({ children }) {
         <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
           <div className="flex-1 max-w-5xl w-full mx-auto">
             {children}
-          </div>
-          <div className="mt-12 max-w-5xl w-full mx-auto">
-            <UniversalFooter />
-          </div>
-        </div>
-      </main>
-    </div>
-  )
-}
+      

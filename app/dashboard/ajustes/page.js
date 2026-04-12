@@ -6,7 +6,7 @@ import { DICTIONARY } from '../../../lib/dictionaries'
 import {
   Settings, User, Store, Bell, ShieldCheck, Loader2, Save,
   CheckCircle2, Copy, ExternalLink, Image as ImageIcon,
-  Smartphone, Info, Camera, Trash2, Globe, X
+  Smartphone, Info, Camera, Trash2, Globe, X, Instagram, Clock
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
@@ -26,6 +26,8 @@ export default function AjustesPage() {
   const [subdominio, setSubdominio] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [instagram, setInstagram] = useState('')
+  const [horario, setHorario] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [emoji, setEmoji] = useState('🏪')
   
@@ -55,6 +57,8 @@ export default function AjustesPage() {
         setSubdominio(data.subdominio || '')
         setDescripcion(data.descripcion || '')
         setWhatsapp(data.whatsapp || '')
+        setInstagram(data.instagram || '')
+        setHorario(data.horario || '')
         setLogoUrl(data.logo_url || '')
         setEmoji(data.emoji || '🏪')
         setAceptarPedidos(data.aceptar_pedidos ?? true)
@@ -134,8 +138,8 @@ export default function AjustesPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ 
-          nombre, descripcion, whatsapp, 
+        body: JSON.stringify({
+          nombre, descripcion, whatsapp, instagram, horario,
           logo_url: logoUrl,
           aceptar_pedidos: aceptarPedidos,
           enviar_whatsapp: enviarWhatsapp,
@@ -269,6 +273,36 @@ export default function AjustesPage() {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Instagram size={13} /> Instagram
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</span>
+                        <input
+                          type="text"
+                          value={instagram.replace('@', '')}
+                          onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
+                          className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
+                          placeholder="tu_tienda"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Clock size={13} /> Horario
+                      </label>
+                      <input
+                        type="text"
+                        value={horario}
+                        onChange={(e) => setHorario(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
+                        placeholder="Lun–Vie 9:00–18:00"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">{dict.descripcionCorta || 'Bio'}</label>
                     <textarea
@@ -308,9 +342,11 @@ export default function AjustesPage() {
                      {copiedLink ? <CheckCircle2 size={18} /> : <Copy size={18} />}
                      {copiedLink ? (dict.enlaceCopiado || '¡Copiado!') : (dict.copiar || 'Copiar')}
                    </button>
-                   <a 
-                     href={`/store/${subdominio}`} 
-                     target="_blank" 
+                   <a
+                     href={typeof window !== 'undefined' && window.location.hostname.includes('tiendaonline.it')
+                       ? `https://${subdominio}.tiendaonline.it`
+                       : `/store/${subdominio}`}
+                     target="_blank"
                      className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-xl transition-all font-bold"
                    >
                      <ExternalLink size={18} /> {dict.abrir || 'Ver Tienda'}

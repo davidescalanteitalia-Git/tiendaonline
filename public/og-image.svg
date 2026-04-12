@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#064e3b"/>
+      <stop offset="60%" style="stop-color:#065f46"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.1)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.04)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Puntos decorativos top-right -->
+  <g fill="rgba(255,255,255,0.06)">
+    <circle cx="750" cy="30" r="3"/><circle cx="790" cy="30" r="3"/><circle cx="830" cy="30" r="3"/><circle cx="870" cy="30" r="3"/><circle cx="910" cy="30" r="3"/><circle cx="950" cy="30" r="3"/><circle cx="990" cy="30" r="3"/><circle cx="1030" cy="30" r="3"/><circle cx="1070" cy="30" r="3"/><circle cx="1110" cy="30" r="3"/><circle cx="1150" cy="30" r="3"/>
+    <circle cx="750" cy="70" r="3"/><circle cx="790" cy="70" r="3"/><circle cx="830" cy="70" r="3"/><circle cx="870" cy="70" r="3"/><circle cx="910" cy="70" r="3"/><circle cx="950" cy="70" r="3"/><circle cx="990" cy="70" r="3"/><circle cx="1030" cy="70" r="3"/><circle cx="1070" cy="70" r="3"/><circle cx="1110" cy="70" r="3"/><circle cx="1150" cy="70" r="3"/>
+    <circle cx="750" cy="110" r="3"/><circle cx="790" cy="110" r="3"/><circle cx="830" cy="110" r="3"/><circle cx="870" cy="110" r="3"/><circle cx="910" cy="110" r="3"/><circle cx="950" cy="110" r="3"/><circle cx="990" cy="110" r="3"/><circle cx="1030" cy="110" r="3"/><circle cx="1070" cy="110" r="3"/><circle cx="1110" cy="110" r="3"/><circle cx="1150" cy="110" r="3"/>
+    <circle cx="750" cy="150" r="3"/><circle cx="790" cy="150" r="3"/><circle cx="830" cy="150" r="3"/><circle cx="870" cy="150" r="3"/><circle cx="910" cy="150" r="3"/><circle cx="950" cy="150" r="3"/><circle cx="990" cy="150" r="3"/><circle cx="1030" cy="150" r="3"/><circle cx="1070" cy="150" r="3"/><circle cx="1110" cy="150" r="3"/><circle cx="1150" cy="150" r="3"/>
+    <circle cx="750" cy="190" r="3"/><circle cx="790" cy="190" r="3"/><circle cx="830" cy="190" r="3"/><circle cx="870" cy="190" r="3"/><circle cx="910" cy="190" r="3"/><circle cx="950" cy="190" r="3"/><circle cx="990" cy="190" r="3"/><circle cx="1030" cy="190" r="3"/><circle cx="1070" cy="190" r="3"/><circle cx="1110" cy="190" r="3"/><circle cx="1150" cy="190" r="3"/>
+  </g>
+
+  <!-- Badge GRATIS -->
+  <rect x="80" y="60" width="130" height="36" rx="18" fill="#10b981"/>
+  <text x="96" y="84" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="700" fill="white">✦ GRATIS</text>
+
+  <!-- Emoji tienda -->
+  <text x="78" y="220" font-size="72" font-family="system-ui">🛍️</text>
+
+  <!-- Título principal -->
+  <text x="80" y="305" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="900" fill="white" letter-spacing="-2">Tu tienda online</text>
+  <text x="80" y="385" font-family="system-ui, -apple-system, sans-serif" font-size="68" font-weight="900" fill="white" letter-spacing="-2">en 10 minutos.</text>
+
+  <!-- Subtítulo -->
+  <text x="80" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="24" fill="rgba(255,255,255,0.65)">Catálogo · POS · WhatsApp · Sin tarjeta de crédito</text>
+
+  <!-- Mockup teléfono (derecha) -->
+  <rect x="820" y="80" width="300" height="470" rx="32" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
+  <!-- Pantalla -->
+  <rect x="836" y="112" width="268" height="400" rx="20" fill="rgba(255,255,255,0.08)"/>
+  <!-- Notch -->
+  <rect x="920" y="92" width="100" height="12" rx="6" fill="rgba(0,0,0,0.3)"/>
+
+  <!-- Header tienda dentro del teléfono -->
+  <rect x="836" y="112" width="268" height="52" rx="0" fill="rgba(5,150,105,0.6)"/>
+  <rect x="836" y="112" width="268" height="52" rx="20" fill="rgba(5,150,105,0.6)"/>
+  <text x="856" y="145" font-family="system-ui" font-size="13" font-weight="800" fill="white">🏪 Pizzeria da Mario</text>
+
+  <!-- Items producto -->
+  <rect x="848" y="178" width="244" height="52" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="864" y="198" font-family="system-ui" font-size="11" font-weight="700" fill="rgba(255,255,255,0.9)">🍕 Pizza Margherita</text>
+  <text x="864" y="216" font-family="system-ui" font-size="13" font-weight="900" fill="#34d399">€8.50</text>
+  <rect x="1050" y="185" width="32" height="32" rx="8" fill="#10b981"/>
+  <text x="1059" y="206" font-family="system-ui" font-size="18" font-weight="900" fill="white">+</text>
+
+  <rect x="848" y="240" width="244" height="52" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="864" y="260" font-family="system-ui" font-size="11" font-weight="700" fill="rgba(255,255,255,0.9)">☕ Caffè Espresso</text>
+  <text x="864" y="278" font-family="system-ui" font-size="13" font-weight="900" fill="#34d399">€1.20</text>
+  <rect x="1050" y="247" width="32" height="32" rx="8" fill="#10b981"/>
+  <text x="1059" y="268" font-family="system-ui" font-size="18" font-weight="900" fill="white">+</text>
+
+  <rect x="848" y="302" width="244" height="52" rx="12" fill="rgba(255,255,255,0.1)"/>
+  <text x="864" y="322" font-family="system-ui" font-size="11" font-weight="700" fill="rgba(255,255,255,0.9)">🥗 Ensalada Mixta</text>
+  <text x="864" y="340" font-family="system-ui" font-size="13" font-weight="900" fill="#34d399">€5.90</text>
+  <rect x="1050" y="309" width="32" height="32" rx="8" fill="#10b981"/>
+  <text x="1059" y="330" font-family="system-ui" font-size="18" font-weight="900" fill="white">+</text>
+
+  <!-- Botón carrito -->
+  <rect x="848" y="370" width="244" height="48" rx="14" fill="#25d366"/>
+  <text x="870" y="400" font-family="system-ui" font-size="13" font-weight="800" fill="white">📲  Pedir por WhatsApp →</text>
+
+  <!-- Barra inferior del teléfono -->
+  <rect x="900" y="490" width="140" height="5" rx="3" fill="rgba(255,255,255,0.3)"/>
+
+  <!-- Logo + dominio abajo izquierda -->
+  <text x="80" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="900" fill="rgba(255,255,255,0.5)" letter-spacing="1">TIENDAONLINE · tiendaonline.it</text>
+</svg>
