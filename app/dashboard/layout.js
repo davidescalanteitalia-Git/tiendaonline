@@ -253,4 +253,11 @@ export default function DashboardLayout({ children }) {
         <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
           <div className="flex-1 max-w-5xl w-full mx-auto">
             {children}
+          </div>
+        </div>
+        <UniversalFooter />
+      </main>
+    </div>
+  )
+}
       

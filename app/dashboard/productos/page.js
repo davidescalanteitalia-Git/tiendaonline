@@ -567,6 +567,25 @@ export default function ProductosPage() {
               </div>
 
               <div className="p-8 border-t border-slate-100 bg-white grid grid-cols-2 gap-4">
-                 <button 
+                 <button
                    onClick={() => setIsSlideOpen(false)}
-                   className="py-4 rounded-2xl border border-sl
+                   className="py-4 rounded-2xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all"
+                 >
+                   Cancelar
+                 </button>
+                 <button
+                   onClick={handleSave}
+                   disabled={saving || !nombre || !precio}
+                   className="py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-lg shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                 >
+                   {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                   {saving ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Crear Producto')}
+                 </button>
+              </div>
+
+           </div>
+        </div>
+      )}
+    </div>
+  )
+}
