@@ -687,3 +687,63 @@ capturarAviso('mensaje', { modulo: 'Checkout', tiendaId, extra: { ... } })
 - Creada `dashboard/cuenta/page.js` → cambio de email, cambio de contraseña con re-auth, indicador fortaleza, zona de peligro
 - Sidebar del dashboard → añadido link "Mi Cuenta" con icono `UserCircle`
 - Actualizado `HISTORIAL_TECNICO.md` con documentación completa del sistema
+
+### [2026-04-13] Sesión 5 — Subdominios Wildcard: `prueba.tiendaonline.it` → Tienda pública
+
+**Objetivo:** Hacer que cada tienda sea accesible por su subdominio propio (`[nombre].tiendaonline.it`) en lugar de la ruta interna (`/store/[nombre]`), para una experiencia SaaS profesional.
+
+**Diagnóstico del problema:**
+- El middleware Next.js (`middleware.js`) ya estaba correctamente programado para detectar subdominios.
+- El problema estaba en la infraestructura: DNS wildcard no configurado + Coolify (Traefik) no aceptaba rutas wildcard.
+- **DNS confirmado:** `nslookup prueba.tiendaonline.it` devolvió IPs de Cloudflare ✅ (wildcard `*` ya estaba en GoDaddy apuntando al proxy de Cloudflare).
+- **Error de Coolify:** Al agregar `*.tiendaonline.it` en el campo "Domains", el deploy fallaba con `bash: line 1: https//www.tiendaonline.it: No such file or directory` — bug de bash globbing con el carácter `*` en variables de entorno de Docker exec.
+- **Coolify Advanced:** No tiene sección de "Custom Labels" editable manualmente en esta versión.
+
+**Solución implementada — Cloudflare Worker como proxy de subdominios:**
+
+| Componente | Cambio |
+|---|---|
+| `middleware.js` | Añadido soporte para header `X-Forwarded-Host` (enviado por el Worker) |
+| Cloudflare Worker | Nuevo Worker `tiendaonline-subdominios` que intercepta `*.tiendaonline.it/*` |
+| Cloudflare Route | `*.tiendaonline.it/*` → Worker (Zone: `tiendaonline.it`) |
+
+**Flujo final:**
+```
+Usuario → prueba.tiendaonline.it
+  ↓ Cloudflare Worker intercepta (Route: *.tiendaonline.it/*)
+  ↓ Reenvía a https://tiendaonline.it con headers:
+      host: tiendaonline.it
+      x-forwarded-host: prueba.tiendaonline.it
+  ↓ Next.js middleware lee x-forwarded-host → extrae "prueba"
+  ↓ Rewrite interno → /store/prueba
+  ↓ ✅ Muestra la tienda "prueba" con URL limpia
+```
+
+**Código del Worker (`tiendaonline-subdominios`):**
+```javascript
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const originalHost = request.headers.get('host');
+    const targetUrl = 'https://tiendaonline.it' + url.pathname + url.search;
+    const newHeaders = new Headers(request.headers);
+    newHeaders.set('host', 'tiendaonline.it');
+    newHeaders.set('x-forwarded-host', originalHost);
+    const newRequest = new Request(targetUrl, {
+      method: request.method,
+      headers: newHeaders,
+      body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
+      redirect: 'manual',
+    });
+    return fetch(newRequest);
+  }
+}
+```
+
+**Archivos modificados:**
+- `middleware.js` → Lee `x-forwarded-host` primero: `req.headers.get('x-forwarded-host') || req.headers.get('host')`
+- Cloudflare → Worker + Route configurados externamente (no en el repositorio)
+
+**Resultado:** ✅ Verificado en preview del Worker: `prueba.tiendaonline.it` carga correctamente la tienda con productos, sidebar, categorías y branding.
+
+**Límite del plan Free de Cloudflare Workers:** 100,000 peticiones/día — suficiente para el volumen actual de clientes en la plataforma.
