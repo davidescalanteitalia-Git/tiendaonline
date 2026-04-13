@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req) {
   try {
-    const { nombre, subdominio, whatsapp, email, password } = await req.json()
+    const { nombre, subdominio, whatsapp, email, password, sector, tipo_vendedor } = await req.json()
     const supabaseAdmin = getSupabaseAdmin()
 
     // 1. Verificar que el subdominio no esté en uso
@@ -56,10 +56,12 @@ export async function POST(req) {
         estado:  'activo',
         config_diseno: {
           publicado: true,
-          color_principal: '#000000',
+          color_principal: '#2563EB',
           version_catalogo: 'nuevo',
           modo_exhibicion: 'cuadricula',
-          mostrar_sin_stock: 'normal'
+          mostrar_sin_stock: 'normal',
+          sector: sector || null,
+          tipo_vendedor: tipo_vendedor || null
         }
       })
 

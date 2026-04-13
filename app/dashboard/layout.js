@@ -7,29 +7,39 @@ import { useLang } from '../../components/LanguageProvider'
 import { DICTIONARY } from '../../lib/dictionaries'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
-import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle } from 'lucide-react'
+import OnboardingWizard from '../../components/OnboardingWizard'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle } from 'lucide-react'
 
-async function fetchTienda() {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return null
+async function fetchTienda(access_token) {
   const res = await fetch('/api/me', {
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: { Authorization: `Bearer ${access_token}` },
   })
   if (!res.ok) return null
   const json = await res.json()
   return json.tienda || null
 }
 
+async function fetchProductosCount(access_token, tienda_id) {
+  const res = await fetch('/api/productos', { 
+    headers: { Authorization: `Bearer ${access_token}` }
+  })
+  if (!res.ok) return 0
+  const data = await res.json()
+  return data.productos ? data.productos.length : 0
+}
+
 export default function DashboardLayout({ children }) {
   const router = useRouter()
   const pathname = usePathname()
   const { lang } = useLang()
-  const dict = DICTIONARY[lang] || DICTIONARY['it']
+  const dict = DICTIONARY[lang] || DICTIONARY['es']
 
   const [tienda, setTienda] = useState(null)
+  const [productosCount, setProductosCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
 
   useEffect(() => {
     let channel = null
@@ -39,25 +49,27 @@ export default function DashboardLayout({ children }) {
         router.replace('/login')
         return
       }
-      const t = await fetchTienda()
+      const t = await fetchTienda(session.access_token)
       setTienda(t)
-      setLoading(false)
 
-      // Realtime badge — contar pedidos pendientes y actualizar en tiempo real
       if (t?.id) {
+        // Fetch products count for checklist
+        const count = await fetchProductosCount(session.access_token, t.id)
+        setProductosCount(count)
+
         // Carga inicial de pendientes
         const res = await fetch('/api/pedidos', { headers: { Authorization: `Bearer ${session.access_token}` } })
         if (res.ok) {
           const data = await res.json()
-          const count = (data.pedidos || []).filter(p => p.estado === 'pendiente').length
-          setPendingCount(count)
+          const pCount = (data.pedidos || []).filter(p => p.estado === 'pendiente').length
+          setPendingCount(pCount)
         }
+        
         // Suscribir a cambios en tiempo real
         channel = supabase
           .channel(`layout-pedidos-${t.id}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos', filter: `tienda_id=eq.${t.id}` },
             async () => {
-              // Recontamos desde la API cuando hay cualquier cambio
               const { data: { session: s } } = await supabase.auth.getSession()
               if (!s) return
               const r = await fetch('/api/pedidos', { headers: { Authorization: `Bearer ${s.access_token}` } })
@@ -68,7 +80,18 @@ export default function DashboardLayout({ children }) {
             }
           )
           .subscribe()
+
+        // Mostrar Onboarding Welcome Modal
+        const config = t.config_diseno || {}
+        const isPagosConfigured = !!config.pagos && Object.keys(config.pagos).some(k => config.pagos[k]?.habilitado)
+        const isDone = !!t.subdominio && isPagosConfigured && count > 0
+
+        // Si no está listo y no ha sido descartado, mostramos el Welcome modal
+        if (!isDone && typeof window !== 'undefined' && !sessionStorage.getItem('welcome_dismissed')) {
+          setShowWelcomeModal(true)
+        }
       }
+      setLoading(false)
     }
     init()
     return () => { if (channel) supabase.removeChannel(channel) }
@@ -108,17 +131,68 @@ export default function DashboardLayout({ children }) {
 
   const inicial = tienda?.nombre ? tienda.nombre.charAt(0).toUpperCase() : '?'
 
+  // Config Checklist Logic
+  const config = tienda?.config_diseno || {}
+  const tasks = [
+    { label: 'Dominio de tu tienda', done: !!tienda?.subdominio },
+    { label: 'Método de pago', done: !!config.pagos && Object.keys(config.pagos).some(k => config.pagos[k]?.habilitado) },
+    { label: 'Sube un producto', done: productosCount > 0 }
+  ]
+  const tasksDone = tasks.filter(t => t.done).length
+  const progressPercent = Math.round((tasksDone / tasks.length) * 100)
+
   // ── Sidebar content (shared between desktop and mobile drawer) ──
   const SidebarContent = () => (
     <>
-      <div className="p-6 pb-2">
+      <div className="p-6 pb-2 relative z-10 flex-1 overflow-y-auto">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 cursor-default">
-          <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30">
+          <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30 shrink-0">
             <ShoppingBag size={20} />
           </div>
           <span className="font-bold text-slate-900 tracking-tight text-lg">TIENDAONLINE</span>
         </div>
+
+        {/* ── Gamification Checklist ── */}
+        {!loading && progressPercent < 100 && (
+          <div className="mb-6 bg-slate-100 rounded-2xl p-4 border border-slate-200 shadow-inner">
+            <div className="flex items-center justify-between mb-2">
+               <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Tu Tienda</span>
+               <span className="text-xs font-black text-primary bg-blue-100 px-2 rounded">{progressPercent}%</span>
+            </div>
+            {/* Progress bar */}
+            <div className="h-1.5 w-full bg-slate-200 rounded-full mb-3 overflow-hidden">
+               <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${progressPercent}%` }}></div>
+            </div>
+            {/* Tasks list */}
+            <ul className="space-y-2">
+              {tasks.map((t, idx) => (
+                <li key={idx} className="flex items-center gap-2 text-sm">
+                  {t.done ? (
+                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
+                  ) : (
+                    <Circle size={16} className="text-slate-300 shrink-0" />
+                  )}
+                  <span className={`${t.done ? 'text-slate-400 line-through' : 'text-slate-700 font-medium'}`}>
+                    {t.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
+        {!loading && progressPercent === 100 && (
+          <div className="mb-6 bg-emerald-50 rounded-2xl p-3 border border-emerald-100 flex items-center gap-3">
+            <div className="w-8 h-8 bg-emerald-500 text-white flex items-center justify-center rounded-xl shrink-0">
+               <CheckCircle2 size={18} />
+            </div>
+            <div>
+               <div className="text-xs font-black uppercase text-emerald-600">¡Todo Listo!</div>
+               <div className="text-[11px] text-emerald-700 font-medium leading-tight mt-0.5">Tienda 100% configurada.</div>
+            </div>
+          </div>
+        )}
 
         {/* Nav */}
         <nav className="flex flex-col gap-1.5">
@@ -138,7 +212,7 @@ export default function DashboardLayout({ children }) {
                 <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-400'} />
                 <span className="flex-1">{item.label}</span>
                 {item.href === '/dashboard/pedidos' && pendingCount > 0 && (
-                  <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
+                  <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse shadow-sm shadow-emerald-500/40">
                     {pendingCount}
                   </span>
                 )}
@@ -149,7 +223,7 @@ export default function DashboardLayout({ children }) {
       </div>
 
       {/* Bottom: store info + logout */}
-      <div className="mt-auto p-4 border-t border-slate-200/50 bg-white/40">
+      <div className="p-4 border-t border-slate-200/50 bg-white/40 shrink-0">
         {loading ? (
           <div className="text-slate-400 text-sm text-center py-4">{dict.caricamento}</div>
         ) : (
@@ -179,7 +253,7 @@ export default function DashboardLayout({ children }) {
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-2.5 mb-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
               >
-                <Globe size={16} /> {dict.visitarSitio}
+                <Globe size={16} /> {dict.visitarSitio || 'Ver Tienda'}
               </a>
             )}
 
@@ -188,7 +262,7 @@ export default function DashboardLayout({ children }) {
               onClick={handleLogout}
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-100 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer"
             >
-              <LogOut size={16} /> {dict.salir}
+              <LogOut size={16} /> {dict.salir || 'Cerrar Sesión'}
             </button>
           </>
         )}
@@ -199,6 +273,17 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800">
 
+      {/* ── Welcome Video Modal ── */}
+      {showWelcomeModal && tienda && (
+        <OnboardingWizard 
+          tienda={tienda} 
+          onDismiss={() => {
+            sessionStorage.setItem('welcome_dismissed', 'true')
+            setShowWelcomeModal(false)
+          }} 
+        />
+      )}
+
       {/* ───── SIDEBAR DESKTOP (oculto en móvil) ───── */}
       <aside className="hidden md:flex w-64 bg-white/60 backdrop-blur-xl border-r border-slate-200/50 flex-col sticky top-0 h-screen box-border shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <SidebarContent />
@@ -208,7 +293,7 @@ export default function DashboardLayout({ children }) {
       {/* Overlay oscuro */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 z-40 md:hidden animate-in fade-in"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -220,7 +305,7 @@ export default function DashboardLayout({ children }) {
         {/* Botón cerrar */}
         <button
           onClick={() => setSidebarOpen(false)}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 text-slate-500"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 text-slate-500 z-20"
         >
           <X size={20} />
         </button>
@@ -241,7 +326,7 @@ export default function DashboardLayout({ children }) {
             </button>
             <div className="font-semibold text-slate-800 flex items-center gap-2">
               <Store size={18} className="text-slate-400 hidden md:block" />
-              {loading ? '...' : (tienda?.nombre || dict.dashboard)}
+              {loading ? '...' : (tienda?.nombre || dict.dashboard || 'Dashboard')}
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -260,4 +345,3 @@ export default function DashboardLayout({ children }) {
     </div>
   )
 }
-      
