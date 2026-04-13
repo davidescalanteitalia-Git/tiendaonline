@@ -10,9 +10,12 @@ export const config = {
 export default function middleware(req) {
   const url = req.nextUrl.clone();
 
-  // Leemos el host: primero x-forwarded-host (enviado por Cloudflare Worker),
-  // luego host normal. Limpiamos el puerto si viene incluido.
+  // Leemos el host en orden de prioridad:
+  // 1. x-tenant-host  → enviado por el Cloudflare Worker para subdominios (*.tiendaonline.it)
+  // 2. x-forwarded-host → enviado por Traefik/Coolify como proxy
+  // 3. host → valor por defecto del servidor
   let hostname =
+    req.headers.get('x-tenant-host') ||
     req.headers.get('x-forwarded-host') ||
     req.headers.get('host') ||
     'tiendaonline.it';
