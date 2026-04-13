@@ -3,49 +3,61 @@ import { NextResponse } from 'next/server';
 export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg).*)',
+    // IMPORTANTE: Quitamos la exclusión de 'api' para poder depurar, 
+    // pero en producción se recomienda excluirlo si no se usa para subdominios.
+    '/api/:path*',
   ],
 };
 
 export default function middleware(req) {
   const url = req.nextUrl.clone();
 
-  // x-tenant-host es un header personalizado enviado por el Cloudflare Worker.
-  // Traefik NO sobreescribe headers personalizados, solo x-forwarded-*.
-  // Fallback al host normal para accesos directos (Coolify/desarrollo).
-  const hostname =
+  // Obtenemos el host y LIMPIAMOS el puerto si existe (ej: tiendaonline.it:443 -> tiendaonline.it)
+  let hostname =
     req.headers.get('x-tenant-host') ||
     req.headers.get('host') ||
     'tiendaonline.it';
+  
+  hostname = hostname.split(':')[0].toLowerCase();
 
   const rootDomains = [
     'tiendaonline.it',
     'www.tiendaonline.it',
-    'localhost:3000',
+    'localhost',
   ];
 
   const isSubdomain = !rootDomains.includes(hostname);
 
-  let currentHost;
+  let currentHost = null;
 
-  if (process.env.NODE_ENV === 'development' && hostname.includes('localhost')) {
-    if (hostname.split('.')[0] !== 'localhost' && isSubdomain) {
+  if (isSubdomain) {
+    // Si es un subdominio, extraemos la parte del subdominio
+    // ej: prueba.tiendaonline.it -> prueba
+    if (hostname.endsWith('.tiendaonline.it')) {
+      currentHost = hostname.replace('.tiendaonline.it', '');
+    } else {
+      // Caso localhost o subdominios raros
       currentHost = hostname.split('.')[0];
     }
-  } else if (isSubdomain) {
-    currentHost = hostname.replace('.tiendaonline.it', '');
   }
+
+  // Debug headers para ver en el navegador
+  const headers = new Headers(req.headers);
+  headers.set('x-debug-hostname-detected', hostname);
+  headers.set('x-debug-is-subdomain', isSubdomain.toString());
+  headers.set('x-debug-current-host', currentHost || 'none');
 
   // Redirige subdominios → /store/[subdominio]
-  if (currentHost && currentHost !== 'www') {
-    const response = NextResponse.rewrite(
-      new URL(`/store/${currentHost}${url.pathname}`, req.url)
-    );
-    response.headers.set('x-debug-host', hostname);
-    response.headers.set('x-debug-current-host', currentHost);
-    return response;
+  if (currentHost && currentHost !== 'www' && currentHost !== 'localhost') {
+    // Evitamos bucles infinitos si la URL ya empieza por /store
+    if (!url.pathname.startsWith('/store')) {
+      const rewriteUrl = new URL(`/store/${currentHost}${url.pathname}`, req.url);
+      console.log(`Middleware Rewrite: ${hostname} -> ${rewriteUrl.pathname}`);
+      const response = NextResponse.rewrite(rewriteUrl);
+      response.headers.set('x-debug-final-path', rewriteUrl.pathname);
+      return response;
+    }
   }
 
-  const response = NextResponse.next();
-  response.headers.set('x-debug-host', hostname);
-  return response;
+  return NextResponse.next();
 }
