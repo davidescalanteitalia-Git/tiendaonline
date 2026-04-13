@@ -31,10 +31,10 @@ const DEMO_TABS = [
     labelKey: 'tabPanetteria',
     store: 'Panetteria Rossi',
     products: [
-      { name: 'Pane casereccio',      price: '2.50', seed: 'bread1'      },
-      { name: 'Cornetti freschi',     price: '1.20', seed: 'croissant1'  },
-      { name: 'Torta della nonna',    price: '14.00',seed: 'cake1'       },
-      { name: 'Focaccia rosmarino',   price: '3.50', seed: 'focaccia1'   },
+      { name: 'Pane casereccio',    price: '2.50',  img: 'https://loremflickr.com/300/300/bread,rustic?lock=1'     },
+      { name: 'Cornetti freschi',   price: '1.20',  img: 'https://loremflickr.com/300/300/croissant,pastry?lock=2' },
+      { name: 'Torta della nonna',  price: '14.00', img: 'https://loremflickr.com/300/300/cake,italian?lock=3'     },
+      { name: 'Focaccia rosmarino', price: '3.50',  img: 'https://loremflickr.com/300/300/focaccia,bread?lock=4'   },
     ],
   },
   {
@@ -42,10 +42,10 @@ const DEMO_TABS = [
     labelKey: 'tabFruttivendolo',
     store: "Frutta e Verdura da Mario",
     products: [
-      { name: 'Fragole biologiche',   price: '3.90', seed: 'berries1'    },
-      { name: 'Arance di Sicilia',    price: '2.00', seed: 'orange1'     },
-      { name: 'Insalata mista',       price: '1.50', seed: 'salad1'      },
-      { name: 'Pomodori datterini',   price: '2.80', seed: 'tomato1'     },
+      { name: 'Fragole biologiche', price: '3.90', img: 'https://loremflickr.com/300/300/strawberry,fresh?lock=5'  },
+      { name: 'Arance di Sicilia',  price: '2.00', img: 'https://loremflickr.com/300/300/orange,citrus?lock=6'     },
+      { name: 'Insalata mista',     price: '1.50', img: 'https://loremflickr.com/300/300/salad,vegetables?lock=7'  },
+      { name: 'Pomodori datterini', price: '2.80', img: 'https://loremflickr.com/300/300/tomato,cherry?lock=8'     },
     ],
   },
   {
@@ -53,10 +53,10 @@ const DEMO_TABS = [
     labelKey: 'tabBar',
     store: 'Bar Centrale',
     products: [
-      { name: 'Caffè espresso',       price: '1.20', seed: 'coffee1'     },
-      { name: 'Cappuccino',           price: '1.50', seed: 'latte1'      },
-      { name: 'Tramezzino misto',     price: '2.50', seed: 'sandwich1'   },
-      { name: 'Succo di frutta',      price: '2.00', seed: 'juice1'      },
+      { name: 'Caffè espresso',    price: '1.20', img: 'https://loremflickr.com/300/300/espresso,coffee?lock=9'  },
+      { name: 'Cappuccino',        price: '1.50', img: 'https://loremflickr.com/300/300/cappuccino,coffee?lock=10'},
+      { name: 'Tramezzino misto',  price: '2.50', img: 'https://loremflickr.com/300/300/sandwich,italian?lock=11' },
+      { name: 'Succo di frutta',   price: '2.00', img: 'https://loremflickr.com/300/300/juice,fruit?lock=12'     },
     ],
   },
   {
@@ -64,10 +64,10 @@ const DEMO_TABS = [
     labelKey: 'tabNegozioLocale',
     store: 'Alimentari da Lucia',
     products: [
-      { name: 'Olio extravergine',    price: '8.50', seed: 'olive1'      },
-      { name: 'Pasta artigianale',    price: '2.20', seed: 'pasta1'      },
-      { name: 'Marmellata artig.',    price: '4.90', seed: 'jam1'        },
-      { name: 'Conserve (pack 3)',    price: '6.00', seed: 'canned1'     },
+      { name: 'Olio extravergine',  price: '8.50', img: 'https://loremflickr.com/300/300/olive,oil?lock=13'      },
+      { name: 'Pasta artigianale',  price: '2.20', img: 'https://loremflickr.com/300/300/pasta,italian?lock=14'  },
+      { name: 'Marmellata artig.',  price: '4.90', img: 'https://loremflickr.com/300/300/jam,jar?lock=15'        },
+      { name: 'Conserve (pack 3)',  price: '6.00', img: 'https://loremflickr.com/300/300/grocery,food?lock=16'   },
     ],
   },
 ]
@@ -341,7 +341,7 @@ export default function Home() {
                     >
                       {DEMO_TABS[activeDemo].products.map((p, i) => (
                         <div key={i} className="product-card">
-                          <img src={`https://picsum.photos/seed/${p.seed}/300/300`} className="w-full h-24 object-cover" alt={p.name} />
+                          <img src={p.img} className="w-full h-24 object-cover" alt={p.name} loading="lazy" />
                           <div className="p-3">
                             <div className="text-[10px] font-bold text-slate-800 line-clamp-1 mb-1">{p.name}</div>
                             <div className="text-xs font-black text-emerald-600">€{p.price}</div>
