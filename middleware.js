@@ -37,10 +37,15 @@ export default function middleware(req) {
 
   // Redirige subdominios → /store/[subdominio]
   if (currentHost && currentHost !== 'www') {
-    return NextResponse.rewrite(
+    const response = NextResponse.rewrite(
       new URL(`/store/${currentHost}${url.pathname}`, req.url)
     );
+    response.headers.set('x-debug-host', hostname);
+    response.headers.set('x-debug-current-host', currentHost);
+    return response;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set('x-debug-host', hostname);
+  return response;
 }
