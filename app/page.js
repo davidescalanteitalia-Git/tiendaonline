@@ -79,6 +79,7 @@ export default function Home() {
   const [activeDemo, setActiveDemo] = useState(0)
   const [openFaq, setOpenFaq] = useState(null)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [billing, setBilling] = useState('monthly')
 
   const t = (key) => dict[key] || key
 
@@ -111,24 +112,99 @@ export default function Home() {
   const pricingPlans = [
     {
       key: 'free',
-      label: t('planGratisLabel'),
-      price: '€0',
-      period: lang === 'it' ? 'per sempre' : 'para siempre',
-      features: [t('planFree1'), t('planFree2'), t('planFree3'), t('planFree4'), t('planFree5'), t('planFree6')],
-      cta: t('ctaHeader'),
+      name: lang === 'it' ? 'Gratuito' : 'Gratis',
+      desc: lang === 'it' ? 'Prova a vendere con la nostra modalità gratuita' : 'Prueba a vender con nuestra modalidad gratuita',
+      monthly: 0,
+      annual: 0,
+      color: 'slate',
       popular: false,
-      gdpr: true
+      cta: lang === 'it' ? 'Inizia gratis' : 'Empezar gratis',
+      badge: null,
+      highlights: [
+        lang === 'it' ? '50 prodotti' : '50 productos',
+        'POS táctil incluido',
+        'Checkout por WhatsApp',
+        lang === 'it' ? 'Sottodominio gratuito' : 'Subdominio gratuito',
+        '100 MB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
+        'GDPR compliance',
+      ],
+    },
+    {
+      key: 'starter',
+      name: lang === 'it' ? 'Starter' : 'Básico',
+      desc: lang === 'it' ? 'Il tuo negozio base per iniziare' : 'Tu tienda básica para poder empezar',
+      monthly: 9,
+      annual: 7,
+      color: 'emerald',
+      popular: false,
+      cta: lang === 'it' ? 'Inizia ora' : 'Empezar ahora',
+      badge: null,
+      highlights: [
+        lang === 'it' ? '500 prodotti' : '500 productos',
+        lang === 'it' ? 'Sottodominio personalizzato' : 'Subdominio personalizado',
+        lang === 'it' ? 'Pagamenti avanzati (Stripe)' : 'Pagos avanzados (Stripe)',
+        lang === 'it' ? 'Esportazione dati CSV' : 'Exportación datos CSV',
+        '1 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
+        lang === 'it' ? 'Supporto via email' : 'Soporte por email',
+      ],
     },
     {
       key: 'pro',
-      label: t('planAvanzatoLabel'),
-      price: '€0.50',
-      period: lang === 'it' ? '/ giorno' : '/ día',
-      features: [t('planAdv1'), t('planAdv2'), t('planAdv3'), t('planAdv4'), t('planAdv5'), t('planAdv6')],
-      cta: t('planAvanzatoCta'),
+      name: 'Pro',
+      desc: lang === 'it' ? 'La tariffa per negozi in crescita' : 'La tarifa para negocios en crecimiento',
+      monthly: 19,
+      annual: 15,
+      color: 'emerald',
       popular: true,
-      gdpr: false
-    }
+      cta: lang === 'it' ? 'Inizia ora' : 'Empezar ahora',
+      badge: lang === 'it' ? 'Il più venduto' : 'El más vendido',
+      highlights: [
+        lang === 'it' ? '5.000 prodotti' : '5.000 productos',
+        lang === 'it' ? 'Rapporti finanziari avanzati' : 'Reportes financieros avanzados',
+        lang === 'it' ? 'Catalogo Instagram/Facebook' : 'Catálogo Instagram/Facebook',
+        lang === 'it' ? 'Codici sconto' : 'Códigos descuento',
+        '5 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
+        lang === 'it' ? 'Supporto prioritario' : 'Soporte prioritario',
+      ],
+    },
+    {
+      key: 'grow',
+      name: 'Grow',
+      desc: lang === 'it' ? 'Il negozio completo per vendere online' : 'Tu tienda completa para vender por Internet',
+      monthly: 49,
+      annual: 39,
+      color: 'slate',
+      popular: false,
+      cta: lang === 'it' ? 'Contattaci' : 'Contactar',
+      badge: null,
+      highlights: [
+        lang === 'it' ? 'Prodotti illimitati' : 'Productos ilimitados',
+        lang === 'it' ? 'Recupero carrelli abbandonati' : 'Recuperación carritos abandonados',
+        lang === 'it' ? 'Programma punti / Affiliati' : 'Programa de puntos / Afiliados',
+        lang === 'it' ? 'Fatturazione elettronica' : 'Facturación electrónica',
+        '20 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
+        lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',
+      ],
+    },
+  ]
+
+  const comparisonRows = [
+    { label: lang === 'it' ? 'Commissione per vendita' : 'Comisión por venta',    vals: ['0%', '0%', '0%', '0%'] },
+    { label: lang === 'it' ? 'Numero di prodotti' : 'Número de productos',        vals: ['50', '500', '5.000', lang === 'it' ? 'Illimitati' : 'Ilimitados'] },
+    { label: 'POS táctil',                                                         vals: [true, true, true, true] },
+    { label: 'Checkout WhatsApp',                                                   vals: [true, true, true, true] },
+    { label: 'Almacenamiento',                                                      vals: ['100 MB', '1 GB', '5 GB', '20 GB'] },
+    { label: lang === 'it' ? 'Subdominio personalizzato' : 'Subdominio personalizado', vals: [false, true, true, true] },
+    { label: lang === 'it' ? 'Pagamenti Stripe / Paypal' : 'Pagos Stripe / PayPal',    vals: [false, true, true, true] },
+    { label: lang === 'it' ? 'Esportazione CSV / PDF' : 'Exportación CSV / PDF',       vals: [false, true, true, true] },
+    { label: lang === 'it' ? 'Reporti finanziari' : 'Reportes financieros',            vals: [false, lang === 'it' ? 'Basici' : 'Básicos', lang === 'it' ? 'Avanzati' : 'Avanzados', 'Premium'] },
+    { label: lang === 'it' ? 'Catalogo Instagram/FB' : 'Catálogo Instagram/FB',        vals: [false, false, true, true] },
+    { label: lang === 'it' ? 'Codici sconto' : 'Códigos descuento',                    vals: [false, false, true, true] },
+    { label: lang === 'it' ? 'Carrelli abbandonati' : 'Carritos abandonados',           vals: [false, false, false, true] },
+    { label: lang === 'it' ? 'Programma punti' : 'Programa de puntos',                 vals: [false, false, false, true] },
+    { label: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',              vals: [false, false, false, true] },
+    { label: lang === 'it' ? 'Backup' : 'Backup',                                      vals: [lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Giornaliero' : 'Diario', lang === 'it' ? 'Giornaliero' : 'Diario'] },
+    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                   vals: ['Community', 'Email', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
   ]
 
   const faqs = [
@@ -421,58 +497,194 @@ export default function Home() {
       </section>
 
       {/* ─── PRICING ────────────────────────────────────────────────────────── */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <AnimatedSection className="text-center mb-20">
+      <section className="py-24 px-6 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+
+          {/* Header */}
+          <AnimatedSection className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">{t('pricingTitle')}</h2>
             <p className="text-lg text-slate-600 font-medium">{t('pricingSubtitle')}</p>
           </AnimatedSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            {pricingPlans.map((plan, i) => (
-              <AnimatedSection key={i} delay={i * 0.1} className={`relative p-10 rounded-[48px] flex flex-col transition-all h-full ${plan.popular ? 'bg-emerald-600 text-white shadow-3xl' : 'bg-slate-50 border border-slate-100 text-slate-900'}`}>
-                {plan.popular && (
-                  <div className="absolute top-0 right-10 -translate-y-1/2 bg-amber-400 text-emerald-900 text-xs font-black uppercase tracking-widest px-6 py-2 rounded-full shadow-lg">
-                    Recomendado
-                  </div>
-                )}
-                
-                <div className="mb-10">
-                  <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 ${plan.popular ? 'bg-white/10 border border-white/20' : 'bg-emerald-100 text-emerald-700'}`}>
-                    {plan.label}
-                  </span>
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-6xl font-black tracking-tighter">{plan.price}</span>
-                    <span className={`text-sm font-bold ${plan.popular ? 'text-emerald-100' : 'text-slate-500'}`}>{plan.period}</span>
-                  </div>
-                </div>
+          {/* Billing Toggle */}
+          <AnimatedSection className="flex justify-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl">
+              <button
+                onClick={() => setBilling('monthly')}
+                className={`px-7 py-3 rounded-xl font-black text-sm transition-all ${
+                  billing === 'monthly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500'
+                }`}
+              >
+                {lang === 'it' ? 'Mensile' : 'Mensual'}
+              </button>
+              <button
+                onClick={() => setBilling('annual')}
+                className={`px-7 py-3 rounded-xl font-black text-sm transition-all flex items-center gap-2 ${
+                  billing === 'annual' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-500'
+                }`}
+              >
+                {lang === 'it' ? 'Annuale' : 'Anual'}
+                <span className="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full tracking-wide">
+                  -20%
+                </span>
+              </button>
+            </div>
+          </AnimatedSection>
 
-                <div className="flex-1 space-y-4 mb-12">
-                  {plan.features.map((f, fi) => (
-                    <div key={fi} className="flex items-start gap-3 text-sm font-bold">
-                      <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${plan.popular ? 'text-white' : 'text-emerald-500'}`} />
-                      <span>{f}</span>
+          {/* Plan Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+            {pricingPlans.map((plan, i) => {
+              const price = billing === 'annual' ? plan.annual : plan.monthly
+              const annualTotal = plan.annual * 12
+              const monthlyTotal = plan.monthly * 12
+              const savings = monthlyTotal - annualTotal
+              const isPro = plan.popular
+
+              return (
+                <AnimatedSection key={plan.key} delay={i * 0.08}
+                  className={`relative flex flex-col rounded-[32px] overflow-hidden transition-all ${
+                    isPro
+                      ? 'bg-emerald-600 text-white shadow-2xl shadow-emerald-500/30 scale-105 z-10'
+                      : 'bg-slate-50 border border-slate-200 text-slate-900 hover:border-emerald-300 hover:shadow-xl'
+                  }`}
+                >
+                  {plan.badge && (
+                    <div className="bg-amber-400 text-emerald-900 text-center text-[9px] font-black uppercase tracking-[2px] py-2">
+                      ⭐ {plan.badge}
+                    </div>
+                  )}
+
+                  <div className="p-8 flex-1 flex flex-col">
+                    <div className="mb-6">
+                      <h3 className={`text-xl font-black mb-1 ${isPro ? 'text-white' : 'text-slate-900'}`}>{plan.name}</h3>
+                      <p className={`text-xs font-semibold leading-snug ${isPro ? 'text-emerald-100' : 'text-slate-500'}`}>{plan.desc}</p>
+                    </div>
+
+                    <div className="mb-8">
+                      <div className="flex items-baseline gap-1">
+                        {price === 0 ? (
+                          <span className={`text-5xl font-black ${isPro ? 'text-white' : 'text-slate-900'}`}>
+                            {lang === 'it' ? 'Gratis' : 'Gratis'}
+                          </span>
+                        ) : (
+                          <>
+                            <span className={`text-5xl font-black tracking-tighter ${isPro ? 'text-white' : 'text-slate-900'}`}>€{price}</span>
+                            <span className={`text-sm font-bold ${isPro ? 'text-emerald-100' : 'text-slate-400'}`}>/mes</span>
+                          </>
+                        )}
+                      </div>
+                      {billing === 'annual' && savings > 0 && (
+                        <div className={`mt-2 text-[11px] font-black ${
+                          isPro ? 'text-emerald-200' : 'text-emerald-600'
+                        }`}>
+                          €{annualTotal}/año · {lang === 'it' ? 'Risparmi' : 'Ahorras'} €{savings}
+                        </div>
+                      )}
+                      {billing === 'monthly' && price > 0 && (
+                        <div className={`mt-2 text-[11px] font-semibold ${
+                          isPro ? 'text-emerald-200' : 'text-slate-400'
+                        }`}>
+                          {lang === 'it' ? 'Alta gratuita' : 'Alta gratis'}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-3 mb-8">
+                      {plan.highlights.map((f, fi) => (
+                        <div key={fi} className="flex items-start gap-2.5">
+                          <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                            isPro ? 'text-white' : 'text-emerald-500'
+                          }`} />
+                          <span className={`text-xs font-semibold leading-tight ${
+                            isPro ? 'text-emerald-50' : 'text-slate-700'
+                          }`}>{f}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <a
+                      href={plan.key === 'grow' ? '/contatti' : '/register'}
+                      className={`glow-btn block w-full py-4 rounded-2xl font-black text-center text-sm transition-all ${
+                        isPro
+                          ? 'bg-white text-emerald-700 hover:bg-emerald-50'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      }`}
+                    >
+                      {plan.cta} →
+                    </a>
+                  </div>
+                </AnimatedSection>
+              )
+            })}
+          </div>
+
+          {/* Comparison Table */}
+          <AnimatedSection>
+            <div className="rounded-[32px] overflow-hidden border border-slate-200 shadow-sm">
+              {/* Table Header Row */}
+              <div className="grid bg-slate-900 text-white" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr' }}>
+                <div className="p-6 font-black text-sm">
+                  {lang === 'it' ? 'Caratteristiche' : 'Características'}
+                </div>
+                {pricingPlans.map((p) => (
+                  <div key={p.key} className={`p-6 text-center font-black text-sm ${
+                    p.popular ? 'bg-emerald-600' : ''
+                  }`}>
+                    {p.name}
+                  </div>
+                ))}
+              </div>
+
+              {/* Table Body */}
+              {comparisonRows.map((row, ri) => (
+                <div
+                  key={ri}
+                  className={`grid items-center text-sm ${
+                    ri % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                  }`}
+                  style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr' }}
+                >
+                  <div className="p-4 pl-6 font-semibold text-slate-700 border-r border-slate-100">{row.label}</div>
+                  {row.vals.map((val, vi) => (
+                    <div key={vi} className={`p-4 text-center border-r border-slate-100 last:border-r-0 font-bold ${
+                      vi === 2 ? 'bg-emerald-50' : ''
+                    }`}>
+                      {val === true ? (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 mx-auto" />
+                      ) : val === false ? (
+                        <span className="text-slate-200 text-lg">—</span>
+                      ) : (
+                        <span className="text-slate-700 text-xs">{val}</span>
+                      )}
                     </div>
                   ))}
                 </div>
+              ))}
 
-                {plan.gdpr && (
-                  <div className="mb-8 p-4 rounded-2xl bg-white/5 text-[11px] font-bold leading-relaxed border border-white/10">
-                    <div className="flex gap-2 items-center mb-2 text-emerald-200 uppercase tracking-widest">
-                       <ShieldCheck className="w-4 h-4" /> GDPR Compliance
-                    </div>
-                    {lang === 'it' 
-                      ? 'Crittografia dati, diritto all\'oblio, nessuna vendita di dati.' 
-                      : 'Cifrado de datos, derecho al olvido, sin venta de datos.'}
+              {/* Table Footer CTA Row */}
+              <div className="grid bg-slate-900" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr' }}>
+                <div className="p-4" />
+                {pricingPlans.map((p) => (
+                  <div key={p.key} className={`p-4 ${
+                    p.popular ? 'bg-emerald-600' : ''
+                  }`}>
+                    <a
+                      href={p.key === 'grow' ? '/contatti' : '/register'}
+                      className={`block w-full py-3 rounded-xl font-black text-center text-xs transition-all ${
+                        p.popular
+                          ? 'bg-white text-emerald-700'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                      }`}
+                    >
+                      {p.cta}
+                    </a>
                   </div>
-                )}
+                ))}
+              </div>
+            </div>
+          </AnimatedSection>
 
-                <a href="/register" className={`glow-btn w-full py-5 rounded-2xl font-black text-center text-lg transition-all ${plan.popular ? 'bg-white text-emerald-700 shadow-white/20' : 'bg-emerald-600 text-white shadow-emerald-600/20'}`}>
-                  {plan.cta} →
-                </a>
-              </AnimatedSection>
-            ))}
-          </div>
+        </div>
         </div>
       </section>
 
