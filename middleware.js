@@ -9,11 +9,11 @@ export const config = {
 export default function middleware(req) {
   const url = req.nextUrl.clone();
 
-  // X-Forwarded-Host es enviado por el Cloudflare Worker cuando
-  // un subdominio (ej: prueba.tiendaonline.it) es redirigido a tiendaonline.it.
-  // Si no existe, usamos el Host normal (acceso directo al subdominio via Traefik).
+  // x-tenant-host es un header personalizado enviado por el Cloudflare Worker.
+  // Traefik NO sobreescribe headers personalizados, solo x-forwarded-*.
+  // Fallback al host normal para accesos directos (Coolify/desarrollo).
   const hostname =
-    req.headers.get('x-forwarded-host') ||
+    req.headers.get('x-tenant-host') ||
     req.headers.get('host') ||
     'tiendaonline.it';
 
