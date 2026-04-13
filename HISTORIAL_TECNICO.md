@@ -747,3 +747,14 @@ export default {
 **Resultado:** ✅ Verificado en preview del Worker: `prueba.tiendaonline.it` carga correctamente la tienda con productos, sidebar, categorías y branding.
 
 **Límite del plan Free de Cloudflare Workers:** 100,000 peticiones/día — suficiente para el volumen actual de clientes en la plataforma.
+
+### [2026-04-13] Sesión 6 — Gamificación, Onboarding UX y Refactor de Registro
+
+**Objetivo:** Reducir la fricción al momento de adquirir usuarios y mejorar la retención inicial mediante incentivos visuales gamificados (inspirado en análisis UX competitivo).
+
+**Implementación técnica:**
+1. **Wizard de Registro en 3 pasos:** Se reescribió `app/register/page.js` transformándolo de un formulario largo a un asistente interactivo por pantallas. Captura `sector` y `tipo_vendedor` en el paso 2 y los persiste en el JSONB `config_diseno`.
+2. **Validación en vivo (API):** Creado el endpoint `GET /api/check-subdominio`. En el paso 1, mientras el usuario escribe, el frontend hace un fetch (con *debounce* de 500ms) devolviendo de inmediato si el subdominio está libre (check verde) o tomado. 
+   - *Fix:* En App Router usando Web Request normal, evaluar `new URL(req.url)` genera un error 500. Se migró correctamente a leer `req.nextUrl.searchParams`.
+3. **Gamificación y Checklist:** Modificado `app/dashboard/layout.js` incorporando una barra de progreso lateral fija (0-100%). Evalúa dinámicamente si el usurio ya tiene productos (haciendo un fetch liviano a `/api/productos`) y si activó métodos de pago, sumando porcentaje con diseño estilo gamificado.
+4. **Welcome Video Modal:** El componente `components/OnboardingWizard.js` fue convertido en un Modal de Bienvenida en primer plano con un `iframe` de YouTube para un tutorial introductorio por parte del fundador. El estado de cierre se controla vía `sessionStorage`.
