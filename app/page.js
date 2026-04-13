@@ -2,11 +2,27 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  ShoppingBag, 
+  MessageSquare, 
+  Store, 
+  ShieldCheck, 
+  Globe, 
+  Users, 
+  Clock, 
+  CheckCircle2, 
+  ArrowRight,
+  ChevronRight,
+  TrendingUp,
+  Zap,
+  Smartphone,
+  Info
+} from 'lucide-react'
 import { useLang } from '../components/LanguageProvider'
 import { DICTIONARY } from '../lib/dictionaries'
-
-// ─── PALETA DE COLORES ────────────────────────────────────────────────────────
 import { C } from '../lib/theme'
+import AnimatedSection from '../components/AnimatedSection'
 
 // ─── DATOS DE LA DEMO INTERACTIVA ─────────────────────────────────────────────
 const DEMO_TABS = [
@@ -56,54 +72,63 @@ const DEMO_TABS = [
   },
 ]
 
-// ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 export default function Home() {
   const { lang, changeLang: setLang } = useLang()
   const dict = DICTIONARY[lang]
-  const [storeCount,  setStoreCount]  = useState(0)
-  const [activeDemo,  setActiveDemo]  = useState(0)
-  const [openFaq,     setOpenFaq]     = useState(null)
+  const [storeCount, setStoreCount] = useState(0)
+  const [activeDemo, setActiveDemo] = useState(0)
+  const [openFaq, setOpenFaq] = useState(null)
+  const [isScrolled, setIsScrolled] = useState(false)
 
-  // Función de traducción conectada al diccionario global
   const t = (key) => dict[key] || key
 
-  // Carga el contador de tiendas
   useEffect(() => {
     fetch('/api/stats')
       .then((r) => r.json())
       .then((d) => setStoreCount(d.total || 0))
       .catch(() => {})
+
+    const handleScroll = () => setIsScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // ── Datos reactivos ────────────────────────────────────────────────────────
   const features = [
-    { icon: '💬', title: t('feat1Title'), desc: t('feat1Desc') },
-    { icon: '🏪', title: t('feat2Title'), desc: t('feat2Desc') },
-    { icon: '🙈', title: t('feat3Title'), desc: t('feat3Desc') },
-    { icon: '🌐', title: t('feat4Title'), desc: t('feat4Desc') },
-    { icon: '👥', title: t('feat5Title'), desc: t('feat5Desc') },
-    { icon: '🔒', title: t('feat6Title'), desc: t('feat6Desc') },
+    { icon: <MessageSquare className="w-8 h-8 text-emerald-500" />, title: t('feat1Title'), desc: t('feat1Desc') },
+    { icon: <Store className="w-8 h-8 text-emerald-500" />, title: t('feat2Title'), desc: t('feat2Desc') },
+    { icon: <TrendingUp className="w-8 h-8 text-emerald-500" />, title: t('feat3Title'), desc: t('feat3Desc') },
+    { icon: <Globe className="w-8 h-8 text-emerald-500" />, title: t('feat4Title'), desc: t('feat4Desc') },
+    { icon: <Users className="w-8 h-8 text-emerald-500" />, title: t('feat5Title'), desc: t('feat5Desc') },
+    { icon: <ShieldCheck className="w-8 h-8 text-emerald-500" />, title: t('feat6Title'), desc: t('feat6Desc') },
   ]
 
   const steps = [
-    { num: '1', title: t('step1Title'), time: t('step1Time'), desc: t('step1Desc') },
-    { num: '2', title: t('step2Title'), time: t('step2Time'), desc: t('step2Desc') },
-    { num: '3', title: t('step3Title'), time: t('step3Time'), desc: t('step3Desc') },
+    { num: '1', title: t('step1Title'), time: t('step1Time'), desc: t('step1Desc'), icon: <Zap className="w-5 h-5" /> },
+    { num: '2', title: t('step2Title'), time: t('step2Time'), desc: t('step2Desc'), icon: <Smartphone className="w-5 h-5" /> },
+    { num: '3', title: t('step3Title'), time: t('step3Time'), desc: t('step3Desc'), icon: <ShoppingBag className="w-5 h-5" /> },
   ]
 
-  const freeFeatures = [
-    t('planFree1'), t('planFree2'), t('planFree3'),
-    t('planFree4'), t('planFree5'), t('planFree6'),
-  ]
-
-  const advFeatures = [
-    t('planAdv1'), t('planAdv2'), t('planAdv3'),
-    t('planAdv4'), t('planAdv5'), t('planAdv6'),
-  ]
-
-  const proFeatures = [
-    t('planPro1'), t('planPro2'), t('planPro3'),
-    t('planPro4'), t('planPro5'), t('planPro6'),
+  const pricingPlans = [
+    {
+      key: 'free',
+      label: t('planGratisLabel'),
+      price: '€0',
+      period: lang === 'it' ? 'per sempre' : 'para siempre',
+      features: [t('planFree1'), t('planFree2'), t('planFree3'), t('planFree4'), t('planFree5'), t('planFree6')],
+      cta: t('ctaHeader'),
+      popular: false,
+      gdpr: true
+    },
+    {
+      key: 'pro',
+      label: t('planAvanzatoLabel'),
+      price: '€0.50',
+      period: lang === 'it' ? '/ giorno' : '/ día',
+      features: [t('planAdv1'), t('planAdv2'), t('planAdv3'), t('planAdv4'), t('planAdv5'), t('planAdv6')],
+      cta: t('planAvanzatoCta'),
+      popular: true,
+      gdpr: false
+    }
   ]
 
   const faqs = [
@@ -116,982 +141,459 @@ export default function Home() {
     { q: t('faq7Q'), a: t('faq7A') },
   ]
 
-  // ── Helpers de estilo ──────────────────────────────────────────────────────
-  const ctaBtn = (href, label, variant = 'primary') => {
-    const isPrimary = variant === 'primary'
-    return (
-      <a
-        href={href}
-        className={isPrimary ? 'glow-btn' : ''}
-        style={{
-          display:       'inline-block',
-          background:    isPrimary ? C.white    : C.green,
-          color:         isPrimary ? C.green    : C.white,
-          padding:       '15px 32px',
-          borderRadius:  '12px',
-          textDecoration:'none',
-          fontWeight:    800,
-          fontSize:      '1.05rem',
-          boxShadow:     isPrimary
-            ? '0 10px 25px -5px rgba(0,0,0,0.1)'
-            : `0 4px 15px rgba(5, 150, 105, 0.3)`,
-          transition:    'all 0.2s',
-        }}
-      >
-        🛍️ {label} →
-      </a>
-    )
-  }
-
-  // ── RENDER ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif", color: C.text, margin: 0, padding: 0 }}>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          HEADER STICKY
-      ════════════════════════════════════════════════════════════════════ */}
-      <header className="glass-header" style={{
-        position:      'sticky',
-        top:           0,
-        zIndex:        100,
-      }}>
-        <div style={{
-          maxWidth:      '1100px',
-          margin:        '0 auto',
-          padding:       '0 20px',
-          display:       'flex',
-          alignItems:    'center',
-          justifyContent:'space-between',
-          height:        '64px',
-          gap:           '12px',
-        }}>
-
-          {/* Logo */}
-          <a href="/" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Image
-              src="/logo.jpg"
-              alt="TIENDAONLINE"
-              width={38}
-              height={38}
-              style={{ borderRadius: '8px' }}
-              priority
-            />
-            <span style={{ color: C.green, fontWeight: 900, fontSize: '1.1rem', letterSpacing: '-0.5px' }}>
+    <div className="bg-slate-50 font-sans selection:bg-emerald-100 selection:text-emerald-900">
+      
+      {/* ─── HEADER ─────────────────────────────────────────────────────────── */}
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-header py-3' : 'bg-transparent py-5'}`}>
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-3 no-underline group">
+            <div className="relative overflow-hidden rounded-xl">
+              <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="rounded-xl transition-transform group-hover:scale-110" priority />
+            </div>
+            <span className={`font-black text-xl tracking-tighter ${isScrolled ? 'text-emerald-600' : 'text-white'}`}>
               TIENDAONLINE
             </span>
           </a>
 
-          {/* Selector de idioma */}
-          <div style={{ display: 'flex', gap: '4px' }}>
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
             {['it', 'es', 'en'].map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                style={{
-                  padding:      '4px 10px',
-                  borderRadius: '20px',
-                  border:       `1.5px solid ${lang === l ? C.green : '#ddd'}`,
-                  background:   lang === l ? C.green : 'transparent',
-                  color:        lang === l ? C.white : C.textMuted,
-                  fontSize:     '0.72rem',
-                  fontWeight:   700,
-                  cursor:       'pointer',
-                  textTransform:'uppercase',
-                  letterSpacing:'0.5px',
-                  transition:   'all 0.15s',
-                }}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${lang === l ? 'bg-emerald-500 text-white shadow-lg' : 'text-emerald-100 hover:text-white'}`}
               >
                 {l}
               </button>
             ))}
           </div>
 
-          {/* Nav links */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
-            <a
-              href="/login"
-              style={{
-                color:         C.textMuted,
-                textDecoration:'none',
-                fontSize:      '0.9rem',
-                fontWeight:    500,
-              }}
-            >
+          <div className="flex items-center gap-6">
+            <a href="/login" className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-slate-600 hover:text-emerald-600' : 'text-emerald-50 hover:text-white'}`}>
               {t('accedi')}
             </a>
-            <a
-              href="/register"
-              className="glow-btn"
-              style={{
-                display:       'inline-block',
-                background:    C.green,
-                color:         C.white,
-                padding:       '8px 16px',
-                borderRadius:  '8px',
-                textDecoration:'none',
-                fontSize:      '0.85rem',
-                fontWeight:    700,
-                boxShadow:     `0 4px 10px rgba(5, 150, 105, 0.25)`,
-                whiteSpace:    'nowrap',
-              }}
-            >
-              {t('ctaHeader')} →
+            <a href="/register" className="glow-btn bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xl shadow-emerald-500/20 flex items-center gap-2">
+              {t('ctaHeader')} <ArrowRight className="w-4 h-4" />
             </a>
           </div>
-
         </div>
       </header>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          BANNER EN CONSTRUCCIÓN
-      ════════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        background:  '#fef3c7',
-        borderBottom:'1px solid #fcd34d',
-        padding:     '10px 20px',
-        textAlign:   'center',
-        fontSize:    '0.88rem',
-        fontWeight:  600,
-        color:       '#92400e',
-        display:     'flex',
-        alignItems:  'center',
-        justifyContent:'center',
-        gap:         '8px',
-      }}>
-        🚧 {t('bannerText')}
-      </div>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          1. HERO
-      ════════════════════════════════════════════════════════════════════ */}
-      <section className="gradient-bg" style={{
-        padding:     '88px 20px',
-        textAlign:   'center',
-        position:    'relative',
-        overflow:    'hidden',
-      }}>
-        {/* Círculos decorativos */}
-        <div style={{ position:'absolute', top:'-80px',  right:'-80px',  width:'360px', height:'360px', borderRadius:'50%', background:'rgba(255,255,255,0.1)', filter:'blur(40px)', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', bottom:'-80px',left:'-40px',  width:'280px', height:'280px', borderRadius:'50%', background:'rgba(255,255,255,0.08)', filter:'blur(30px)', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', top:'30%',   left:'5%',       width:'120px', height:'120px', borderRadius:'50%', background:'rgba(255,255,255,0.12)', filter:'blur(20px)', pointerEvents:'none' }} />
-
-        <div style={{ maxWidth: '680px', margin: '0 auto', position: 'relative' }}>
-
-          {/* Badge */}
-          <div style={{
-            display:      'inline-block',
-            background:   'rgba(255,255,255,0.15)',
-            border:       '1px solid rgba(255,255,255,0.3)',
-            borderRadius: '100px',
-            padding:      '6px 18px',
-            marginBottom: '24px',
-            color:        C.white,
-            fontSize:     '0.85rem',
-            fontWeight:   600,
-          }}>
+      {/* ─── HERO SECTION ────────────────────────────────────────────────────── */}
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden mesh-gradient">
+        {/* Animated Orbs */}
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], x: [0, 50, 0], y: [0, 30, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="hero-glow top-[10%] left-[5%]" 
+        />
+        <motion.div 
+          animate={{ scale: [1.2, 1, 1.2], x: [0, -40, 0], y: [0, -50, 0] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+          className="hero-glow bottom-[10%] right-[10%] bg-blue-500/20" 
+        />
+        
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl text-white text-xs font-bold tracking-wide mb-8 shadow-2xl"
+          >
+            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             ✨ {t('heroBadge')}
-          </div>
+          </motion.div>
 
-          {/* H1 */}
-          <h1 style={{
-            color:        C.white,
-            fontSize:     'clamp(2rem, 5.5vw, 3.4rem)',
-            fontWeight:   900,
-            lineHeight:   1.12,
-            margin:       '0 0 18px',
-            letterSpacing:'-1.5px',
-          }}>
-            {t('heroTitle')}
-          </h1>
-
-          {/* Subtítulo */}
-          <p style={{
-            color:        'rgba(255,255,255,0.88)',
-            fontSize:     'clamp(1rem, 2.5vw, 1.2rem)',
-            lineHeight:   1.65,
-            margin:       '0 0 36px',
-            fontWeight:   400,
-          }}>
-            {t('heroSubtitle')}
-          </p>
-
-          {/* CTA Principal */}
-          <div style={{ marginBottom: '24px' }}>
-            {ctaBtn('/register', t('heroCtaMain'), 'primary')}
-          </div>
-
-          {/* Checkmarks */}
-          <div style={{
-            display:        'flex',
-            flexWrap:       'wrap',
-            justifyContent: 'center',
-            gap:            '10px 24px',
-            marginBottom:   '32px',
-          }}>
-            {[t('heroCheck1'), t('heroCheck2'), t('heroCheck3')].map((check, i) => (
-              <span key={i} style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', fontWeight: 600 }}>
-                ✓ {check}
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-8"
+          >
+            {t('heroTitle').split('\n').map((line, i) => (
+              <span key={i} className={i === 1 ? 'text-emerald-300' : ''}>
+                {line}<br/>
               </span>
             ))}
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-lg md:text-xl text-emerald-50/80 leading-relaxed mb-12 max-w-2xl mx-auto"
+          >
+            {t('heroSubtitle')}
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          >
+            <a href="/register" className="glow-btn bg-white text-emerald-900 px-10 py-5 rounded-2xl text-lg font-black shadow-2xl transition-all w-full sm:w-auto flex items-center justify-center gap-3">
+              <ShoppingBag className="w-6 h-6" /> {t('heroCtaMain')}
+            </a>
+            <div className="flex -space-x-3 items-center">
+              {[1, 2, 3, 4].map(i => (
+                <img key={i} src={`https://i.pravatar.cc/100?img=${i+10}`} className="w-10 h-10 rounded-full border-2 border-emerald-800 shadow-xl" alt="User" />
+              ))}
+              <div className="pl-6 text-emerald-100 text-sm font-bold">
+                {t('heroStores').replace('{n}', storeCount)}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Social Proof Checkmarks */}
+          <div className="flex flex-wrap justify-center gap-6 md:gap-12">
+            {[t('heroCheck1'), t('heroCheck2'), t('heroCheck3')].map((check, i) => (
+              <div key={i} className="flex items-center gap-2 text-emerald-100/70 text-sm font-semibold">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" /> {check}
+              </div>
+            ))}
           </div>
-
-          {/* Contador social proof */}
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: 0, fontWeight: 500 }}>
-            {t('heroStores').replace('{n}', storeCount)}
-          </p>
-
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          2. EL PROBLEMA
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.white, padding: '80px 20px' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      {/* ─── EL PROBLEMA ────────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-white overflow-hidden relative">
+        <div className="max-w-7xl mx-auto">
+          <AnimatedSection className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+              {t('problemaTitle')}
+            </h2>
+          </AnimatedSection>
 
-          <h2 style={{
-            textAlign:    'center',
-            fontSize:     'clamp(1.5rem, 3vw, 2.2rem)',
-            fontWeight:   800,
-            margin:       '0 0 52px',
-            letterSpacing:'-0.5px',
-          }}>
-            {t('problemaTitle')}
-          </h2>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               { icon: '📵', title: t('problema1Title'), desc: t('problema1Desc') },
               { icon: '💬', title: t('problema2Title'), desc: t('problema2Desc') },
               { icon: '💸', title: t('problema3Title'), desc: t('problema3Desc') },
             ].map((item, i) => (
-              <div key={i} className="premium-shadow" style={{
-                flex:         '1 1 280px',
-                maxWidth:     '320px',
-                background:   C.white,
-                border:       `1px solid ${C.greenBorder}`,
-                borderRadius: '18px',
-                padding:      '36px 28px',
-                textAlign:    'center',
-              }}>
-                <div style={{ fontSize: '2.8rem', marginBottom: '14px' }}>{item.icon}</div>
-                <h3 style={{ fontWeight: 700, fontSize: '1.05rem', margin: '0 0 10px', color: C.text }}>{item.title}</h3>
-                <p style={{ color: C.textMuted, lineHeight: 1.65, margin: 0, fontSize: '0.93rem' }}>{item.desc}</p>
-              </div>
+              <AnimatedSection key={i} delay={i * 0.1} className="premium-shadow p-8 rounded-3xl bg-slate-50 border border-slate-100 group">
+                <div className="text-5xl mb-6 transition-transform group-hover:scale-110 duration-500 transform-gpu">{item.icon}</div>
+                <h3 className="text-xl font-bold text-slate-900 mb-4 tracking-tight">{item.title}</h3>
+                <p className="text-slate-600 leading-relaxed font-medium text-sm">{item.desc}</p>
+              </AnimatedSection>
             ))}
           </div>
-
         </div>
       </section>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          3. DEMO INTERACTIVA
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.greenBg, padding: '80px 20px' }}>
-        <div style={{ maxWidth: '820px', margin: '0 auto' }}>
+      {/* ─── DEMO INTERACTIVA ────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-emerald-50 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          <AnimatedSection>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-6">
+              {t('demoTitle')}
+            </h2>
+            <p className="text-lg text-slate-600 font-medium mb-10 leading-relaxed">
+              {t('demoSubtitle')}
+            </p>
 
-          <h2 style={{
-            textAlign:    'center',
-            fontSize:     'clamp(1.5rem, 3vw, 2.2rem)',
-            fontWeight:   800,
-            margin:       '0 0 10px',
-            letterSpacing:'-0.5px',
-          }}>
-            {t('demoTitle')}
-          </h2>
-          <p style={{ textAlign: 'center', color: C.textMuted, margin: '0 0 36px', fontSize: '1rem' }}>
-            {t('demoSubtitle')}
-          </p>
-
-          {/* Tabs */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '36px' }}>
-            {DEMO_TABS.map((tab, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveDemo(i)}
-                style={{
-                  padding:      '10px 22px',
-                  borderRadius: '100px',
-                  border:       `2px solid ${activeDemo === i ? C.green : C.grayBorder}`,
-                  background:   activeDemo === i ? C.green : C.white,
-                  color:        activeDemo === i ? C.white : C.textMuted,
-                  fontWeight:   600,
-                  fontSize:     '0.9rem',
-                  cursor:       'pointer',
-                  transition:   'all 0.2s',
-                }}
-              >
-                {tab.icon} {t(tab.labelKey)}
-              </button>
-            ))}
-          </div>
-
-          {/* Mockup teléfono */}
-          <div style={{ maxWidth: '300px', margin: '0 auto' }}>
-            <div className="demo-phone">
-              <div className="demo-phone-inner">
-                {/* Barra del store */}
-              <div style={{ background: C.green, padding: '16px' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: C.white, marginBottom: '10px' }}>
-                  {DEMO_TABS[activeDemo].store}
-                </div>
-                <div style={{
-                  background:   'rgba(255,255,255,0.18)',
-                  borderRadius: '8px',
-                  padding:      '7px 12px',
-                  fontSize:     '0.78rem',
-                  color:        'rgba(255,255,255,0.8)',
-                }}>
-                  🔍 {t('demoSearchPlaceholder')}
-                </div>
-              </div>
-
-              {/* Grid de productos */}
-              <div style={{
-                display:    'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap:        '10px',
-                padding:    '12px',
-                maxHeight:  '360px',
-                overflowY:  'auto',
-              }}>
-                {DEMO_TABS[activeDemo].products.map((product, i) => (
-                  <div key={i} className="product-card" style={{}}>
-                    <img
-                      src={`https://picsum.photos/seed/${product.seed}/200/200`}
-                      alt={product.name}
-                      style={{ width: '100%', height: '90px', objectFit: 'cover', display: 'block' }}
-                    />
-                    <div style={{ padding: '8px' }}>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 600, color: C.text, marginBottom: '3px', lineHeight: 1.3 }}>
-                        {product.name}
-                      </div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 800, color: C.green }}>
-                        €{product.price}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Botón WhatsApp */}
-              <div style={{ padding: '10px 12px 14px' }}>
-                <button className="glow-btn" style={{
-                  width:        '100%',
-                  background:   '#25d366',
-                  color:        C.white,
-                  border:       'none',
-                  borderRadius: '10px',
-                  padding:      '11px',
-                  fontWeight:   700,
-                  fontSize:     '0.82rem',
-                  cursor:       'pointer',
-                  fontFamily:   'inherit',
-                  display:      'block',
-                }}>
-                  💬 {t('demoOrderBtn')}
-                </button>
-              </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Demo */}
-          <div style={{ textAlign: 'center', marginTop: '36px' }}>
-            <a href="/register" className="glow-btn" style={{
-              display:       'inline-block',
-              background:    C.green,
-              color:         C.white,
-              padding:       '14px 28px',
-              borderRadius:  '10px',
-              textDecoration:'none',
-              fontWeight:    700,
-              fontSize:      '0.95rem',
-              boxShadow:     `0 5px 15px rgba(5,150,105,0.3)`,
-            }}>
-              {t('demoCta')} →
-            </a>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          4. COME FUNZIONA
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.white, padding: '80px 20px' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-
-          <h2 style={{
-            textAlign:    'center',
-            fontSize:     'clamp(1.5rem, 3vw, 2.2rem)',
-            fontWeight:   800,
-            margin:       '0 0 52px',
-            letterSpacing:'-0.5px',
-          }}>
-            {t('howTitle')}
-          </h2>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', justifyContent: 'center' }}>
-            {steps.map((step, i) => (
-              <div key={i} style={{ flex: '1 1 220px', maxWidth: '270px', textAlign: 'center' }}>
-                {/* Número */}
-                <div style={{
-                  width:          '60px',
-                  height:         '60px',
-                  borderRadius:   '50%',
-                  background:     C.green,
-                  color:          C.white,
-                  fontSize:       '1.5rem',
-                  fontWeight:     900,
-                  display:        'flex',
-                  alignItems:     'center',
-                  justifyContent: 'center',
-                  margin:         '0 auto 14px',
-                  boxShadow:      `0 4px 12px rgba(26,92,42,0.35)`,
-                }}>
-                  {step.num}
-                </div>
-                {/* Tiempo */}
-                <div style={{
-                  display:      'inline-block',
-                  background:   '#fef3c7',
-                  color:        C.amberText,
-                  padding:      '3px 12px',
-                  borderRadius: '100px',
-                  fontSize:     '0.78rem',
-                  fontWeight:   700,
-                  marginBottom: '10px',
-                }}>
-                  ⏱️ {step.time}
-                </div>
-                <h3 style={{ fontWeight: 700, fontSize: '1.05rem', margin: '0 0 8px', color: C.text }}>{step.title}</h3>
-                <p style={{ color: C.textMuted, lineHeight: 1.65, margin: 0, fontSize: '0.92rem' }}>{step.desc}</p>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          5. FEATURES
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.greenBg, padding: '80px 20px' }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-
-          <h2 style={{
-            textAlign:    'center',
-            fontSize:     'clamp(1.5rem, 3vw, 2.2rem)',
-            fontWeight:   800,
-            margin:       '0 0 52px',
-            letterSpacing:'-0.5px',
-          }}>
-            {t('featuresTitle')}
-          </h2>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
-            {features.map((feat, i) => (
-              <div key={i} className="premium-shadow" style={{
-                flex:         '1 1 260px',
-                maxWidth:     '300px',
-                background:   C.white,
-                border:       `1px solid ${C.greenBorder}`,
-                borderRadius: '16px',
-                padding:      '28px 24px',
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>{feat.icon}</div>
-                <h3 style={{ fontWeight: 700, fontSize: '1rem', margin: '0 0 8px', color: C.text }}>{feat.title}</h3>
-                <p style={{ color: C.textMuted, lineHeight: 1.65, margin: 0, fontSize: '0.9rem' }}>{feat.desc}</p>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          6. PRICING
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.white, padding: '80px 20px' }}>
-        <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-
-          <h2 style={{
-            textAlign:    'center',
-            fontSize:     'clamp(1.5rem, 3vw, 2.2rem)',
-            fontWeight:   800,
-            margin:       '0 0 10px',
-            letterSpacing:'-0.5px',
-          }}>
-            {t('pricingTitle')}
-          </h2>
-          <p style={{ textAlign: 'center', color: C.textMuted, margin: '0 0 48px', fontSize: '1.05rem' }}>
-            {t('pricingSubtitle')}
-          </p>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-
-            {/* ── Plan Gratuito ── */}
-            <a href="/register" className="premium-shadow" style={{
-              flex:           '1 1 300px',
-              maxWidth:       '380px',
-              border:         `2px solid ${C.greenLight}`,
-              borderRadius:   '20px',
-              padding:        '36px 32px',
-              position:       'relative',
-              background:     C.white,
-              display:        'block',
-              textDecoration: 'none',
-              color:          'inherit',
-              cursor:         'pointer',
-              transition:     'transform 0.15s, box-shadow 0.15s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow=`0 16px 40px rgba(5,150,105,0.2)` }}
-              onMouseOut={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='' }}
-            >
-              <div style={{
-                display:      'inline-block',
-                background:   C.green,
-                color:        C.white,
-                padding:      '4px 14px',
-                borderRadius: '100px',
-                fontSize:     '0.78rem',
-                fontWeight:   700,
-                marginBottom: '18px',
-              }}>
-                {t('planGratisLabel')}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ fontSize: '4.5rem', fontWeight: 900, color: C.green, lineHeight: 1 }}>€0</span>
-              </div>
-              <div style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>
-                {lang === 'it' ? 'per sempre' : lang === 'es' ? 'para siempre' : 'forever'}
-              </div>
-
-              <div style={{ borderTop: `1px solid ${C.greenBorder}`, paddingTop: '20px', marginBottom: '12px' }}>
-                {freeFeatures.map((feat, i) => (
-                  <div key={i} style={{
-                    display:    'flex',
-                    alignItems: 'center',
-                    gap:        '10px',
-                    padding:    '7px 0',
-                    fontSize:   '0.92rem',
-                    color:      C.text,
-                  }}>
-                    <span style={{ color: C.green, fontWeight: 800, fontSize: '1rem' }}>✓</span>
-                    {feat}
-                  </div>
-                ))}
-              </div>
-
-              {/* GDPR detail note */}
-              <div style={{
-                background:   C.greenBg,
-                border:       `1px solid ${C.greenBorder}`,
-                borderRadius: '8px',
-                padding:      '10px 14px',
-                marginBottom: '24px',
-                fontSize:     '0.78rem',
-                color:        C.textMuted,
-                lineHeight:   1.5,
-              }}>
-                🔒 {lang === 'it'
-                  ? 'GDPR: crittografia dati, diritto all\'oblio, nessuna vendita di dati a terzi.'
-                  : lang === 'es'
-                  ? 'GDPR: cifrado de datos, derecho al olvido, sin venta de datos a terceros.'
-                  : 'GDPR: data encryption, right to erasure, no sale of data to third parties.'}
-              </div>
-
-              <div className="glow-btn" style={{
-                display:       'block',
-                background:    C.green,
-                color:         C.white,
-                padding:       '14px',
-                borderRadius:  '10px',
-                fontWeight:    700,
-                textAlign:     'center',
-                boxShadow:     `0 4px 15px rgba(5, 150, 105, 0.3)`,
-                fontSize:      '0.98rem',
-              }}>
-                {t('ctaHeader')} →
-              </div>
-            </a>
-
-            {/* ── Plan Avanzato ── */}
-            <a href="/register" className="premium-shadow" style={{
-              flex:           '1 1 300px',
-              maxWidth:       '380px',
-              border:         `2px solid ${C.greenLight}`,
-              borderRadius:   '20px',
-              padding:        '36px 32px',
-              background:     C.white,
-              display:        'block',
-              textDecoration: 'none',
-              color:          'inherit',
-              cursor:         'pointer',
-              transition:     'transform 0.15s, box-shadow 0.15s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow=`0 16px 40px rgba(5,150,105,0.2)` }}
-              onMouseOut={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='' }}
-            >
-              <div style={{
-                display:      'inline-block',
-                background:   C.green,
-                color:        C.white,
-                padding:      '4px 14px',
-                borderRadius: '100px',
-                fontSize:     '0.78rem',
-                fontWeight:   700,
-                marginBottom: '18px',
-              }}>
-                {t('planAvanzatoLabel')}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ fontSize: '4.5rem', fontWeight: 900, color: C.green, lineHeight: 1 }}>€0.50</span>
-              </div>
-              <div style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>
-                {lang === 'it' ? '/ giorno' : lang === 'es' ? '/ día' : '/ day'}
-              </div>
-
-              <div style={{ borderTop: `1px solid ${C.greenBorder}`, paddingTop: '20px', marginBottom: '28px' }}>
-                {advFeatures.map((feat, i) => (
-                  <div key={i} style={{
-                    display:    'flex',
-                    alignItems: 'center',
-                    gap:        '10px',
-                    padding:    '7px 0',
-                    fontSize:   '0.92rem',
-                    color:      C.text,
-                  }}>
-                    <span style={{ color: C.green, fontWeight: 800, fontSize: '1rem' }}>✓</span>
-                    {feat}
-                  </div>
-                ))}
-              </div>
-
-              <div className="glow-btn" style={{
-                display:       'block',
-                background:    C.green,
-                color:         C.white,
-                padding:       '14px',
-                borderRadius:  '10px',
-                fontWeight:    700,
-                textAlign:     'center',
-                boxShadow:     `0 4px 15px rgba(5, 150, 105, 0.3)`,
-                fontSize:      '0.98rem',
-              }}>
-                {t('planAvanzatoCta')} →
-              </div>
-            </a>
-
-            {/* ── Plan Profesional ── */}
-            <a href="/contatti" className="premium-shadow" style={{
-              flex:           '1 1 300px',
-              maxWidth:       '380px',
-              border:         `2px solid ${C.grayBorder}`,
-              borderRadius:   '20px',
-              padding:        '36px 32px',
-              background:     C.white,
-              display:        'block',
-              textDecoration: 'none',
-              color:          'inherit',
-              cursor:         'pointer',
-              transition:     'transform 0.15s, box-shadow 0.15s',
-            }}
-              onMouseOver={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow=`0 16px 40px rgba(0,0,0,0.1)` }}
-              onMouseOut={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='' }}
-            >
-              <div style={{
-                display:      'inline-block',
-                background:   C.text,
-                color:        C.white,
-                padding:      '4px 14px',
-                borderRadius: '100px',
-                fontSize:     '0.78rem',
-                fontWeight:   700,
-                marginBottom: '18px',
-              }}>
-                {t('planProLabel')}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px' }}>
-                <span style={{ fontSize: '3rem', fontWeight: 900, color: C.text, lineHeight: 1.2 }}>{t('planProPrice')}</span>
-              </div>
-              <div style={{ color: C.textMuted, fontSize: '0.9rem', marginBottom: '24px' }}>
-                {lang === 'it' ? 'Aziende e grandi volumi' : lang === 'es' ? 'Empresas y grandes volúmenes' : 'Enterprises and large volumes'}
-              </div>
-
-              <div style={{ borderTop: `1px solid ${C.grayBorder}`, paddingTop: '20px', marginBottom: '28px' }}>
-                {proFeatures.map((feat, i) => (
-                  <div key={i} style={{
-                    display:    'flex',
-                    alignItems: 'center',
-                    gap:        '10px',
-                    padding:    '7px 0',
-                    fontSize:   '0.92rem',
-                    color:      C.text,
-                  }}>
-                    <span style={{ color: C.text, fontWeight: 800, fontSize: '1rem' }}>✓</span>
-                    {feat}
-                  </div>
-                ))}
-              </div>
-
-              <div style={{
-                display:       'block',
-                background:    C.white,
-                color:         C.text,
-                border:        `2px solid ${C.text}`,
-                padding:       '12px',
-                borderRadius:  '10px',
-                fontWeight:    700,
-                textAlign:     'center',
-                fontSize:      '0.98rem',
-                transition:    'background 0.2s, color 0.2s',
-              }}
-              onMouseOver={e => { e.currentTarget.style.background=C.text; e.currentTarget.style.color=C.white; }}
-              onMouseOut={e => { e.currentTarget.style.background=C.white; e.currentTarget.style.color=C.text; }}
-              >
-                {t('planProCta')} →
-              </div>
-            </a>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          7. CONTADOR DE TIENDAS
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{
-        background:  C.green,
-        padding:     '72px 20px',
-        textAlign:   'center',
-        position:    'relative',
-        overflow:    'hidden',
-      }}>
-        <div style={{ position:'absolute', top:'-50px',  right:'-50px', width:'240px', height:'240px', borderRadius:'50%', background:'rgba(255,255,255,0.05)', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', bottom:'-60px',left:'-20px', width:'200px', height:'200px', borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }} />
-
-        <div style={{ position: 'relative' }}>
-          <div style={{
-            fontSize:    'clamp(4rem, 10vw, 6rem)',
-            fontWeight:  900,
-            color:       C.white,
-            lineHeight:  1,
-            marginBottom:'8px',
-          }}>
-            {storeCount}
-          </div>
-          <div style={{
-            color:       'rgba(255,255,255,0.82)',
-            fontSize:    '1.1rem',
-            fontWeight:  500,
-            marginBottom:'28px',
-          }}>
-            {t('counterLabel')}
-          </div>
-          <a href="/register" style={{
-            display:       'inline-block',
-            background:    C.white,
-            color:         C.green,
-            padding:       '14px 28px',
-            borderRadius:  '10px',
-            textDecoration:'none',
-            fontWeight:    800,
-            fontSize:      '1rem',
-            boxShadow:     '0 3px 0 rgba(0,0,0,0.18)',
-          }}>
-            {t('counterCta')} →
-          </a>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          8. FAQ
-      ════════════════════════════════════════════════════════════════════ */}
-      <section style={{ background: C.greenBg, padding: '80px 20px' }}>
-        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-
-          <h2 style={{
-            textAlign:    'center',
-            fontSize:     'clamp(1.5rem, 3vw, 2.2rem)',
-            fontWeight:   800,
-            margin:       '0 0 44px',
-            letterSpacing:'-0.5px',
-          }}>
-            {t('faqTitle')}
-          </h2>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {faqs.map((faq, i) => (
-              <div key={i} style={{
-                background:   C.white,
-                borderRadius: '12px',
-                border:       `1px solid ${C.greenBorder}`,
-                overflow:     'hidden',
-              }}>
+            <div className="flex flex-wrap gap-3 mb-8">
+              {DEMO_TABS.map((tab, i) => (
                 <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  style={{
-                    width:          '100%',
-                    padding:        '18px 20px',
-                    background:     'transparent',
-                    border:         'none',
-                    textAlign:      'left',
-                    cursor:         'pointer',
-                    display:        'flex',
-                    justifyContent: 'space-between',
-                    alignItems:     'center',
-                    gap:            '16px',
-                    fontFamily:     'inherit',
-                  }}
+                  key={i}
+                  onClick={() => setActiveDemo(i)}
+                  className={`px-5 py-3 rounded-2xl font-bold text-sm transition-all focus:outline-none ${activeDemo === i ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20' : 'bg-white text-slate-500 hover:bg-emerald-100 hover:text-emerald-700'}`}
                 >
-                  <span style={{ fontWeight: 600, fontSize: '0.97rem', color: C.text, lineHeight: 1.4 }}>
-                    {faq.q}
-                  </span>
-                  <span style={{
-                    color:     C.green,
-                    fontWeight:700,
-                    fontSize:  '1.3rem',
-                    flexShrink:0,
-                    display:   'inline-block',
-                    transform: openFaq === i ? 'rotate(45deg)' : 'rotate(0deg)',
-                    transition:'transform 0.2s ease',
-                  }}>
-                    +
-                  </span>
+                  <span className="mr-2">{tab.icon}</span> {t(tab.labelKey)}
                 </button>
-
-                {openFaq === i && (
-                  <div style={{
-                    padding:    '0 20px 18px',
-                    color:      C.textMuted,
-                    lineHeight: 1.65,
-                    fontSize:   '0.92rem',
-                    borderTop:  `1px solid ${C.greenBorder}`,
-                    paddingTop: '14px',
-                  }}>
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          9. CTA FINAL
-      ════════════════════════════════════════════════════════════════════ */}
-      <section className="gradient-bg" style={{
-        padding:     '88px 20px',
-        textAlign:   'center',
-        position:    'relative',
-        overflow:    'hidden',
-      }}>
-        <div style={{ position:'absolute', top:'-80px',  right:'-80px', width:'360px', height:'360px', borderRadius:'50%', background:'rgba(255,255,255,0.05)', pointerEvents:'none' }} />
-        <div style={{ position:'absolute', bottom:'-80px',left:'-40px', width:'280px', height:'280px', borderRadius:'50%', background:'rgba(255,255,255,0.04)', pointerEvents:'none' }} />
-
-        <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
-          <h2 style={{
-            color:        C.white,
-            fontSize:     'clamp(1.8rem, 4.5vw, 2.8rem)',
-            fontWeight:   900,
-            margin:       '0 0 16px',
-            lineHeight:   1.18,
-            letterSpacing:'-1px',
-          }}>
-            {t('ctaFinalTitle')}
-          </h2>
-          <p style={{
-            color:       'rgba(255,255,255,0.88)',
-            fontSize:    '1.1rem',
-            margin:      '0 0 36px',
-            lineHeight:  1.55,
-          }}>
-            {t('ctaFinalSubtitle')}
-          </p>
-
-          <div style={{ marginBottom: '20px' }}>
-            {ctaBtn('/register', t('heroCtaMain'), 'primary')}
-          </div>
-
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: 0, fontWeight: 500 }}>
-            {t('ctaFinalSocial').replace('{n}', storeCount)}
-          </p>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          FOOTER
-      ════════════════════════════════════════════════════════════════════ */}
-      <footer style={{ background: C.greenDark, padding: '48px 20px 32px', color: C.white }}>
-        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-
-          {/* Fila superior */}
-          <div style={{
-            display:        'flex',
-            flexWrap:       'wrap',
-            justifyContent: 'space-between',
-            alignItems:     'center',
-            gap:            '20px',
-            marginBottom:   '28px',
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                <Image
-                  src="/logo.jpg"
-                  alt="TIENDAONLINE"
-                  width={36}
-                  height={36}
-                  style={{ borderRadius: '8px' }}
-                />
-                <span style={{ fontWeight: 900, fontSize: '1.3rem', letterSpacing: '-0.5px' }}>
-                  TIENDAONLINE
-                </span>
-              </div>
-              <div style={{ opacity: 0.6, fontSize: '0.88rem' }}>{t('footerTagline')}</div>
+              ))}
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-              {[
-                { label: t('footerPrivacy'), href: '/privacy'   },
-                { label: t('footerTerms'),   href: '/terms'     },
-                { label: t('footerContact'), href: '/contatti'  },
-              ].map((link, i) => (
-                <a key={i} href={link.href} style={{
-                  color:         'rgba(255,255,255,0.7)',
-                  textDecoration:'none',
-                  fontSize:      '0.88rem',
-                  fontWeight:    500,
-                }}>
-                  {link.label}
-                </a>
+
+            <div className="p-6 rounded-3xl bg-white/50 border border-emerald-100 backdrop-blur-sm">
+              <div className="flex items-center gap-4 text-emerald-900 font-black mb-2">
+                <Store className="w-6 h-6" /> {DEMO_TABS[activeDemo].store}
+              </div>
+              <p className="text-slate-600 text-sm font-medium">
+                {t('demoTabsInfo') || "Prueba la experiencia de navegación que tendrán tus clientes desde su móvil."}
+              </p>
+            </div>
+          </AnimatedSection>
+
+          <AnimatedSection delay={0.2} className="relative flex justify-center">
+            {/* Phone Mockup */}
+            <div className="demo-phone w-[320px] transform-gpu transition-all duration-700 hover:rotate-2 hover:scale-105">
+              <div className="demo-phone-inner h-[600px] flex flex-col bg-white">
+                
+                {/* Visual Header of internal store */}
+                <div className="bg-emerald-600 p-5 pt-8">
+                  <div className="font-black text-sm text-white mb-4">{DEMO_TABS[activeDemo].store}</div>
+                  <div className="bg-white/10 rounded-xl px-3 py-2.5 text-[10px] text-emerald-50 flex items-center gap-2 border border-white/10">
+                    <span className="opacity-50">🔍</span> {t('demoSearchPlaceholder')}
+                  </div>
+                </div>
+
+                {/* Animated Product Grid */}
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                  <AnimatePresence mode="wait">
+                    <motion.div 
+                      key={activeDemo}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.2 }}
+                      className="grid grid-cols-2 gap-3"
+                    >
+                      {DEMO_TABS[activeDemo].products.map((p, i) => (
+                        <div key={i} className="product-card">
+                          <img src={`https://picsum.photos/seed/${p.seed}/300/300`} className="w-full h-24 object-cover" alt={p.name} />
+                          <div className="p-3">
+                            <div className="text-[10px] font-bold text-slate-800 line-clamp-1 mb-1">{p.name}</div>
+                            <div className="text-xs font-black text-emerald-600">€{p.price}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Sticky Action Button */}
+                <div className="p-4 border-t border-slate-100">
+                  <button className="w-full bg-[#25D366] text-white py-3 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-lg shadow-green-500/20 flex items-center justify-center gap-2">
+                    <MessageSquare className="w-4 h-4" /> {t('demoOrderBtn')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Decorative elements outside phone */}
+              <div className="absolute -right-8 top-[20%] advanced-glass p-4 rounded-2xl shadow-xl animate-bounce duration-[3000ms]">
+                <div className="text-xs font-black text-emerald-800">New Order! 🚀</div>
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ─── COMO FUNCIONA ───────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-white overflow-hidden">
+        <div className="max-w-5xl mx-auto">
+          <AnimatedSection className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">{t('howTitle')}</h2>
+          </AnimatedSection>
+
+          <div className="relative">
+            {/* Progressive Line */}
+            <div className="hidden md:block absolute top-[28px] left-[10%] right-[10%] h-[3px] bg-slate-100 z-0">
+              <div className="w-[66%] h-full bg-emerald-500" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+              {steps.map((step, i) => (
+                <AnimatedSection key={i} delay={i * 0.1} className="text-center group">
+                  <div className="w-16 h-16 rounded-3xl bg-emerald-600 text-white flex items-center justify-center text-2xl font-black mx-auto mb-6 shadow-xl shadow-emerald-500/30 transition-transform group-hover:scale-110 group-hover:rotate-3">
+                    {step.num}
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-black uppercase tracking-widest mb-4 border border-amber-100">
+                    {step.icon} {step.time}
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">{step.title}</h3>
+                  <p className="text-slate-600 leading-relaxed font-medium text-sm">{step.desc}</p>
+                </AnimatedSection>
               ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Separador */}
-          <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.15)', margin: '0 0 20px' }} />
+      {/* ─── FEATURES GRID ───────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-slate-900 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <AnimatedSection className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black mb-6">{t('featuresTitle')}</h2>
+            <div className="w-24 h-1 bg-emerald-500 mx-auto rounded-full" />
+          </AnimatedSection>
 
-          {/* Fila inferior */}
-          <div style={{
-            display:        'flex',
-            flexWrap:       'wrap',
-            justifyContent: 'space-between',
-            gap:            '8px',
-            opacity:        0.5,
-            fontSize:       '0.8rem',
-          }}>
-            <span>© 2026 TIENDAONLINE · tiendaonline.it</span>
-            <span>🛍️ {t('footerCredit')}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((feat, i) => (
+              <AnimatedSection key={i} delay={i * 0.05} className="p-10 rounded-[40px] bg-slate-800/50 border border-slate-700 hover:border-emerald-500/50 transition-all hover:bg-slate-800 group transform-gpu">
+                <div className="mb-8 p-4 bg-slate-900 rounded-2xl inline-block group-hover:rotate-6 transition-transform">{feat.icon}</div>
+                <h3 className="text-2xl font-bold mb-4 tracking-tight">{feat.title}</h3>
+                <p className="text-slate-400 leading-relaxed font-medium">{feat.desc}</p>
+              </AnimatedSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PRICING ────────────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <AnimatedSection className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">{t('pricingTitle')}</h2>
+            <p className="text-lg text-slate-600 font-medium">{t('pricingSubtitle')}</p>
+          </AnimatedSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+            {pricingPlans.map((plan, i) => (
+              <AnimatedSection key={i} delay={i * 0.1} className={`relative p-10 rounded-[48px] flex flex-col transition-all h-full ${plan.popular ? 'bg-emerald-600 text-white shadow-3xl' : 'bg-slate-50 border border-slate-100 text-slate-900'}`}>
+                {plan.popular && (
+                  <div className="absolute top-0 right-10 -translate-y-1/2 bg-amber-400 text-emerald-900 text-xs font-black uppercase tracking-widest px-6 py-2 rounded-full shadow-lg">
+                    Recomendado
+                  </div>
+                )}
+                
+                <div className="mb-10">
+                  <span className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-6 ${plan.popular ? 'bg-white/10 border border-white/20' : 'bg-emerald-100 text-emerald-700'}`}>
+                    {plan.label}
+                  </span>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-6xl font-black tracking-tighter">{plan.price}</span>
+                    <span className={`text-sm font-bold ${plan.popular ? 'text-emerald-100' : 'text-slate-500'}`}>{plan.period}</span>
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-4 mb-12">
+                  {plan.features.map((f, fi) => (
+                    <div key={fi} className="flex items-start gap-3 text-sm font-bold">
+                      <CheckCircle2 className={`w-5 h-5 flex-shrink-0 ${plan.popular ? 'text-white' : 'text-emerald-500'}`} />
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {plan.gdpr && (
+                  <div className="mb-8 p-4 rounded-2xl bg-white/5 text-[11px] font-bold leading-relaxed border border-white/10">
+                    <div className="flex gap-2 items-center mb-2 text-emerald-200 uppercase tracking-widest">
+                       <ShieldCheck className="w-4 h-4" /> GDPR Compliance
+                    </div>
+                    {lang === 'it' 
+                      ? 'Crittografia dati, diritto all\'oblio, nessuna vendita di dati.' 
+                      : 'Cifrado de datos, derecho al olvido, sin venta de datos.'}
+                  </div>
+                )}
+
+                <a href="/register" className={`glow-btn w-full py-5 rounded-2xl font-black text-center text-lg transition-all ${plan.popular ? 'bg-white text-emerald-700 shadow-white/20' : 'bg-emerald-600 text-white shadow-emerald-600/20'}`}>
+                  {plan.cta} →
+                </a>
+              </AnimatedSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FAQ ────────────────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-3xl mx-auto">
+          <AnimatedSection className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">{t('faqTitle')}</h2>
+          </AnimatedSection>
+
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <AnimatedSection key={i} delay={i * 0.05}>
+                <div className="bg-white rounded-[24px] border border-slate-200 overflow-hidden hover:border-emerald-300 transition-colors">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="w-full p-6 text-left flex items-center justify-between gap-6 focus:outline-none"
+                  >
+                    <span className="font-bold text-slate-800 leading-tight">{faq.q}</span>
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all ${openFaq === i ? 'bg-emerald-600 text-white rotate-45' : 'bg-slate-100 text-slate-400 rotate-0'}`}>
+                      <Zap className="w-4 h-4" />
+                    </div>
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === i && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-6 text-slate-600 font-medium leading-relaxed border-t border-slate-100 pt-4 text-sm">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </AnimatedSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA FINAL ──────────────────────────────────────────────────────── */}
+      <section className="relative py-24 px-6 overflow-hidden mesh-gradient">
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <AnimatedSection>
+            <h2 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tight mb-8">
+              {t('ctaFinalTitle')}
+            </h2>
+            <p className="text-xl text-emerald-100 font-medium mb-12 max-w-2xl mx-auto opacity-90 leading-relaxed">
+              {t('ctaFinalSubtitle')}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <a href="/register" className="glow-btn bg-white text-emerald-900 px-12 py-6 rounded-2xl text-xl font-black shadow-3xl w-full sm:w-auto">
+                {t('heroCtaMain')} →
+              </a>
+              <div className="text-emerald-100/70 font-bold text-lg">
+                <span className="text-white text-2xl font-black mr-2">{storeCount}</span> {t('counterLabel')}
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ─────────────────────────────────────────────────────────── */}
+      <footer className="bg-slate-950 pt-24 pb-12 px-6 text-slate-400">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-20">
+            <div className="max-w-xs">
+              <div className="flex items-center gap-3 text-white font-black text-2xl tracking-tighter mb-6">
+                <Image src="/logo.jpg" alt="Logo" width={36} height={36} className="rounded-xl" />
+                TIENDAONLINE
+              </div>
+              <p className="font-medium text-sm leading-relaxed mb-8 opacity-60">
+                {t('footerTagline')}
+              </p>
+              <div className="flex gap-4">
+                {/* Social icons placeholders */}
+                <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all cursor-pointer"><Info className="w-5 h-5"/></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
+              <div className="space-y-4">
+                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Plataforma</h4>
+                <a href="/login" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('accedi')}</a>
+                <a href="/register" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('ctaHeader')}</a>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Legal</h4>
+                <a href="/privacy" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('footerPrivacy')}</a>
+                <a href="/terms" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('footerTerms')}</a>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Soporte</h4>
+                <a href="/contatti" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('footerContact')}</a>
+              </div>
+            </div>
           </div>
 
+          <div className="pt-12 border-t border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-6 text-[11px] font-black uppercase tracking-[3px] opacity-40">
+            <div>© 2026 TIENDAONLINE · ITALY</div>
+            <div className="flex items-center gap-2">
+               <Zap className="w-3 h-3 text-emerald-500" /> {t('footerCredit')}
+            </div>
+          </div>
         </div>
       </footer>
+
+      {/* Global CSS Overrides for complex cases */}
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+      `}</style>
 
     </div>
   )

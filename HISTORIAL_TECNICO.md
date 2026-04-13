@@ -764,3 +764,38 @@ export default {
 - **Problema:** El servidor local mostraba páginas en blanco o errores 500 persistentes incluso tras arreglar el código.
 - **Causa:** Bug conocido de NPM/Rollup en Windows (`Cannot find module @rollup/rollup-win32-x64-msvc`). Los archivos de `node_modules` se bloquean y corrompen el build de Next.js.
 - **Solución documentada:** Es necesario detener todos los procesos de Node, borrar `node_modules` y `package-lock.json` manualmente y ejecutar `npm install` de nuevo. El código en GitHub/Producción está limpio de este error ya que solo afecta al sistema de archivos local de Windows.
+
+### [2026-04-14] Sesión 7 — Fix crítico: bucle de redirecciones en producción (`ERR_TOO_MANY_REDIRECTS`)
+
+**Síntoma:** `tiendaonline.it` mostraba `ERR_TOO_MANY_REDIRECTS` en todos los navegadores. El sitio era completamente inaccesible.
+
+**Diagnóstico:**
+- El bucle era un `302` infinito: `tiendaonline.it → 302 → tiendaonline.it`
+- Confirmado con `read_url_content`: "stopped after 10 redirects"
+- El middleware Next.js usa `NextResponse.rewrite()` (transparente, sin 302) — **no era la causa**
+- La causa real estaba en la capa de infraestructura: **Cloudflare SSL/TLS en modo Flexible**
+
+**Causa raíz:**
+```
+Cloudflare SSL = Flexible → habla HTTP con el servidor origen (Coolify/Traefik)
+Traefik recibe HTTP → redirige a HTTPS (302)
+Cloudflare recibe HTTPS del browser → vuelve a enviar HTTP a Traefik
+→ LOOP INFINITO
+```
+
+**Solución aplicada:**
+- Cloudflare → `tiendaonline.it` → SSL/TLS → cambiar de **Flexible** → **Full**
+- Con modo Full: Cloudflare habla HTTPS con Traefik → sin redirecciones → resuelto ✅
+
+**Cambios de código también aplicados en esta sesión:**
+
+| Archivo | Cambio | Motivo |
+|---------|--------|--------|
+| `middleware.js` | Eliminado `/api/:path*` del matcher | Era un residuo de debug de Sesión 6 que nunca se limpió |
+| `middleware.js` | Restaurado orden de headers: `x-tenant-host` → `x-forwarded-host` → `host` | El Cloudflare Worker envía `x-tenant-host` (no `x-forwarded-host` como estaba en el historial) |
+| `next.config.mjs` | Sentry ahora es opcional según `SENTRY_AUTH_TOKEN` | Sin el token, el build podría fallar silenciosamente en Coolify |
+| `next.config.mjs` | Añadido `images.unsplash.com` a `remotePatterns` | Necesario para thumbnail del OnboardingWizard |
+
+> ⚠️ **IMPORTANTE — Cloudflare SSL:** Mantener siempre en modo **Full** (nunca Flexible). El modo Flexible es incompatible con Traefik/Coolify que redirige HTTP→HTTPS internamente.
+
+> ⚠️ **Header del Cloudflare Worker:** El Worker `tiendaonline-subdominios` envía `x-tenant-host` (NO `x-forwarded-host`). El middleware lee primero `x-tenant-host`. Si se modifica el Worker, actualizar también el middleware.
