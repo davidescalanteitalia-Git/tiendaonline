@@ -2,19 +2,18 @@ import { NextResponse } from 'next/server';
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg).*)',
-    // IMPORTANTE: Quitamos la exclusión de 'api' para poder depurar, 
-    // pero en producción se recomienda excluirlo si no se usa para subdominios.
-    '/api/:path*',
+    // Excluimos api, archivos estáticos, imágenes y assets — solo rutas de página
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.ico|.*\\.webp).*)',
   ],
 };
 
 export default function middleware(req) {
   const url = req.nextUrl.clone();
 
-  // Obtenemos el host y LIMPIAMOS el puerto si existe (ej: tiendaonline.it:443 -> tiendaonline.it)
+  // Leemos el host: primero x-forwarded-host (enviado por Cloudflare Worker),
+  // luego host normal. Limpiamos el puerto si viene incluido.
   let hostname =
-    req.headers.get('x-tenant-host') ||
+    req.headers.get('x-forwarded-host') ||
     req.headers.get('host') ||
     'tiendaonline.it';
   
