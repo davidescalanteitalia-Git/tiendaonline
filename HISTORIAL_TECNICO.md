@@ -564,6 +564,7 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 | Sin lector de barras activo | `codigo_barras` existe en DB pero cámara no se activa | Pendiente `@zxing/browser` |
 | Sin filtro de rango en reportes | Todo el historial siempre | Pendiente UI de filtro |
 | Stripe no integrado | Sin modelo de negocio activo | Pendiente Sprint 5 |
+| Bug Rollup (Windows) | Servidor local no carga | Borrar node_modules y re-instalar |
 
 ---
 
@@ -755,6 +756,11 @@ export default {
 **Implementación técnica:**
 1. **Wizard de Registro en 3 pasos:** Se reescribió `app/register/page.js` transformándolo de un formulario largo a un asistente interactivo por pantallas. Captura `sector` y `tipo_vendedor` en el paso 2 y los persiste en el JSONB `config_diseno`.
 2. **Validación en vivo (API):** Creado el endpoint `GET /api/check-subdominio`. En el paso 1, mientras el usuario escribe, el frontend hace un fetch (con *debounce* de 500ms) devolviendo de inmediato si el subdominio está libre (check verde) o tomado. 
-   - *Fix:* En App Router usando Web Request normal, evaluar `new URL(req.url)` genera un error 500. Se migró correctamente a leer `req.nextUrl.searchParams`.
+   - **Fix Crítico (Sesión 6.1):** Se detectó que `new URL(req.url)` lanzaba un Error 500 en entornos de producción/Coolify. Se corrigió migrando a `req.nextUrl.searchParams`, lo que estabilizó el flujo de registro.
 3. **Gamificación y Checklist:** Modificado `app/dashboard/layout.js` incorporando una barra de progreso lateral fija (0-100%). Evalúa dinámicamente si el usurio ya tiene productos (haciendo un fetch liviano a `/api/productos`) y si activó métodos de pago, sumando porcentaje con diseño estilo gamificado.
 4. **Welcome Video Modal:** El componente `components/OnboardingWizard.js` fue convertido en un Modal de Bienvenida en primer plano con un `iframe` de YouTube para un tutorial introductorio por parte del fundador. El estado de cierre se controla vía `sessionStorage`.
+
+### [2026-04-13] Sesión 6.2 — Debugging de Entorno Local (Windows)
+- **Problema:** El servidor local mostraba páginas en blanco o errores 500 persistentes incluso tras arreglar el código.
+- **Causa:** Bug conocido de NPM/Rollup en Windows (`Cannot find module @rollup/rollup-win32-x64-msvc`). Los archivos de `node_modules` se bloquean y corrompen el build de Next.js.
+- **Solución documentada:** Es necesario detener todos los procesos de Node, borrar `node_modules` y `package-lock.json` manualmente y ejecutar `npm install` de nuevo. El código en GitHub/Producción está limpio de este error ya que solo afecta al sistema de archivos local de Windows.
