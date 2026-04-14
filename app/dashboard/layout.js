@@ -70,11 +70,13 @@ export default function DashboardLayout({ children }) {
           setPedidos(data.pedidos || [])
           setPendingCount((data.pedidos || []).filter(p => p.estado === 'pendiente').length)
         }
+        let count = 0
         if (productosRes.ok) {
           const data = await productosRes.json()
           const prods = Array.isArray(data) ? data : []
           setProductos(prods)
-          setProductosCount(prods.length)
+          count = prods.length
+          setProductosCount(count)
         }
         if (clientesRes.ok) {
           const data = await clientesRes.json()
