@@ -43,98 +43,89 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a5c2a 0%, #2d8a45 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-      <div style={{ background: C.white, borderRadius: '24px', width: '100%', maxWidth: '420px', padding: '48px 40px', boxShadow: '0 25px 60px rgba(0,0,0,0.2)' }}>
+    <div className="bg-slate-50 font-sans selection:bg-emerald-100 selection:text-emerald-900 min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 mesh-gradient relative overflow-hidden">
+      
+      {/* Animated Orbs */}
+      <div className="hero-glow top-[10%] left-[5%] bg-emerald-500/20" />
+      <div className="hero-glow bottom-[10%] right-[10%] bg-blue-500/20" />
 
+      <div className="relative z-10 w-full max-w-[420px] bg-white/90 backdrop-blur-xl rounded-[32px] p-8 sm:p-10 shadow-2xl border border-white/40">
         {/* Language selector */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px', marginBottom: '24px' }}>
+        <div className="flex justify-end gap-1.5 mb-8">
           {['it', 'es', 'en'].map(l => (
-            <button key={l} onClick={() => changeLang(l)} style={{
-              padding:      '3px 9px',
-              borderRadius: '20px',
-              border:       `1.5px solid ${lang === l ? C.green : '#ddd'}`,
-              background:   lang === l ? C.green : 'transparent',
-              color:        lang === l ? '#fff' : C.textMuted,
-              fontSize:     '0.7rem',
-              fontWeight:   700,
-              cursor:       'pointer',
-              textTransform:'uppercase',
-              letterSpacing:'0.5px',
-            }}>
+            <button key={l} onClick={() => changeLang(l)} className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${lang === l ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400 hover:text-emerald-600 border border-slate-200'}`}>
               {l}
             </button>
           ))}
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ color: C.green, fontWeight: 900, fontSize: '1.4rem', letterSpacing: '-0.5px', marginBottom: '8px' }}>🛍️ TIENDAONLINE</div>
-          <h1 style={{ color: C.text, fontSize: '1.6rem', fontWeight: 900, margin: '0 0 6px' }}>{dict.bentornato}</h1>
-          <p style={{ color: C.textMuted, fontSize: '0.9rem', margin: 0 }}>{dict.accediAlPannello}</p>
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+              <span className="text-2xl">🛍️</span>
+            </div>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">{dict.bentornato}</h1>
+          <p className="text-slate-500 text-sm font-medium">{dict.accediAlPannello}</p>
         </div>
 
         {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: C.error, padding: '12px 16px', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 600, marginBottom: '20px', textAlign: 'center' }}>
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-semibold mb-6 text-center">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: C.text, marginBottom: '8px' }}>{dict.emailLabel}</label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">{dict.emailLabel}</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={dict.emailPlaceholder} required
-              style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: `1px solid ${C.grayBorder}`, background: C.grayBg, fontSize: '0.95rem', color: C.text, outline: 'none', boxSizing: 'border-box' }} />
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium placeholder:text-slate-400" />
           </div>
           <div>
-            <label style={{ fontSize: '0.85rem', fontWeight: 700, color: C.text }}>{dict.passwordLabel}</label>
-            <div style={{ position: 'relative', marginTop: '8px' }}>
+            <label className="block text-xs font-bold text-slate-700 mb-2">{dict.passwordLabel}</label>
+            <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder={dict.passwordPlaceholder}
                 required
-                style={{ width: '100%', padding: '12px 44px 12px 16px', borderRadius: '10px', border: `1px solid ${C.grayBorder}`, background: C.grayBg, fontSize: '0.95rem', color: C.text, outline: 'none', boxSizing: 'border-box' }}
+                className="w-full pl-4 pr-12 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all font-medium placeholder:text-slate-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(v => !v)}
-                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: C.textMuted, fontSize: '1.1rem', lineHeight: 1 }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors text-lg"
               >
                 {showPassword ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
           <button type="submit" disabled={loading}
-            style={{ width: '100%', background: loading ? '#9ca3af' : C.green, color: C.white, border: 'none', padding: '14px', borderRadius: '10px', fontWeight: 700, fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+            className={`w-full py-4 rounded-xl font-black text-sm transition-all shadow-xl mt-2 ${loading ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none' : 'glow-btn bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-600/20'}`}>
             {loading ? dict.verificando : dict.accediBtn}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '28px', fontSize: '0.88rem', color: C.textMuted }}>
+        <div className="text-center mt-8 text-sm font-medium text-slate-500">
           {dict.nonHaiAccount}{' '}
-          <a href="/register" style={{ color: C.green, fontWeight: 700, textDecoration: 'none' }}>{dict.creaVetrinaLink}</a>
+          <a href="/register" className="text-emerald-600 font-bold hover:text-emerald-500 transition-colors">{dict.creaVetrinaLink}</a>
         </div>
       </div>
 
       {/* Bottom info */}
-      <div style={{ marginTop: '24px', display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="relative z-10 mt-8 flex flex-wrap justify-center gap-4 sm:gap-6">
         {[
           { label: dict.footerPrivacy || 'Privacy Policy', href: '/privacy' },
           { label: dict.footerTerms   || 'Termini',        href: '/terms'   },
           { label: dict.footerContact || 'Contatti',       href: '/contatti'},
         ].map((link, i) => (
-          <a key={i} href={link.href} style={{
-            color:         'rgba(255,255,255,0.7)',
-            textDecoration:'none',
-            fontSize:      '0.78rem',
-            fontWeight:    500,
-            transition:    'color 0.15s',
-          }}>
+          <a key={i} href={link.href} className="text-emerald-50/70 hover:text-white text-xs font-semibold transition-colors">
             {link.label}
           </a>
         ))}
       </div>
-      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', marginTop: '12px', textAlign: 'center' }}>
+      <p className="relative z-10 text-emerald-50/40 text-[10px] sm:text-xs font-semibold mt-4 text-center">
         © 2026 TIENDAONLINE · tiendaonline.it
       </p>
     </div>

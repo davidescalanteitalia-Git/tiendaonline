@@ -2,7 +2,8 @@
 
 import PageShell from '../../components/PageShell'
 import { useLang } from '../../components/LanguageProvider'
-import { C } from '../../lib/theme'
+import { Mail, Phone, Clock } from 'lucide-react'
+import AnimatedSection from '../../components/AnimatedSection'
 
 const T = {
   it: {
@@ -45,110 +46,77 @@ export default function ContattiPage() {
     <PageShell>
 
       {/* Hero */}
-      <section className="gradient-bg" style={{
-        padding:    '64px 20px 56px',
-        textAlign:  'center',
-      }}>
-        <h1 style={{ color: C.white, fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, margin: '0 0 12px', letterSpacing: '-1px' }}>
-          {t.title}
-        </h1>
-        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', margin: 0 }}>
-          {t.subtitle}
-        </p>
+      <section className="bg-slate-900 pt-24 pb-20 px-6 text-center mesh-gradient relative overflow-hidden">
+        {/* Animated Orbs */}
+        <div className="hero-glow top-[10%] left-[5%] bg-emerald-500/20" />
+        <div className="hero-glow bottom-[10%] right-[10%] bg-blue-500/20" />
+
+        <div className="relative z-10 max-w-4xl mx-auto">
+          <AnimatedSection>
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4">
+              {t.title}
+            </h1>
+            <p className="text-lg md:text-xl text-emerald-50/80 font-medium max-w-2xl mx-auto">
+              {t.subtitle}
+            </p>
+          </AnimatedSection>
+        </div>
       </section>
 
       {/* Cards di contatto */}
-      <section style={{ background: C.greenBg, padding: '64px 20px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-4xl mx-auto">
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center', marginBottom: '48px' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
 
             {/* Email */}
-            <div className="premium-shadow" style={{
-              flex:         '1 1 280px',
-              maxWidth:     '340px',
-              background:   C.white,
-              border:       `1px solid ${C.greenBorder}`,
-              borderRadius: '18px',
-              padding:      '36px 28px',
-              textAlign:    'center',
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '14px' }}>📧</div>
-              <h2 style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0 0 10px', color: C.text }}>{t.emailTitle}</h2>
-              <p style={{ color: C.textMuted, fontSize: '0.9rem', margin: '0 0 16px', lineHeight: 1.5 }}>
+            <AnimatedSection className="bg-white rounded-[32px] p-10 border border-slate-200 premium-shadow text-center group hover:border-emerald-300 transition-all">
+              <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Mail className="w-8 h-8 text-emerald-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">{t.emailTitle}</h2>
+              <p className="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
                 {t.emailDesc}
               </p>
               <a
                 href="mailto:utilizzositemaster@gmail.com"
-                className="glow-btn"
-                style={{
-                  display:       'inline-block',
-                  background:    C.green,
-                  color:         C.white,
-                  padding:       '10px 20px',
-                  borderRadius:  '8px',
-                  textDecoration:'none',
-                  fontWeight:    700,
-                  fontSize:      '0.9rem',
-                  boxShadow:     `0 4px 10px rgba(5, 150, 105, 0.25)`,
-                  wordBreak:     'break-all',
-                }}
+                className="glow-btn bg-slate-900 text-white font-bold text-sm px-6 py-3.5 rounded-xl inline-block hover:bg-slate-800 transition-all shadow-xl"
               >
                 utilizzositemaster@gmail.com
               </a>
-            </div>
+            </AnimatedSection>
 
             {/* Telefono */}
-            <div className="premium-shadow" style={{
-              flex:         '1 1 280px',
-              maxWidth:     '340px',
-              background:   C.white,
-              border:       `1px solid ${C.greenBorder}`,
-              borderRadius: '18px',
-              padding:      '36px 28px',
-              textAlign:    'center',
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '14px' }}>📞</div>
-              <h2 style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0 0 10px', color: C.text }}>{t.phoneTitle}</h2>
-              <p style={{ color: C.textMuted, fontSize: '0.9rem', margin: '0 0 16px', lineHeight: 1.5 }}>
+            <AnimatedSection delay={0.1} className="bg-white rounded-[32px] p-10 border border-slate-200 premium-shadow text-center group hover:border-[#25d366]/30 transition-all">
+              <div className="w-16 h-16 bg-[#25d366]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Phone className="w-8 h-8 text-[#25d366]" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">{t.phoneTitle}</h2>
+              <p className="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
                 {t.phoneDesc}
               </p>
               <a
                 href="tel:+393717701185"
-                className="glow-btn"
-                style={{
-                  display:       'inline-block',
-                  background:    '#25d366',
-                  color:         C.white,
-                  padding:       '10px 20px',
-                  borderRadius:  '8px',
-                  textDecoration:'none',
-                  fontWeight:    700,
-                  fontSize:      '0.95rem',
-                  boxShadow:     '0 4px 10px rgba(37, 211, 102, 0.25)',
-                }}
+                className="glow-btn bg-[#25d366] text-white font-bold text-sm px-6 py-3.5 rounded-xl inline-block hover:bg-[#20bd5a] transition-all shadow-xl shadow-[#25d366]/20"
               >
                 +39 371 770 1185
               </a>
-            </div>
+            </AnimatedSection>
 
           </div>
 
           {/* Info extra */}
-          <div className="premium-shadow" style={{
-            background:   C.white,
-            border:       `1px solid ${C.greenBorder}`,
-            borderRadius: '16px',
-            padding:      '28px 32px',
-            textAlign:    'center',
-          }}>
-            <h3 style={{ fontWeight: 700, fontSize: '1rem', margin: '0 0 10px', color: C.text }}>
-              {t.hoursTitle}
-            </h3>
-            <p style={{ color: C.textMuted, margin: 0, lineHeight: 1.7, fontSize: '0.92rem', whiteSpace: 'pre-line' }}>
+          <AnimatedSection delay={0.2} className="bg-emerald-50/50 rounded-[32px] p-10 border border-emerald-100 text-center max-w-2xl mx-auto">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Clock className="w-6 h-6 text-emerald-600" />
+              <h3 className="font-bold text-lg text-emerald-950">
+                {t.hoursTitle.replace('🕐 ', '')}
+              </h3>
+            </div>
+            <p className="text-emerald-800/80 font-medium leading-loose text-sm whitespace-pre-line">
               {t.hours}
             </p>
-          </div>
+          </AnimatedSection>
 
         </div>
       </section>

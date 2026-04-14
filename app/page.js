@@ -123,7 +123,7 @@ export default function Home() {
         lang === 'it' ? '50 prodotti' : '50 productos',
         'POS ' + (lang === 'it' ? 'tattile' : 'táctil') + ' incluido',
         'Checkout WhatsApp',
-        lang === 'it' ? 'Sottodominio gratuito' : 'Subdominio gratuito',
+        lang === 'it' ? 'Sottodominio personalizzato' : 'Subdominio personalizado',
         '100 MB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         'GDPR compliance',
       ],
@@ -161,7 +161,7 @@ export default function Home() {
         lang === 'it' ? 'Catalogo Instagram / Facebook' : 'Catálogo Instagram / Facebook',
         lang === 'it' ? 'Codici sconto illimitati' : 'Códigos descuento ilimitados',
         '5 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
-        lang === 'it' ? 'Supporto prioritario 24h' : 'Soporte prioritario 24h',
+        lang === 'it' ? 'Supporto prioritario' : 'Soporte prioritario',
       ],
     },
     {
@@ -190,7 +190,7 @@ export default function Home() {
     { label: 'POS ' + (lang === 'it' ? 'tattile' : 'táctil'),                           vals: [true, true, true, true] },
     { label: 'Checkout WhatsApp',                                                        vals: [true, true, true, true] },
     { label: lang === 'it' ? 'Spazio disco' : 'Almacenamiento',                         vals: ['100 MB', '1 GB', '5 GB', '20 GB'] },
-    { label: lang === 'it' ? 'Subdominio personalizzato' : 'Subdominio personalizado',   vals: [false, true, true, true] },
+    { label: lang === 'it' ? 'Subdominio personalizzato' : 'Subdominio personalizado',   vals: [true, true, true, true] },
     { label: lang === 'it' ? 'Pagamenti Stripe / PayPal' : 'Pagos Stripe / PayPal',     vals: [false, true, true, true] },
     { label: lang === 'it' ? 'Esportazione CSV / PDF' : 'Exportación CSV / PDF',        vals: [false, true, true, true] },
     { label: lang === 'it' ? 'Reporti finanziari' : 'Reportes financieros',             vals: [false, lang === 'it' ? 'Base' : 'Básicos', lang === 'it' ? 'Avanzati' : 'Avanzados', 'Premium'] },
@@ -200,7 +200,7 @@ export default function Home() {
     { label: lang === 'it' ? 'Programma punti' : 'Programa de puntos',                  vals: [false, false, false, true] },
     { label: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',               vals: [false, false, false, true] },
     { label: 'Backup',                                                                   vals: [lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Giornaliero' : 'Diario', lang === 'it' ? 'Giornaliero' : 'Diario'] },
-    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: ['Community', 'Email', lang === 'it' ? 'Prioritario' : 'Prioritario 24h', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
+    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: ['Community', 'Email', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
   ]
 
 

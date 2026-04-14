@@ -6,7 +6,7 @@ import { DICTIONARY } from '../../../lib/dictionaries'
 import {
   Settings, User, Store, Bell, ShieldCheck, Loader2, Save,
   CheckCircle2, Copy, ExternalLink, Image as ImageIcon,
-  Smartphone, Info, Camera, Trash2, Globe, X, Instagram, Clock
+  Smartphone, Info, Camera, Trash2, Globe, X, Clock
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
@@ -276,7 +276,7 @@ export default function AjustesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Instagram size={13} /> Instagram
+                        @ Instagram
                       </label>
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</span>
