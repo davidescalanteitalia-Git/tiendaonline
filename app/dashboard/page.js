@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import OnboardingWizard from '../../components/OnboardingWizard'
+import DashboardChecklist from '../../components/DashboardChecklist'
 
 export default function DashboardPage() {
   const { lang } = useLang()
@@ -117,14 +118,6 @@ export default function DashboardPage() {
 
   // ─── Operational Checklist ───
   const config = tienda?.config_diseno || {}
-  const checklist = [
-    { title: 'Métodos de Pago', status: !!config.pagos && Object.keys(config.pagos).length > 0, icon: <CreditCard size={18} />, href: '/dashboard/diseno?tab=pagos' },
-    { title: 'Zonas de Envío', status: !!config.envios && Object.keys(config.envios).length > 0, icon: <Truck size={18} />, href: '/dashboard/diseno?tab=envios' },
-    { title: 'Identidad Visual (Logo/Banner)', status: !!config.logo || !!config.banner, icon: <Palette size={18} />, href: '/dashboard/diseno?tab=branding' },
-    { title: 'Inventario de Productos', status: productos.length > 0, icon: <Package size={18} />, href: '/dashboard/productos' },
-  ]
-  const completedSteps = checklist.filter(c => c.status).length
-  const progressPercent = (completedSteps / checklist.length) * 100
 
   if (loading) {
     return (
@@ -235,48 +228,13 @@ export default function DashboardPage() {
          
          {/* Left Side: Setup & Analytics */}
          <div className="lg:col-span-1 space-y-10">
-            {/* Setup Checklist */}
-            <div className="bg-slate-900 rounded-[40px] p-8 text-white shadow-2xl shadow-blue-900/10">
-               <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-blue-400">Setup de Tienda</h3>
-                  <div className="bg-white/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                     {completedSteps}/{checklist.length} Completado
-                  </div>
-               </div>
-               
-               <div className="w-full h-2 bg-white/5 rounded-full mb-8 overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 transition-all duration-1000" 
-                    style={{ width: `${progressPercent}%` }}
-                  />
-               </div>
-
-               <div className="space-y-4">
-                  {checklist.map((item, idx) => (
-                    <Link 
-                      key={idx} 
-                      href={item.href}
-                      className="flex items-center justify-between p-4 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group"
-                    >
-                       <div className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${item.status ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white/40 group-hover:text-white'}`}>
-                             {item.icon}
-                          </div>
-                          <span className={`text-sm font-bold ${item.status ? 'text-white/80' : 'text-white/40 group-hover:text-white'}`}>
-                             {item.title}
-                          </span>
-                       </div>
-                       {item.status ? (
-                          <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                             <ShieldCheck size={14} className="text-white" />
-                          </div>
-                       ) : (
-                          <ChevronRight size={16} className="text-white/20 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                       )}
-                    </Link>
-                  ))}
-               </div>
-            </div>
+            {/* Setup Checklist (Nuevo Onboarding) */}
+            <DashboardChecklist 
+               tienda={tienda} 
+               productos={productos} 
+               pedidos={pedidos} 
+               clientes={clientes} 
+            />
 
             {/* Support Box */}
             <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
