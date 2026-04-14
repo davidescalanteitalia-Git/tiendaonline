@@ -799,3 +799,60 @@ Cloudflare recibe HTTPS del browser → vuelve a enviar HTTP a Traefik
 > ⚠️ **IMPORTANTE — Cloudflare SSL:** Mantener siempre en modo **Full** (nunca Flexible). El modo Flexible es incompatible con Traefik/Coolify que redirige HTTP→HTTPS internamente.
 
 > ⚠️ **Header del Cloudflare Worker:** El Worker `tiendaonline-subdominios` envía `x-tenant-host` (NO `x-forwarded-host`). El middleware lee primero `x-tenant-host`. Si se modifica el Worker, actualizar también el middleware.
+
+### [2026-04-14] Sesión 8 — Landing Page Pro Max + Estandarización Visual + Rediseño Super Admin
+
+#### Parte A — Landing Page y páginas secundarias (sesiones previas del día)
+
+**Objetivo:** Elevar la landing page a un nivel "Pro Max" con tabla de precios completa, toggle mensual/anual y tabla comparativa de features. Estandarizar visualmente todas las páginas públicas bajo un mismo sistema de diseño.
+
+**Cambios implementados:**
+- `app/page.js` → Rediseño completo de la landing: sección de precios con 4 niveles (Free, Starter €9/mes, Pro €19/mes, Business €39/mes), toggle de facturación mensual/anual, tabla de comparativa de features colapsable.
+- `app/privacy/page.js` → Migrada al sistema de diseño Tailwind unificado (fondo oscuro slate-950, tipografía Inter, glassmorphism cards).
+- `app/cookie-policy/page.js` → Ídem, mismo sistema visual.
+- `app/contatti/page.js` → Migrada al nuevo sistema de diseño.
+- Correcciones de responsividad móvil en el header de la landing (nombre de tienda, menú, etc.)
+
+#### Parte B — Rediseño completo del Panel Super Admin
+
+**Objetivo:** Transformar el panel de administración de un diseño básico blanco/claro a un **dark premium SaaS dashboard** coherente con el branding de la plataforma.
+
+**Tema de diseño aplicado:**
+- Fondo principal: `bg-slate-950` con grid de puntos sutil (transparencia 3%)
+- Sidebar/Topbar: `bg-slate-900/95 backdrop-blur-xl` con bordes `border-slate-800`
+- Cards y paneles: glassmorphism `bg-slate-800/60 backdrop-blur border-slate-700/50`
+- Acento principal: `emerald-500` / `emerald-400` con glow effects (`shadow-[0_0_8px_rgba(52,211,153,0.5)]`)
+- Animaciones: Framer Motion con stagger delay por tarjeta
+
+**Archivos refactorizados:**
+
+| Archivo | Cambios clave |
+|---------|---------------|
+| `app/administrador/layout.js` | Sidebar oscuro colapsible con nav items que tienen barra lateral de acento verde con glow; topbar glassmorphism; indicador "Online" pulsante; avatar con gradiente; mobile drawer con X button; grid background; eliminado `UniversalFooter` redundante visualmente pero mantenido en el contenido |
+| `app/administrador/page.js` | 6 StatCards en grid con glow blob hover, accentClass por color temático; gráfica de barras animada (height motion animado individualmente por barra); barra de progreso tiendas con glow; tabla de actividad reciente con hover states; badge "Live" animado en el título |
+| `app/administrador/tiendas/page.js` | Eliminados todos los inline styles → clases Tailwind; search input con icono embebido; filtros pill con glow del color activo; grid de cards con hover lift (-translate-y-0.5 + shadow); badge de estado con dot pulsante para activos; modal de confirmación con backdrop blur, spring animation y iconos contextuales (ShieldAlert/ShieldCheck/Trash2) |
+| `app/administrador/usuarios/page.js` | Tabla desktop con header sticky oscuro y filas con hover; responsive: en móvil se convierte en cards; filtros pill igual que tiendas; badge "sin-tienda" con icono UserX; modal idéntico al de tiendas; columnas adaptadas a `grid-cols-[2fr_1.8fr_1.4fr_1fr_1fr_1.4fr]` |
+
+**Patrones de código establecidos en el panel admin:**
+```jsx
+// StatCard con glow y accentClass dinámico
+<div className="bg-slate-800/60 backdrop-blur border border-slate-700/50 rounded-2xl hover:border-slate-600/60 hover:-translate-y-0.5 transition-all">
+  <div className={`absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-30 ${glowClass}`} />
+  <div className={`text-4xl font-black ${accentClass}`}>{value}</div>
+</div>
+
+// Badge de estado activo con dot pulsante
+<span className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 rounded-full">
+  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+  {dict.adminAttivo}
+</span>
+
+// Modal animado con spring
+<motion.div initial={{ opacity: 0, scale: 0.9, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+  transition={{ type: 'spring', bounce: 0.3, duration: 0.4 }}>
+```
+
+**Dependencias utilizadas (ya existentes):** Framer Motion, Lucide React, Tailwind CSS 3.
+
+> ℹ️ No se modificó ninguna API route ni lógica de negocio. Solo cambios de UI/UX.
+
