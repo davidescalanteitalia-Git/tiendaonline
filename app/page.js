@@ -685,7 +685,104 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── WEB CORPORATIVA (Servicio especial) ───────────────────────────────── */}
+      <section className="py-16 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <AnimatedSection>
+            <div className="relative rounded-[40px] overflow-hidden bg-slate-950 p-10 md:p-16">
+
+              {/* Decorative background glow */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-emerald-500/10 blur-[80px]" />
+                <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-blue-500/10 blur-[80px]" />
+              </div>
+
+              <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-12">
+
+                {/* Left: Text */}
+                <div className="flex-1">
+                  <div className="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/30 text-amber-400 text-[10px] font-black uppercase tracking-[3px] px-4 py-2 rounded-full mb-8">
+                    ✦ {lang === 'it' ? 'Servizio Esclusivo' : 'Servicio Exclusivo'}
+                  </div>
+                  <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-6">
+                    {lang === 'it' ? 'Crea la tua' : 'Crea tu'}{' '}
+                    <span className="text-emerald-400">
+                      {lang === 'it' ? 'Pagina Web Corporativa' : 'Página Web Corporativa'}
+                    </span>
+                  </h2>
+                  <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-lg mb-8">
+                    {lang === 'it'
+                      ? 'Un sito web professionale, progettato e configurato per te. Nessun template generico — un\'identità digitale unica per la tua azienda.'
+                      : 'Un sitio web profesional, diseñado y configurado para ti. Sin plantillas genéricas — una identidad digital única para tu empresa.'}
+                  </p>
+
+                  <div className="flex flex-wrap gap-4">
+                    {[
+                      lang === 'it' ? '✓ Design su misura' : '✓ Diseño a medida',
+                      lang === 'it' ? '✓ SEO ottimizzato' : '✓ SEO optimizado',
+                      lang === 'it' ? '✓ Hosting & dominio' : '✓ Hosting & dominio',
+                      lang === 'it' ? '✓ Pannello di controllo' : '✓ Panel de control',
+                      lang === 'it' ? '✓ Integrazione negozio' : '✓ Integración con tu tienda',
+                    ].map((f, i) => (
+                      <span key={i} className="text-sm text-slate-300 font-semibold bg-slate-800 px-4 py-2 rounded-full">
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right: Price card */}
+                <div className="flex-shrink-0 w-full lg:w-auto">
+                  <div className="bg-slate-900 border border-slate-700 rounded-[32px] p-8 min-w-[280px]">
+
+                    {/* One-time payment */}
+                    <div className="mb-6 pb-6 border-b border-slate-700">
+                      <div className="text-slate-400 text-xs font-black uppercase tracking-widest mb-3">
+                        {lang === 'it' ? 'Investimento iniziale' : 'Inversión inicial'}
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-6xl font-black text-white tracking-tighter">€980</span>
+                      </div>
+                      <div className="text-slate-500 text-sm font-semibold mt-1">
+                        {lang === 'it' ? 'Progettazione + configurazione' : 'Diseño + configuración'}
+                      </div>
+                    </div>
+
+                    {/* Annual maintenance */}
+                    <div className="mb-8">
+                      <div className="text-slate-400 text-xs font-black uppercase tracking-widest mb-3">
+                        + {lang === 'it' ? 'Mantenimento annuale' : 'Mantenimiento anual'}
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-emerald-400 tracking-tight">€190</span>
+                        <span className="text-slate-500 text-sm font-bold">{lang === 'it' ? '/ anno' : '/ año'}</span>
+                      </div>
+                      <div className="text-slate-500 text-xs font-semibold mt-1">
+                        ≈ {lang === 'it' ? '€15,80 al mese' : '€15,80 al mes'}
+                      </div>
+                    </div>
+
+                    <a
+                      href="/contatti"
+                      className="glow-btn block w-full py-5 rounded-2xl bg-amber-400 text-emerald-900 font-black text-center text-base hover:bg-amber-300 transition-all shadow-xl shadow-amber-400/20"
+                    >
+                      {lang === 'it' ? 'Richiedi ora →' : 'Solicitar ahora →'}
+                    </a>
+
+                    <p className="text-center text-slate-600 text-[11px] font-semibold mt-4">
+                      {lang === 'it' ? 'Sin compromiso · Risposta in 24h' : 'Sin compromiso · Respuesta en 24h'}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
       {/* ─── FAQ ────────────────────────────────────────────────────────────── */}
+
       <section className="py-24 px-6 bg-slate-50">
         <div className="max-w-3xl mx-auto">
           <AnimatedSection className="text-center mb-16">
