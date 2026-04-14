@@ -28,7 +28,7 @@ const STEPS_META = [
     titulo:  '¿Cuál será la dirección de tu tienda?',
     desc:    'Esta es la dirección (link) que compartirás con tus clientes para que puedan ver y comprar tus productos.',
     ejemplo: null,
-    tip:     '💡 Solo usa letras y números, sin espacios ni caracteres especiales. Puedes cambiarlo más adelante desde los ajustes.',
+    tip:     '⚠️ Esta dirección es permanente y no se puede cambiar una vez creada la tienda. ¡Tómate un momento para elegir bien!',
   },
   {
     field:   'whatsapp',
@@ -429,7 +429,11 @@ export default function RegisterPage() {
 
                     {/* Ejemplo / Tip */}
                     {meta.tip && (
-                      <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-6 text-slate-600 text-sm leading-relaxed">
+                      <div className={`border rounded-xl px-4 py-3 mb-6 text-sm leading-relaxed ${
+                        currentField === 'subdominio'
+                          ? 'bg-amber-50 border-amber-200 text-amber-800 font-medium'
+                          : 'bg-blue-50 border-blue-100 text-slate-600'
+                      }`}>
                         {meta.tip}
                       </div>
                     )}
