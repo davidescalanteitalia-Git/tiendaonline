@@ -633,66 +633,78 @@ export default function Home() {
 
           {/* Comparison Table */}
           <AnimatedSection>
-            <div className="rounded-[32px] overflow-hidden border border-slate-200 shadow-sm">
-              {/* Table Header Row */}
-              <div className="grid bg-slate-900 text-white" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr' }}>
-                <div className="p-6 font-black text-sm">
-                  {lang === 'it' ? 'Caratteristiche' : 'Características'}
-                </div>
-                {pricingPlans.map((p) => (
-                  <div key={p.key} className={`p-6 text-center font-black text-sm ${
-                    p.popular ? 'bg-emerald-600' : ''
-                  }`}>
-                    {p.name}
-                  </div>
-                ))}
-              </div>
+            {/* Scroll Hint (Mobile only) */}
+            <div className="md:hidden flex items-center justify-center gap-3 text-xs font-bold text-slate-400 mb-4 animate-pulse">
+              <span className="text-lg">←</span> {lang === 'it' ? 'Scorri per vedere i piani' : 'Desliza para ver más planes'} <span className="text-lg">→</span>
+            </div>
 
-              {/* Table Body */}
-              {comparisonRows.map((row, ri) => (
-                <div
-                  key={ri}
-                  className={`grid items-center text-sm ${
-                    ri % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-                  }`}
-                  style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr' }}
-                >
-                  <div className="p-4 pl-6 font-semibold text-slate-700 border-r border-slate-100">{row.label}</div>
-                  {row.vals.map((val, vi) => (
-                    <div key={vi} className={`p-4 text-center border-r border-slate-100 last:border-r-0 font-bold ${
-                      vi === 2 ? 'bg-emerald-50' : ''
-                    }`}>
-                      {val === true ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 mx-auto" />
-                      ) : val === false ? (
-                        <span className="text-slate-200 text-lg">—</span>
-                      ) : (
-                        <span className="text-slate-700 text-xs">{val}</span>
-                      )}
+            <div className="rounded-[32px] overflow-hidden border border-slate-200 shadow-sm relative z-0">
+              <div className="overflow-x-auto custom-scrollbar w-full">
+                <div className="min-w-[800px]">
+                  {/* Table Header Row */}
+                  <div className="grid bg-slate-900 text-white" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr' }}>
+                    <div className="p-6 font-black text-sm sticky left-0 z-20 bg-slate-900 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.5)]">
+                      {lang === 'it' ? 'Caratteristiche' : 'Características'}
                     </div>
-                  ))}
-                </div>
-              ))}
-
-              {/* Table Footer CTA Row */}
-              <div className="grid bg-slate-900" style={{ gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr' }}>
-                <div className="p-4" />
-                {pricingPlans.map((p) => (
-                  <div key={p.key} className={`p-4 ${
-                    p.popular ? 'bg-emerald-600' : ''
-                  }`}>
-                    <a
-                      href={p.key === 'grow' ? '/contatti' : '/register'}
-                      className={`block w-full py-3 rounded-xl font-black text-center text-xs transition-all ${
-                        p.popular
-                          ? 'bg-white text-emerald-700'
-                          : 'bg-emerald-600 text-white hover:bg-emerald-500'
-                      }`}
-                    >
-                      {p.cta}
-                    </a>
+                    {pricingPlans.map((p) => (
+                      <div key={p.key} className={`p-6 text-center font-black text-sm ${
+                        p.popular ? 'bg-emerald-600' : ''
+                      }`}>
+                        {p.name}
+                      </div>
+                    ))}
                   </div>
-                ))}
+
+                  {/* Table Body */}
+                  {comparisonRows.map((row, ri) => {
+                    const rowBg = ri % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                    return (
+                      <div
+                        key={ri}
+                        className={`grid items-center text-sm ${rowBg}`}
+                        style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr' }}
+                      >
+                        <div className={`p-4 pl-6 font-semibold text-slate-800 border-r border-slate-100 sticky left-0 z-10 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.08)] ${rowBg}`}>
+                          {row.label}
+                        </div>
+                        {row.vals.map((val, vi) => (
+                          <div key={vi} className={`p-4 text-center border-r border-slate-100 last:border-r-0 font-bold ${
+                            vi === 2 ? 'bg-emerald-50' : ''
+                          }`}>
+                            {val === true ? (
+                              <CheckCircle2 className="w-5 h-5 text-emerald-500 mx-auto" />
+                            ) : val === false ? (
+                              <span className="text-slate-200 text-lg">—</span>
+                            ) : (
+                              <span className="text-slate-700 text-xs">{val}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })}
+
+                  {/* Table Footer CTA Row */}
+                  <div className="grid bg-slate-900" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr' }}>
+                    <div className="p-4 sticky left-0 z-20 bg-slate-900 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.5)]" />
+                    {pricingPlans.map((p) => (
+                      <div key={p.key} className={`p-4 ${
+                        p.popular ? 'bg-emerald-600' : ''
+                      }`}>
+                        <a
+                          href={p.key === 'grow' ? '/contatti' : '/register'}
+                          className={`block w-full py-3 rounded-xl font-black text-center text-xs transition-all ${
+                            p.popular
+                              ? 'bg-white text-emerald-700'
+                              : 'bg-emerald-600 text-white hover:bg-emerald-500'
+                          }`}
+                        >
+                          {p.cta}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </AnimatedSection>
