@@ -91,6 +91,7 @@ export default function RegisterPage() {
   const [fieldError,     setFieldError]     = useState('')
   const [subdomainStatus,setSubdomainStatus]= useState('idle')
   const [buildPhase,     setBuildPhase]     = useState(0)
+  const [onboardingChoice, setOnboardingChoice] = useState(null) // 'demo' o 'clean'
 
   const [form, setForm] = useState({
     nombre: '', subdominio: '', whatsapp: '',
@@ -619,7 +620,7 @@ export default function RegisterPage() {
 
               {/* ════ PASO 6: Éxito ════ */}
               {step === 6 && (
-                <div className="text-center py-4 animate-in zoom-in-95 duration-500 flex flex-col items-center">
+                <div className="text-center py-4 animate-in zoom-in-95 duration-500 flex flex-col items-center w-full">
                   <div className="relative mb-6">
                     <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center shadow-xl shadow-emerald-200/50">
                       <CheckCircle2 size={48} className="text-emerald-600" />
@@ -630,18 +631,49 @@ export default function RegisterPage() {
                   <p className="text-slate-500 mb-2 max-w-xs leading-relaxed">
                     Tu tienda <strong className="text-slate-700">{form.nombre}</strong> ha sido creada con éxito.
                   </p>
-                  <p className="text-slate-400 text-sm mb-8">
-                    Ya puedes empezar a agregar tus productos y compartir tu tienda con tus clientes.
-                  </p>
 
-                  <button
-                    onClick={() => router.push('/dashboard')}
-                    className="w-full bg-slate-900 hover:bg-slate-800 active:scale-95 text-white py-4 rounded-xl font-bold shadow-xl flex items-center justify-center gap-2 transition-all text-base"
-                  >
-                    Ir a gestionar mi tienda <ChevronRight size={18} />
-                  </button>
+                  {!onboardingChoice ? (
+                    <div className="w-full mt-6 animate-in slide-in-from-bottom-4 duration-500">
+                      <p className="text-slate-800 font-bold mb-4 text-center">¿Cómo prefieres empezar?</p>
+                      
+                      <button
+                        onClick={() => setOnboardingChoice('demo')}
+                        className="w-full mb-3 p-4 border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 rounded-xl transition-all text-left flex items-start gap-4 group"
+                      >
+                        <div className="text-2xl mt-0.5">📦</div>
+                        <div>
+                          <div className="font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">Quiero productos de prueba</div>
+                          <div className="text-xs text-slate-500 mt-1 leading-relaxed">Para guiarme, ver cómo queda la tienda y modificar cosas que ya están hechas.</div>
+                        </div>
+                      </button>
 
-                  <p className="text-slate-400 text-xs mt-4">
+                      <button
+                        onClick={() => setOnboardingChoice('clean')}
+                        className="w-full mb-3 p-4 border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50 rounded-xl transition-all text-left flex items-start gap-4 group"
+                      >
+                        <div className="text-2xl mt-0.5">✨</div>
+                        <div>
+                          <div className="font-bold text-slate-800 group-hover:text-blue-700 transition-colors">Quiero la tienda vacía</div>
+                          <div className="text-xs text-slate-500 mt-1 leading-relaxed">Prefiero empezar con una tienda limpia para ir llenándola yo mismo desde cero.</div>
+                        </div>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-full mt-6 bg-slate-50 border border-slate-200 p-6 rounded-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 text-left">
+                      <h3 className="text-lg font-black text-slate-800 mb-2 text-center">¡Entendido!</h3>
+                      <p className="text-slate-600 text-sm leading-relaxed mb-6 text-center">
+                        Vamos a crear tu primer producto. No te preocupes, esto es súper fácil y <strong>siempre lo vas a poder modificar</strong> o borrar más adelante.
+                      </p>
+                      <button
+                        onClick={() => router.push('/dashboard')}
+                        className="w-full bg-slate-900 hover:bg-slate-800 active:scale-95 text-white py-4 rounded-xl font-bold shadow-xl flex items-center justify-center gap-2 transition-all text-base"
+                      >
+                        Vamos allá <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="text-slate-400 text-xs mt-6">
                     Tu dirección web es:{' '}
                     <a
                       href={`https://${form.subdominio}.tiendaonline.it`}
