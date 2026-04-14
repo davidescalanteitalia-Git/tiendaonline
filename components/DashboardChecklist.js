@@ -215,35 +215,29 @@ export default function DashboardChecklist({ tienda, productos, pedidos, cliente
   }
 
   return (
-    <div className={`rounded-[32px] border ${borderColor} overflow-hidden bg-white shadow-xl shadow-slate-200/50 transition-all duration-300`}>
+    <div className={`rounded-2xl border ${borderColor} overflow-hidden bg-white shadow-md transition-all duration-300`}>
       {/* Header Desplegable */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:${lightBgColor} focus:outline-none`}
+        className={`w-full p-4 flex flex-col gap-3 transition-colors hover:${lightBgColor} focus:outline-none text-left bg-gradient-to-br from-white to-slate-50/50`}
       >
-        <div className="flex flex-col text-left">
-          <h3 className="text-xl font-black text-slate-800 tracking-tight">Onboarding: Transforma tu Tienda 🚀</h3>
-          <p className="text-slate-500 text-sm font-medium mt-1">
-            {progressPercent === 100 
-              ? '¡Excelente! Has completado todas las tareas expertas de tu tienda.' 
-              : 'Domina la plataforma paso a paso comprobando todo su potencial.'}
-          </p>
+        <div className="flex justify-between items-start w-full">
+           <h3 className="text-sm font-black text-slate-800 tracking-tight leading-snug">Onboarding:<br/>Tu Tienda 🚀</h3>
+           <div className="text-slate-400 p-1.5 bg-white rounded-lg shadow-sm border border-slate-100 shrink-0">
+            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
         </div>
         
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col items-end gap-2 flex-grow sm:flex-grow-0">
-            <span className={`text-sm font-black ${textColor}`}>
-              {completedCount} de {totalCount} ({progressPercent}%)
-            </span>
-            <div className="w-32 sm:w-48 h-2.5 bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className={`h-full ${barColor} transition-all duration-1000 ease-out`} 
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+        <div className="flex flex-col w-full gap-1.5 mt-1">
+          <div className="flex justify-between items-center w-full">
+             <span className={`text-[10px] font-black uppercase tracking-widest ${textColor}`}>Progreso</span>
+             <span className={`text-[11px] font-black ${textColor}`}>{progressPercent}%</span>
           </div>
-          <div className="text-slate-400 hover:text-slate-700 transition-colors p-2 bg-white rounded-2xl shadow-sm border border-slate-100">
-            {isOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+            <div 
+              className={`h-full ${barColor} transition-all duration-1000 ease-out`} 
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
         </div>
       </button>
@@ -253,73 +247,63 @@ export default function DashboardChecklist({ tienda, productos, pedidos, cliente
         className={`grid transition-all duration-500 ease-in-out ${isOpen ? 'grid-rows-[1fr] border-t border-slate-100' : 'grid-rows-[0fr]'}`}
       >
         <div className="overflow-hidden">
-          <div className="divide-y divide-slate-50 max-h-[600px] overflow-y-auto no-scrollbar">
+          <div className="divide-y divide-slate-100 max-h-[50vh] overflow-y-auto no-scrollbar">
             {tasks.map((task) => (
-               <div key={task.id} className="group flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 sm:px-8 hover:bg-slate-50 transition-colors gap-4">
-                  <div className="flex gap-4 items-start sm:items-center">
-                    <div className={`mt-1 sm:mt-0 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all shadow-sm ${
+               <div key={task.id} className="group flex flex-col px-4 py-3 hover:bg-slate-50 transition-colors gap-2">
+                  <div className="flex gap-3 items-start">
+                    <div className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                       task.status 
-                        ? 'bg-emerald-100 text-emerald-600 shadow-emerald-200' 
-                        : 'bg-white border border-slate-200 text-slate-400 group-hover:border-blue-200 group-hover:text-blue-500'
+                        ? 'bg-emerald-100 text-emerald-600 shadow-sm shadow-emerald-200/50' 
+                        : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600'
                     }`}>
-                      {task.status ? <CheckCircle2 size={24} /> : task.icon}
+                      {task.status ? <CheckCircle2 size={16} /> : task.icon}
                     </div>
-                    <div>
-                      <h4 className={`text-base font-bold ${task.status ? 'text-slate-400 line-through' : 'text-slate-800 group-hover:text-blue-600 transition-colors'}`}>
+                    <div className="flex-1 mt-0.5">
+                      <h4 className={`text-xs font-bold leading-tight ${task.status ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
                         {task.title}
                       </h4>
-                      <p className={`text-sm mt-0.5 max-w-xl ${task.status ? 'text-slate-300' : 'text-slate-500'}`}>
-                        {task.desc}
-                      </p>
                     </div>
                   </div>
                   
-                  <div className="pl-16 sm:pl-0 shrink-0 flex items-center gap-2">
-                    {task.status ? (
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-[11px] uppercase tracking-wider">
-                        Completado ✅
-                      </span>
-                    ) : task.action ? (
-                      <button 
-                        onClick={task.action}
-                        className="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm active:scale-95 whitespace-nowrap"
-                      >
-                        {task.buttonText || 'Hacer ahora'}
-                      </button>
-                    ) : task.manual ? (
-                      <button 
-                        onClick={() => toggleManualCheck(task.id)}
-                        className="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm active:scale-95 whitespace-nowrap"
-                      >
-                        {task.buttonText || 'Marcar como hecho'}
-                      </button>
-                    ) : (
-                      <Link 
-                        href={task.href}
-                        className="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm active:scale-95 whitespace-nowrap"
-                      >
-                        Hacer ahora
-                      </Link>
-                    )}
-                  </div>
+                  {!task.status && (
+                    <div className="pl-11 pr-1 mt-1">
+                      {task.action ? (
+                        <button 
+                          onClick={task.action}
+                          className="w-full py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95"
+                        >
+                          {task.buttonText || 'Hacer ahora'}
+                        </button>
+                      ) : task.manual ? (
+                        <button 
+                          onClick={() => toggleManualCheck(task.id)}
+                          className="w-full py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95"
+                        >
+                          {task.buttonText || 'Marcar hecho'}
+                        </button>
+                      ) : (
+                        <Link 
+                          href={task.href}
+                          className="w-full inline-flex justify-center py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg font-bold text-[10px] uppercase tracking-wider hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95"
+                        >
+                          Hacer ahora
+                        </Link>
+                      )}
+                    </div>
+                  )}
                </div>
             ))}
           </div>
           
           {progressPercent === 100 && (
-            <div className="p-6 sm:p-8 bg-emerald-50 border-t border-emerald-100 text-emerald-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
-                  <span className="text-2xl animate-bounce">🏆</span>
-                </div>
-                <div>
-                  <h4 className="text-lg font-black tracking-tight">¡Felicidades, eres un experto!</h4>
-                  <p className="text-sm font-medium opacity-90">Ya dominas las bases y herramientas principales del sistema.</p>
-                </div>
+            <div className="p-4 bg-emerald-50 border-t border-emerald-100 text-emerald-800 flex flex-col gap-3 text-center">
+              <div>
+                <h4 className="text-sm font-black tracking-tight text-emerald-700">¡Felicidades, eres un experto! 🏆</h4>
+                <p className="text-[10px] font-medium opacity-80 mt-1">Ya dominas las herramientas.</p>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition-all"
+                className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[11px] font-bold uppercase tracking-wider rounded-lg shadow-sm transition-all"
               >
                 Ocultar panel
               </button>

@@ -8,6 +8,7 @@ import { DICTIONARY } from '../../lib/dictionaries'
 import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
 import OnboardingWizard from '../../components/OnboardingWizard'
+import DashboardChecklist from '../../components/DashboardChecklist'
 import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle } from 'lucide-react'
 
 async function fetchTienda(access_token) {
@@ -36,6 +37,9 @@ export default function DashboardLayout({ children }) {
 
   const [tienda, setTienda] = useState(null)
   const [productosCount, setProductosCount] = useState(0)
+  const [productos, setProductos] = useState([])
+  const [pedidos, setPedidos] = useState([])
+  const [clientes, setClientes] = useState([])
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
@@ -53,16 +57,28 @@ export default function DashboardLayout({ children }) {
       setTienda(t)
 
       if (t?.id) {
-        // Fetch products count for checklist
-        const count = await fetchProductosCount(session.access_token, t.id)
-        setProductosCount(count)
+        // Fetch resources in parallel for the sidebar checklist
+        const headers = { Authorization: `Bearer ${session.access_token}` }
+        const [pedidosRes, productosRes, clientesRes] = await Promise.all([
+          fetch('/api/pedidos', { headers }),
+          fetch('/api/productos', { headers }),
+          fetch('/api/clientes', { headers })
+        ])
 
-        // Carga inicial de pendientes
-        const res = await fetch('/api/pedidos', { headers: { Authorization: `Bearer ${session.access_token}` } })
-        if (res.ok) {
-          const data = await res.json()
-          const pCount = (data.pedidos || []).filter(p => p.estado === 'pendiente').length
-          setPendingCount(pCount)
+        if (pedidosRes.ok) {
+          const data = await pedidosRes.json()
+          setPedidos(data.pedidos || [])
+          setPendingCount((data.pedidos || []).filter(p => p.estado === 'pendiente').length)
+        }
+        if (productosRes.ok) {
+          const data = await productosRes.json()
+          const prods = Array.isArray(data) ? data : []
+          setProductos(prods)
+          setProductosCount(prods.length)
+        }
+        if (clientesRes.ok) {
+          const data = await clientesRes.json()
+          setClientes(Array.isArray(data) ? data : [])
         }
         
         // Suscribir a cambios en tiempo real
@@ -131,16 +147,6 @@ export default function DashboardLayout({ children }) {
 
   const inicial = tienda?.nombre ? tienda.nombre.charAt(0).toUpperCase() : '?'
 
-  // Config Checklist Logic
-  const config = tienda?.config_diseno || {}
-  const tasks = [
-    { label: 'Dominio de tu tienda', done: !!tienda?.subdominio },
-    { label: 'Método de pago', done: !!config.pagos && Object.keys(config.pagos).some(k => config.pagos[k]?.habilitado) },
-    { label: 'Sube un producto', done: productosCount > 0 }
-  ]
-  const tasksDone = tasks.filter(t => t.done).length
-  const progressPercent = Math.round((tasksDone / tasks.length) * 100)
-
   // ── Sidebar content (shared between desktop and mobile drawer) ──
   const SidebarContent = () => (
     <>
@@ -154,43 +160,14 @@ export default function DashboardLayout({ children }) {
         </div>
 
         {/* ── Gamification Checklist ── */}
-        {!loading && progressPercent < 100 && (
-          <div className="mb-6 bg-slate-100 rounded-2xl p-4 border border-slate-200 shadow-inner">
-            <div className="flex items-center justify-between mb-2">
-               <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Tu Tienda</span>
-               <span className="text-xs font-black text-primary bg-blue-100 px-2 rounded">{progressPercent}%</span>
-            </div>
-            {/* Progress bar */}
-            <div className="h-1.5 w-full bg-slate-200 rounded-full mb-3 overflow-hidden">
-               <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${progressPercent}%` }}></div>
-            </div>
-            {/* Tasks list */}
-            <ul className="space-y-2">
-              {tasks.map((t, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-sm">
-                  {t.done ? (
-                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />
-                  ) : (
-                    <Circle size={16} className="text-slate-300 shrink-0" />
-                  )}
-                  <span className={`${t.done ? 'text-slate-400 line-through' : 'text-slate-700 font-medium'}`}>
-                    {t.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        
-        {!loading && progressPercent === 100 && (
-          <div className="mb-6 bg-emerald-50 rounded-2xl p-3 border border-emerald-100 flex items-center gap-3">
-            <div className="w-8 h-8 bg-emerald-500 text-white flex items-center justify-center rounded-xl shrink-0">
-               <CheckCircle2 size={18} />
-            </div>
-            <div>
-               <div className="text-xs font-black uppercase text-emerald-600">¡Todo Listo!</div>
-               <div className="text-[11px] text-emerald-700 font-medium leading-tight mt-0.5">Tienda 100% configurada.</div>
-            </div>
+        {!loading && tienda && (
+          <div className="mb-6 -mx-2">
+            <DashboardChecklist 
+              tienda={tienda} 
+              productos={productos} 
+              pedidos={pedidos} 
+              clientes={clientes} 
+            />
           </div>
         )}
 

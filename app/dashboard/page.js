@@ -226,17 +226,8 @@ export default function DashboardPage() {
       {/* ── 2. Content Sections ── */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
          
-         {/* Left Side: Setup & Analytics */}
+         {/* Left Side: Analytics & Support */}
          <div className="lg:col-span-1 space-y-10">
-            {/* Setup Checklist (Nuevo Onboarding) */}
-            <DashboardChecklist 
-               tienda={tienda} 
-               productos={productos} 
-               pedidos={pedidos} 
-               clientes={clientes} 
-            />
-
-            {/* Support Box */}
             <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform"></div>
                <div className="relative">
