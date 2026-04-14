@@ -90,6 +90,7 @@ export default function RegisterPage() {
   const [error,          setError]          = useState('')
   const [fieldError,     setFieldError]     = useState('')
   const [subdomainStatus,setSubdomainStatus]= useState('idle')
+  const [buildPhase,     setBuildPhase]     = useState(0)
 
   const [form, setForm] = useState({
     nombre: '', subdominio: '', whatsapp: '',
@@ -120,6 +121,23 @@ export default function RegisterPage() {
     }, 500)
     return () => clearTimeout(timer)
   }, [form.subdominio, step])
+
+  /* ── Animación artificial de creación ─────────────────────── */
+  useEffect(() => {
+    if (step !== 'building') return
+    setBuildPhase(0)
+    const t1 = setTimeout(() => setBuildPhase(1), 1500)
+    const t2 = setTimeout(() => setBuildPhase(2), 3000)
+    const t3 = setTimeout(() => setBuildPhase(3), 4500)
+    const t4 = setTimeout(() => {
+      setBuildPhase(4)
+      setTimeout(() => setStep(6), 800) // Transición suave a éxito
+    }, 6000)
+    
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4)
+    }
+  }, [step])
 
   /* ── handleChange ─────────────────────────────────────────── */
   const handleChange = (e) => {
@@ -211,7 +229,7 @@ export default function RegisterPage() {
       }
 
       await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
-      setStep(6)
+      setStep('building')
       setLoading(false)
     } catch {
       setError('Algo salió mal. Por favor inténtalo de nuevo.')
@@ -221,7 +239,7 @@ export default function RegisterPage() {
 
   /* ── Porcentaje de progreso ───────────────────────────────── */
   const totalSteps = 6 // pasos 0-5 (sin contar éxito)
-  const progress   = step >= totalSteps ? 100 : Math.round((step / totalSteps) * 100)
+  const progress   = typeof step === 'number' ? (step >= totalSteps ? 100 : Math.round((step / totalSteps) * 100)) : 100
 
   const pwStrength = getPasswordStrength(form.password)
 
@@ -237,7 +255,7 @@ export default function RegisterPage() {
           <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
 
             {/* Barra de progreso */}
-            {step < 6 && (
+            {typeof step === 'number' && step < 6 && (
               <div className="h-1.5 bg-slate-100 w-full">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-500 ease-out"
@@ -562,6 +580,43 @@ export default function RegisterPage() {
                 </div>
               )}
 
+              {/* ════ PASO BUILDING: Animación Artificial ════ */}
+              {step === 'building' && (() => {
+                const buildTexts = [
+                  'Inicializando sistema...',
+                  'Configurando base de datos segura...',
+                  'Reservando tu dirección web...',
+                  'Aplicando diseño de la tienda...',
+                  '¡Todo listo, finalizando!'
+                ]
+                return (
+                  <div className="text-center py-8 animate-in zoom-in-95 duration-500 flex flex-col items-center">
+                    <div className="relative mb-8">
+                      <div className="w-24 h-24 bg-blue-50/50 rounded-3xl flex items-center justify-center shadow-inner border border-blue-100">
+                        <Store size={40} className="text-blue-500 animate-pulse" />
+                      </div>
+                      <div className="absolute -bottom-2 -right-2">
+                        <div className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
+                          <span className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h2 className="text-2xl font-black text-slate-800 mb-3">Construyendo tu tienda</h2>
+                    <p className="text-blue-600 font-semibold text-sm animate-pulse h-5 mb-8">
+                      {buildTexts[buildPhase]}
+                    </p>
+
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-600 transition-all duration-1000 ease-out" 
+                        style={{ width: `${(buildPhase / 4) * 100}%` }} 
+                      />
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* ════ PASO 6: Éxito ════ */}
               {step === 6 && (
                 <div className="text-center py-4 animate-in zoom-in-95 duration-500 flex flex-col items-center">
@@ -604,7 +659,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Indicadores de punto debajo de la card */}
-          {step < 6 && (
+          {typeof step === 'number' && step < 6 && (
             <div className="flex justify-center gap-2 mt-5">
               {[0,1,2,3,4,5].map(i => (
                 <div
