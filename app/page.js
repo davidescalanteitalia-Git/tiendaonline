@@ -218,13 +218,13 @@ export default function Home() {
     <div className="bg-slate-50 font-sans selection:bg-emerald-100 selection:text-emerald-900">
       
       {/* ─── HEADER ─────────────────────────────────────────────────────────── */}
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-header py-3' : 'bg-transparent py-5'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 no-underline group">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-header py-2 sm:py-3' : 'bg-transparent py-3 sm:py-5'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-2">
+          <a href="/" className="flex items-center gap-1.5 sm:gap-3 no-underline group shrink-0">
             <div className="relative overflow-hidden rounded-xl">
-              <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="rounded-xl transition-transform group-hover:scale-110" priority />
+              <Image src="/logo.jpg" alt="Logo" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl transition-transform group-hover:scale-110" priority />
             </div>
-            <span className={`font-black text-xl tracking-tighter ${isScrolled ? 'text-emerald-600' : 'text-white'}`}>
+            <span className={`font-black text-sm sm:text-xl tracking-tighter ${isScrolled ? 'text-emerald-600' : 'text-white'}`}>
               TIENDAONLINE
             </span>
           </a>
@@ -241,19 +241,19 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="flex items-center gap-6">
-            <a href="/login" className={`text-sm font-semibold transition-colors ${isScrolled ? 'text-slate-600 hover:text-emerald-600' : 'text-emerald-50 hover:text-white'}`}>
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            <a href="/login" className={`text-xs sm:text-sm font-semibold transition-colors text-center whitespace-nowrap ${isScrolled ? 'text-slate-600 hover:text-emerald-600' : 'text-emerald-50 hover:text-white'}`}>
               {t('accedi')}
             </a>
-            <a href="/register" className="glow-btn bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xl shadow-emerald-500/20 flex items-center gap-2">
-              {t('ctaHeader')} <ArrowRight className="w-4 h-4" />
+            <a href="/register" className="glow-btn bg-emerald-500 text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xl shadow-emerald-500/20 flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+              {t('ctaHeader')} <ArrowRight className="hidden sm:block w-4 h-4" />
             </a>
           </div>
         </div>
       </header>
 
       {/* ─── HERO SECTION ────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden mesh-gradient">
+      <section className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-24 overflow-hidden mesh-gradient">
         {/* Animated Orbs */}
         <motion.div 
           animate={{ scale: [1, 1.2, 1], x: [0, 50, 0], y: [0, 30, 0] }}
@@ -570,6 +570,13 @@ export default function Home() {
                           </>
                         )}
                       </div>
+                      {price === 0 && (
+                        <div className={`mt-2 text-[11px] font-semibold ${
+                          isPro ? 'text-emerald-200' : 'text-slate-400'
+                        }`}>
+                          {lang === 'it' ? 'Nessun costo nascosto' : lang === 'en' ? 'No hidden costs' : 'Sin ningún costo oculto'}
+                        </div>
+                      )}
                       {billing === 'annual' && savings > 0 && (
                         <div className={`mt-2 text-[11px] font-black ${
                           isPro ? 'text-emerald-200' : 'text-emerald-600'
@@ -592,9 +599,18 @@ export default function Home() {
                           <CheckCircle2 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
                             isPro ? 'text-white' : 'text-emerald-500'
                           }`} />
-                          <span className={`text-xs font-semibold leading-tight ${
-                            isPro ? 'text-emerald-50' : 'text-slate-700'
-                          }`}>{f}</span>
+                          <div className="flex-1">
+                            <span className={`block text-xs font-semibold leading-tight ${
+                              isPro ? 'text-emerald-50' : 'text-slate-700'
+                            }`}>{f}</span>
+                            {f === 'GDPR compliance' && (
+                              <span className={`block mt-1 text-[10px] font-medium leading-tight ${
+                                isPro ? 'text-emerald-200/80' : 'text-slate-400'
+                              }`}>
+                                {lang === 'it' ? 'Protezione dei dati e privacy sui clienti.' : lang === 'en' ? 'Legal data & privacy protection.' : 'Protección de datos y privacidad.'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
