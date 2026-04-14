@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { 
   CheckCircle2, ChevronDown, ChevronUp, Image as ImageIcon, MessageSquare, 
   PackagePlus, ShoppingCart, UserPlus, Image as BannerIcon, CreditCard, 
-  Truck, Clock, Instagram, Palette, Tag, Share2, Layers, Star, MapPin 
+  Truck, Clock, AtSign, Palette, Tag, Share2, Layers, Star, MapPin 
 } from 'lucide-react'
 
 export default function DashboardChecklist({ tienda, productos, pedidos, clientes }) {
@@ -116,7 +116,7 @@ export default function DashboardChecklist({ tienda, productos, pedidos, cliente
       title: 'Conectar tus Redes Sociales',
       desc: 'Añade el link de tu Instagram para que tus clientes te sigan.',
       status: hasInstagram,
-      icon: <Instagram size={20} />,
+      icon: <AtSign size={20} />,
       href: '/dashboard/ajustes'
     },
     {
