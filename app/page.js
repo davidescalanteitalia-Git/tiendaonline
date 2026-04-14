@@ -682,8 +682,8 @@ export default function Home() {
           </AnimatedSection>
 
         </div>
-        </div>
       </section>
+
 
       {/* ─── WEB CORPORATIVA (Servicio especial) ───────────────────────────────── */}
       <section className="py-16 px-6 bg-white">
