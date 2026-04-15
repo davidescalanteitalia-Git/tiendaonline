@@ -89,9 +89,9 @@ export default function DashboardChecklist({ tienda, productos, pedidos, cliente
       id: 'banner',
       title: 'Pon un banner para la página web',
       desc: 'Añade una portada atractiva que resalte sobre el resto en tu tienda online.',
-      status: !!config.banner || manualChecks['banner'], // Pendiente desarrollo backend
+      status: !!config.banner_url,
       icon: <BannerIcon size={20} />,
-      href: '/dashboard/diseno?tab=branding'
+      href: '/dashboard/diseno'
     },
     {
       id: 'mensaje',
@@ -132,11 +132,9 @@ export default function DashboardChecklist({ tienda, productos, pedidos, cliente
       id: 'cupon',
       title: 'Crear un Cupón de Descuento',
       desc: 'Crea un código como BIENVENIDO10 para animar a tus primeros visitantes a comprar.',
-      status: manualChecks['cupon'], // Aún no hay backend, se marca manual
+      status: config.cupones && config.cupones.length > 0,
       icon: <Tag size={20} />,
       href: '/dashboard/diseno',
-      buttonText: 'Marcar como hecho',
-      manual: true
     },
 
     // 📦 Gestión de Inventario Avanzada

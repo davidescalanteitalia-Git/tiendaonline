@@ -28,7 +28,8 @@ import {
   Smartphone,
   Info,
   Loader2,
-  Camera
+  Camera,
+  Tag
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
@@ -43,6 +44,10 @@ export default function DisenoPage() {
   const [copied, setCopied] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
   
+  // Coupons State
+  const [showCuponModal, setShowCuponModal] = useState(false)
+  const [newCupon, setNewCupon] = useState({ codigo: '', tipo: 'porcentaje', valor: '' })
+
   // Design Configuration State
   const [config, setConfig] = useState({
     publicado: true,
@@ -51,6 +56,7 @@ export default function DisenoPage() {
     modo_exhibicion: 'cuadricula',
     mostrar_sin_stock: 'normal',
     banner_url: null,
+    cupones: [],
   })
 
   const bannerInputRef = useRef(null)
@@ -104,6 +110,29 @@ export default function DisenoPage() {
       setSaving(false)
     }
   }
+
+  const handleSaveCupon = () => {
+    if (!newCupon.codigo || !newCupon.valor) {
+      setErrorMsg('Debes llenar el código y el valor.');
+      setTimeout(() => setErrorMsg(null), 3000);
+      return;
+    }
+    const cuponGuardar = { ...newCupon, codigo: newCupon.codigo.toUpperCase().trim() };
+    const currentCupones = config.cupones || [];
+    const newConfig = { ...config, cupones: [...currentCupones, cuponGuardar] };
+    setConfig(newConfig);
+    saveChanges(newConfig);
+    setShowCuponModal(false);
+    setNewCupon({ codigo: '', tipo: 'porcentaje', valor: '' });
+  };
+
+  const handleDeleteCupon = (idx) => {
+    const currentCupones = [...(config.cupones || [])];
+    currentCupones.splice(idx, 1);
+    const newConfig = { ...config, cupones: currentCupones };
+    setConfig(newConfig);
+    saveChanges(newConfig);
+  };
 
   const compressImage = (file) => {
     return new Promise((resolve) => {
@@ -190,6 +219,78 @@ export default function DisenoPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto p-4 md:p-8 animate-in fade-in duration-500 font-sans">
+
+      {showCuponModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex justify-center items-center p-4">
+           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative">
+              <button 
+                onClick={() => setShowCuponModal(false)} 
+                className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full transition-colors"
+               >
+                <X size={20} />
+              </button>
+              <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                <Tag size={24} className="text-purple-500" /> Cupones Activos
+              </h2>
+              
+              <div className="space-y-4 max-h-[30vh] overflow-y-auto pr-2 no-scrollbar mb-6">
+                {(!config.cupones || config.cupones.length === 0) ? (
+                   <div className="text-center text-slate-400 py-6 border-2 border-dashed border-slate-100 rounded-2xl">
+                      <p className="text-sm font-medium">Aún no tienes cupones. Crea el primero.</p>
+                   </div>
+                ) : (
+                   config.cupones.map((c, i) => (
+                     <div key={i} className="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <div>
+                           <div className="font-black text-slate-800 tracking-wider text-sm">{c.codigo}</div>
+                           <div className="font-medium text-purple-600 text-xs">Descuento: {c.tipo === 'porcentaje' ? `${c.valor}%` : `€${c.valor}`}</div>
+                        </div>
+                        <button onClick={() => handleDeleteCupon(i)} className="text-rose-500 hover:bg-rose-50 p-2 rounded-xl transition-colors">
+                           <Trash2 size={18} />
+                        </button>
+                     </div>
+                   ))
+                )}
+              </div>
+
+              <div className="border-t border-slate-100 pt-6">
+                 <h3 className="font-bold text-slate-600 mb-4 text-sm">Añadir Nuevo Cupón</h3>
+                 <div className="space-y-3">
+                    <input 
+                      type="text" 
+                      placeholder="Código (ej. VERANO24)" 
+                      value={newCupon.codigo}
+                      onChange={e => setNewCupon({...newCupon, codigo: e.target.value.toUpperCase()})}
+                      className="w-full bg-slate-50 border-2 border-slate-100 px-4 py-3 rounded-xl outline-none focus:border-purple-500 font-bold uppercase transition-colors text-sm"
+                    />
+                    <div className="flex gap-3">
+                       <select 
+                         value={newCupon.tipo} 
+                         onChange={e => setNewCupon({...newCupon, tipo: e.target.value})}
+                         className="bg-slate-50 border-2 border-slate-100 px-4 py-3 rounded-xl outline-none focus:border-purple-500 font-bold transition-colors text-sm w-1/2"
+                       >
+                         <option value="porcentaje">Porcentaje (%)</option>
+                         <option value="monto">Descuento (fijo)</option>
+                       </select>
+                       <input 
+                         type="number"
+                         placeholder="Valor"
+                         value={newCupon.valor}
+                         onChange={e => setNewCupon({...newCupon, valor: e.target.value})}
+                         className="w-1/2 bg-slate-50 border-2 border-slate-100 px-4 py-3 rounded-xl outline-none focus:border-purple-500 font-bold transition-colors text-sm"
+                       />
+                    </div>
+                    <button 
+                      onClick={handleSaveCupon}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-slate-900/20 active:scale-95 mt-2"
+                    >
+                      Añadir Cupón
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
 
       {/* Error Toast */}
       {errorMsg && (
@@ -470,13 +571,23 @@ export default function DisenoPage() {
                   </div>
                 </Link>
 
-                <div className="bg-slate-50 rounded-3xl p-6 border border-transparent opacity-60 flex flex-col gap-4 grayscale">
-                   <div className="bg-white w-12 h-12 rounded-2xl shadow-sm text-slate-400 flex items-center justify-center">
-                    <Share2 size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-400">{dict.canalesVenta || 'Canales de Venta'}</h4>
-                    <p className="text-[10px] font-medium text-slate-300 mt-1">Próximamente: Instagram / FB.</p>
+                <div 
+                  onClick={() => setShowCuponModal(true)}
+                  className="bg-slate-50 rounded-3xl p-6 border border-transparent hover:border-purple-500 hover:bg-purple-50/30 transition-all group cursor-pointer"
+                >
+                  <div className="flex flex-col gap-4">
+                    <div className="bg-white w-12 h-12 rounded-2xl shadow-sm text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors relative">
+                      <Tag size={24} />
+                      {config.cupones?.length > 0 && (
+                        <div className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">
+                          {config.cupones.length}
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 group-hover:text-purple-700 transition-colors">Cupones</h4>
+                      <p className="text-[10px] font-medium text-slate-400 mt-1">Crea códigos de descuento.</p>
+                    </div>
                   </div>
                 </div>
 

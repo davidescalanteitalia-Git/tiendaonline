@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   ShoppingBag,
   Search,
@@ -29,6 +29,8 @@ export default function PosPage() {
   const [selectedCat, setSelectedCat] = useState('all')
 
   const [cart, setCart] = useState([])
+  const [scannerOpen, setScannerOpen] = useState(false)
+  const videoRef = useRef(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [successMsg, setSuccessMsg] = useState(null)
   const [errorMsg, setErrorMsg] = useState(null)
@@ -81,6 +83,94 @@ export default function PosPage() {
       return [...prev, { ...prod, quantity: 1 }]
     })
   }
+
+  // --- SCANNER LOGIC ---
+  useEffect(() => {
+    let animationFrameId;
+    let detector;
+
+    if (scannerOpen && videoRef.current) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+          }
+          
+          if ('BarcodeDetector' in window) {
+            detector = new window.BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'qr_code', 'upc_a', 'upc_e'] });
+            const detectLoop = async () => {
+              try {
+                if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+                  const codes = await detector.detect(videoRef.current);
+                  if (codes && codes.length > 0) {
+                    handleScan(codes[0].rawValue);
+                    return;
+                  }
+                }
+              } catch (e) {
+                console.error("Error en detección:", e);
+              }
+              if (scannerOpen) {
+                animationFrameId = requestAnimationFrame(detectLoop);
+              }
+            };
+            detectLoop();
+          } else {
+             showError("Tu dispositivo o navegador no soporta el Lector nativo.");
+             setScannerOpen(false);
+          }
+        })
+        .catch(err => {
+          console.error("Camera error:", err);
+          showError("Acceso a la cámara denegado o no disponible.");
+          setScannerOpen(false);
+        });
+    }
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      if (videoRef.current && videoRef.current.srcObject) {
+         videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [scannerOpen]);
+
+  const handleScan = (code) => {
+     try {
+       const ctx = new (window.AudioContext || window.webkitAudioContext)();
+       const osc = ctx.createOscillator();
+       osc.frequency.value = 800; 
+       osc.connect(ctx.destination);
+       osc.start();
+       setTimeout(() => osc.stop(), 150);
+     } catch(e) {}
+
+     setScannerOpen(false);
+
+     const p = productos.find(prod => prod.codigo_barras && String(prod.codigo_barras) === String(code));
+     if (p) {
+        setCart(prev => {
+          const existing = prev.find(i => i.id === p.id)
+          if (existing) {
+            if (existing.quantity >= p.stock && p.stock > 0) {
+              showError('No hay más stock disponible');
+              return prev;
+            }
+            return prev.map(i => i.id === p.id ? { ...i, quantity: i.quantity + 1 } : i)
+          }
+          if (p.stock === 0) {
+             showError('Producto sin stock');
+             return prev;
+          }
+          return [...prev, { ...p, quantity: 1 }]
+        })
+        setSuccessMsg(`"${p.nombre}" agregado`);
+        setTimeout(() => setSuccessMsg(null), 2000);
+     } else {
+        showError(`Prod. no encontrado: ${code}`);
+     }
+  };
 
   const adjustQty = (id, delta) => {
     setCart(prev => prev.map(i => {
@@ -191,6 +281,33 @@ export default function PosPage() {
 
 
 
+      {scannerOpen && (
+         <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 p-4">
+            <button 
+               onClick={() => setScannerOpen(false)} 
+               className="absolute top-8 right-8 text-white hover:text-rose-400 bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors z-[110]">
+               <X size={24} />
+            </button>
+            <div className="text-center mb-6 z-[110] w-full max-w-sm absolute top-20">
+               <ScanLine size={48} className="text-blue-500 mx-auto mb-3 animate-pulse" />
+               <h2 className="text-xl font-black text-white">Escanear Código</h2>
+               <p className="text-slate-400 font-medium text-sm mt-2">Enfoca el código de barras</p>
+            </div>
+            
+            <div className="relative w-full max-w-md aspect-[3/4] bg-slate-900 rounded-[32px] overflow-hidden border-2 border-slate-700 shadow-2xl mt-10">
+               <video 
+                 ref={videoRef} 
+                 className="absolute inset-0 w-full h-full object-cover" 
+                 playsInline 
+                 muted 
+               />
+               <div className="absolute inset-0 border-[2px] border-blue-500/50 m-8 rounded-[20px] pointer-events-none overflow-hidden">
+                 <div className="w-full h-1 bg-red-500/90 shadow-[0_0_15px_rgba(239,68,68,1)] animate-scan-line origin-top" />
+               </div>
+            </div>
+         </div>
+      )}
+
       {showReciboPreview && lastOrderDetails && (
          <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
             <div className="bg-white max-w-sm w-full rounded-3xl p-8 shadow-2xl relative animate-in fade-in zoom-in duration-300">
@@ -248,7 +365,11 @@ export default function PosPage() {
                  onChange={(e) => setSearch(e.target.value)}
                  className="w-full pl-12 pr-12 py-3 bg-slate-100 border-transparent border-2 rounded-xl outline-none focus:border-blue-500 focus:bg-white transition-all font-medium"
                />
-               <ScanLine size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-blue-600" />
+               <ScanLine 
+                 size={24} 
+                 onClick={() => setScannerOpen(true)}
+                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer hover:text-blue-600 active:scale-95 transition-transform" 
+               />
             </div>
          </div>
 
@@ -432,8 +553,16 @@ export default function PosPage() {
          </div>
       </div>
       
-      {/* Scrollbar hide */}
+      {/* Scrollbar hide and scanner animation */}
       <style jsx global>{`
+        @keyframes scan-line {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(1000px); }
+          100% { transform: translateY(0px); }
+        }
+        .animate-scan-line {
+          animation: scan-line 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>

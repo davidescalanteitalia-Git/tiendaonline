@@ -45,13 +45,40 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
   const [metodoPago, setMetodoPago] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
 
+  const [cuponInput, setCuponInput] = useState('')
+  const [cuponAplicado, setCuponAplicado] = useState(null)
+  const [cuponError, setCuponError] = useState(null)
+
   const configPagos = config.pagos || {}
   const configEnvios = config.envios || {}
 
   const totalProductos = cart.reduce((acc, item) => acc + (parseFloat(item.price || item.precio) * item.quantity), 0)
+  
+  let discount = 0;
+  if (cuponAplicado) {
+    if (cuponAplicado.tipo === 'porcentaje') {
+      discount = totalProductos * (cuponAplicado.valor / 100);
+    } else {
+      discount = parseFloat(cuponAplicado.valor);
+    }
+  }
+
   const shippingCost = metodoEnvio === 'domicilio' ? (zonaSeleccionada?.costo || 0) : 0
-  const total = totalProductos + shippingCost
+  const total = Math.max(0, totalProductos - discount) + shippingCost
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0)
+  
+  const applyCupon = () => {
+    setCuponError(null);
+    if (!cuponInput.trim()) return;
+    const cupones = config.cupones || [];
+    const found = cupones.find(c => c.codigo.toUpperCase() === cuponInput.trim().toUpperCase());
+    if (found) {
+      setCuponAplicado(found);
+      setCuponInput('');
+    } else {
+      setCuponError('Cupón inválido');
+    }
+  }
 
   const addToCart = (product) => {
     if (!aceptarPedidos) return
@@ -101,7 +128,9 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           metodo_pago: metodoPago,
           direccion: direccionCliente,
           shipping_cost: shippingCost,
-          whatsapp: customerPhone
+          whatsapp: customerPhone,
+          cupon_codigo: cuponAplicado?.codigo || null,
+          descuento: discount
         })
       })
       const data = await response.json()
@@ -117,9 +146,10 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           const bankDetails = metodoPago === 'transferencia'
             ? `%0A%0A*DATOS BANCARIOS:*%0A- *Banco:* ${configPagos.transferencia?.banco}%0A- *Alias/CBU:* ${configPagos.transferencia?.cbu}%0A- *Titular:* ${configPagos.transferencia?.titular}%0A`
             : ''
+          const discountInfo = cuponAplicado ? `%0A*Descuento (${cuponAplicado.codigo}):* -€${discount.toFixed(2)}` : '';
           const message = `*ORDEN #${pedido.codigo || pedido.id.slice(0,5).toUpperCase()}*%0A*Cliente:* ${customerName}%0A%0A*PEDIDO:*%0A` +
             cart.map(item => `- ${item.quantity}x ${item.nombre} (€${parseFloat(item.price || item.precio).toFixed(2)})`).join('%0A') +
-            `%0A%0A${shippingInfo}%0A%0A${paymentInfo}${bankDetails}%0A%0A*Total: €${total.toFixed(2)}*%0A%0A_Enviado desde: ${tienda.nombre}_`
+            `%0A%0A${shippingInfo}%0A%0A${paymentInfo}${bankDetails}${discountInfo}%0A%0A*Total: €${total.toFixed(2)}*%0A%0A_Enviado desde: ${tienda.nombre}_`
           window.open(`https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`, '_blank')
         }
         setIsModalOpen(false)
@@ -130,6 +160,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         setZonaSeleccionada(null)
         setDireccionCliente('')
         setMetodoPago('')
+        setCuponAplicado(null)
+        setCuponInput('')
         setCheckoutStep(1)
         setSuccessMessageOpen(true)
       }
@@ -619,10 +651,35 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                     </div>
                   </div>
 
+                  {config.cupones && config.cupones.length > 0 && (
+                    <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+                      <p style={{ margin: '0 0 10px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>Cupón de Descuento</p>
+                      {cuponAplicado ? (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#dcfce7', color: '#15803d', padding: '10px 14px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700 }}>
+                          <span>✅ {cuponAplicado.codigo} aplicado (-€{discount.toFixed(2)})</span>
+                          <button onClick={() => setCuponAplicado(null)} style={{ background: 'none', border: 'none', color: '#15803d', fontWeight: 800, cursor: 'pointer' }}>✕</button>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input type="text" placeholder="Ingresa tu cupón..." value={cuponInput} onChange={(e) => { setCuponInput(e.target.value.toUpperCase()); setCuponError(null); }} className="modal-input" style={{ borderColor: cuponError ? '#ef4444' : '#e2e8f0', margin: 0, flex: 1, padding: '10px 14px', borderRadius: '12px' }} />
+                            <button onClick={applyCupon} style={{ background: C.primary, color: '#fff', border: 'none', borderRadius: '12px', padding: '0 16px', fontWeight: 800, cursor: 'pointer' }}>Aplicar</button>
+                          </div>
+                          {cuponError && <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: '6px 0 0', fontWeight: 600 }}>{cuponError}</p>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '14px', textAlign: 'left' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748b', marginBottom: '6px' }}>
                       <span>Subtotal</span><span>€{totalProductos.toFixed(2)}</span>
                     </div>
+                    {discount > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#16a34a', marginBottom: '6px', fontWeight: 700 }}>
+                        <span>Descuento ({cuponAplicado.codigo})</span><span>-€{discount.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#64748b', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}>
                       <span>Envío</span><span>€{shippingCost.toFixed(2)}</span>
                     </div>

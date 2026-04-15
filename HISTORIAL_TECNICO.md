@@ -869,3 +869,18 @@ Cloudflare recibe HTTPS del browser → vuelve a enviar HTTP a Traefik
 - `app/dashboard/layout.js`: Refactorización de las consultas (pedidos, productos, clientes) con `Promise.all` para optimizar la carga del estado global del sidebar, removiendo el antiguo widget de validación manual.
 - `app/dashboard/page.js`: Eliminación del widget grande del checklist central para liberar espacio de lectura rápida de analíticas.
 - **UX/UI:** Uso de `AtSign` en lugar del icono de Instagram (incompatible en versión local), validación de estilos comprimidos para un sidebar de 256px y condicionales visuales de victoria ("Felicidades, eres un experto").
+
+### [2026-04-15] Sesión 9 — Lector POS Nativo y Motor de Cupones
+
+**Objetivo:** Agilizar el terminal Punto de Venta (POS) habilitando escaneo rápido mediante la cámara trasera del dispositivo móvil o webcam. Además, cerrar los flecos del Checklist implementando un panel completo de Cupones en el diseño y vinculando automáticamente las misiones de Banner y Cupón en la base de datos.
+
+**Archivos refactorizados:**
+
+| Archivo | Cambios clave |
+|---------|---------------|
+| `app/dashboard/pos/page.js` | Incorporación de [API Nativa `BarcodeDetector`](https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API) usando la cámara del dispositivo (`facingMode: "environment"`). Implementado loop asíncrono con timeout protector para detectar el producto por el campo `codigo_barras` de forma ultrasónica. Auto-inserción al carrito de compras con notificación toast y oscilador de frecuencia (BEEP) 100% libre de bibliotecas externas. |
+| `app/dashboard/diseno/page.js` | Nuevo UI de gestión de cupones mediante un estado transaccional embebido en el campo JSON `config_diseno` de Supabase (`cupones: []`). Opción de descuento por porcentaje o suma fija. |
+| `components/DashboardChecklist.js` | Automatización final de gamificación de onboarding. Los checks "Añadir banner" y "Crear cupón" ya no son manuales; reaccionan reactivamente a `tienda.config_diseno.banner_url` y `config_diseno.cupones.length > 0`. |
+| `components/StoreClient.js` | Inyección del input para Código Promocional just antes de confirmar la orden de WhatsApp. Calcula descuentos transparentemente informando de cuánto ahorró el cliente (+ info adjunta al mensaje WA). |
+
+> ℹ️ El uso progresivo de API web nativas (como BarcodeDetector y Web Audio API) posiciona estratégicamente al ecosistema para que no dependamos de ZXing y Quagga mejorando considerablemente la métrica First Contentful Paint.
