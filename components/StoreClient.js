@@ -757,12 +757,42 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
       {successMessageOpen && (
         <div className="overlay">
           <div className="modal-box" style={{ background: '#fff', textAlign: 'center' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>✅</div>
+            <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>🎉</div>
             <h2 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '1.4rem', fontWeight: 900 }}>¡Pedido enviado!</h2>
             <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>{mensajePost}</p>
+
+            {/* Bloque de registro — solo si el cliente no tiene sesión */}
+            <div style={{
+              margin: '20px 0 4px',
+              background: 'linear-gradient(135deg, #f8f4ff 0%, #ede9fe 100%)',
+              borderRadius: '16px',
+              padding: '16px',
+              border: '1.5px solid #ddd6fe',
+              textAlign: 'left'
+            }}>
+              <p style={{ margin: '0 0 4px', fontWeight: 800, fontSize: '0.85rem', color: '#5b21b6' }}>
+                ✨ ¿Quieres seguir tu pedido en tiempo real?
+              </p>
+              <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: '#7c3aed', lineHeight: 1.5 }}>
+                Crea tu cuenta gratis y consulta el estado de tus pedidos, tu historial de compras y más.
+              </p>
+              <a
+                href={`/store/${tienda.subdominio}/cuenta`}
+                style={{
+                  display: 'block', width: '100%', padding: '12px',
+                  borderRadius: '12px', border: 'none', textDecoration: 'none',
+                  background: '#7c3aed', color: '#fff', fontWeight: 800,
+                  fontSize: '0.85rem', cursor: 'pointer', textAlign: 'center',
+                  boxSizing: 'border-box'
+                }}
+              >
+                Crear mi cuenta gratis →
+              </a>
+            </div>
+
             <button onClick={() => setSuccessMessageOpen(false)} style={{
-              marginTop: '24px', width: '100%', padding: '16px', borderRadius: '14px', border: 'none',
-              background: C.primary, color: '#fff', fontWeight: 800, fontSize: '1rem', cursor: 'pointer'
+              marginTop: '12px', width: '100%', padding: '14px', borderRadius: '14px', border: '1.5px solid #e2e8f0',
+              background: '#f8fafc', color: '#64748b', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer'
             }}>
               {dict.cerrar || 'Cerrar'}
             </button>

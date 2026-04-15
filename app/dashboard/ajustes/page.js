@@ -7,7 +7,7 @@ import {
   Settings, User, Store, Bell, ShieldCheck, Loader2, Save,
   CheckCircle2, Copy, ExternalLink, Image as ImageIcon,
   Smartphone, Info, Camera, Trash2, Globe, X, Clock,
-  Music2, MessageCircle, Bird, PlayCircle, Link, AtSign
+  Music2, MessageCircle, Bird, PlayCircle, Link, AtSign, Star
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
@@ -39,6 +39,7 @@ export default function AjustesPage() {
   const [horario, setHorario] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [emoji, setEmoji] = useState('🏪')
+  const [linkResenaGoogle, setLinkResenaGoogle] = useState('')
 
   // Redes sociales: { facebook: {url, visible}, instagram: {url, visible}, ... }
   const [redes, setRedes] = useState(() => {
@@ -83,6 +84,7 @@ export default function AjustesPage() {
         setAceptarPedidos(data.aceptar_pedidos ?? true)
         setEnviarWhatsapp(data.enviar_whatsapp ?? true)
         setMensajePostPedido(data.mensaje_post_pedido || '')
+        setLinkResenaGoogle(data.link_resena_google || '')
 
         // Cargar redes sociales desde config_diseno
         const config = data.config_diseno || {}
@@ -179,6 +181,7 @@ export default function AjustesPage() {
           aceptar_pedidos: aceptarPedidos,
           enviar_whatsapp: enviarWhatsapp,
           mensaje_post_pedido: mensajePostPedido,
+          link_resena_google: linkResenaGoogle,
           config_diseno_patch: { redes_sociales: redes },
         })
       })
@@ -384,6 +387,40 @@ export default function AjustesPage() {
               ))}
             </div>
           </div>
+          {/* ─── Google Reviews ─── */}
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-8">
+            <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+              <Star className="text-yellow-400 fill-yellow-300" size={22} /> Google Reviews
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">
+              Pega aquí el link de tu perfil de Google Reviews. Tus clientes registrados verán un botón
+              para dejarte una opinión directamente desde su cuenta.
+            </p>
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                Enlace de Google Reviews
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="url"
+                  value={linkResenaGoogle}
+                  onChange={e => setLinkResenaGoogle(e.target.value)}
+                  placeholder="https://g.page/r/TU_CODIGO/review"
+                  className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/40 placeholder-slate-300"
+                />
+                {linkResenaGoogle && (
+                  <a href={linkResenaGoogle} target="_blank" rel="noopener noreferrer"
+                    className="px-4 py-3 rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-600 hover:bg-yellow-100 transition-colors flex items-center gap-1.5 text-sm font-bold shrink-0">
+                    <ExternalLink size={14} /> Ver
+                  </a>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                💡 Para obtener tu link: abre Google Maps → busca tu negocio → toca <strong>Reseñas</strong> → comparte el link.
+              </p>
+            </div>
+          </div>
+
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-8 text-white shadow-xl">
              <div className="flex items-center gap-4 mb-6">
                 <div className="bg-white/10 p-3 rounded-2xl">

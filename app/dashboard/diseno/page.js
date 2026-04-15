@@ -311,9 +311,9 @@ export default function DisenoPage() {
         <a
           href={storeVisitUrl}
           target="_blank"
-          className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-xl active:scale-95"
+          className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg active:scale-95 shrink-0"
         >
-          {dict.verEnOtraPestana || 'Ver Tienda'} <ExternalLink size={20} />
+          <ExternalLink size={18} /> {dict.verEnOtraPestana || 'Ver Tienda'}
         </a>
       </div>
 
@@ -330,20 +330,17 @@ export default function DisenoPage() {
                       <Share2 size={28} />
                    </div>
                    <div>
-                      <h3 className="text-xl font-bold text-slate-800">{dict.publicarCatalogo || 'Tienda Online'}</h3>
-                      <div className="flex items-center gap-3 mt-1.5">
-                         <span className="text-sm font-mono text-slate-400 bg-slate-50 px-3 py-1 rounded-lg">{storeUrl}</span>
-                         <button onClick={copyLink} className="text-blue-600 text-xs font-black hover:bg-blue-50 px-2 py-1 rounded-lg transition-colors">
-                            {copied ? (dict.enlaceCopiado || '¡Copiado!') : (dict.copiarEnlace || 'Copiar')}
-                         </button>
-                      </div>
+                      <h3 className="text-xl font-bold text-slate-800">{dict.publicarCatalogo || 'Publicar Tienda'}</h3>
+                      <p className="text-sm text-slate-400 mt-1">
+                        {config.publicado ? 'Tu catálogo está visible al público.' : 'Tu catálogo está oculto al público.'}
+                      </p>
                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className={`text-xs font-black uppercase tracking-widest ${config.publicado ? 'text-emerald-500' : 'text-slate-400'}`}>
                     {config.publicado ? 'Online' : 'Offline'}
                   </span>
-                  <button 
+                  <button
                     onClick={() => handleUpdateConfig('publicado', !config.publicado)}
                     className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${config.publicado ? 'bg-emerald-500' : 'bg-slate-200'}`}
                   >

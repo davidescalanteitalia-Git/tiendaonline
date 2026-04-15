@@ -28,7 +28,79 @@ import { supabase } from '../../../lib/supabase'
 import { useLang } from '../../../components/LanguageProvider'
 import { DICTIONARY } from '../../../lib/dictionaries'
 
-// ── Componente de tarjeta arrastrable ──────────────────────────────────────
+// ── Componente de fila arrastrable (vista Lista) ───────────────────────────
+function SortableListRow({ producto: p, onEdit }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: p.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  }
+
+  const isLowStock = p.stock <= 5
+  const isPausado = p.estado === 'pausado'
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-[32px] p-5 border border-violet-200 flex items-center gap-4 select-none"
+    >
+      {/* Handle arrastre */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="p-2 bg-violet-500 text-white rounded-xl cursor-grab active:cursor-grabbing shrink-0"
+        title="Arrastra para reordenar"
+      >
+        <GripVertical size={16} />
+      </div>
+
+      {/* Imagen / emoji */}
+      <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 relative">
+        {p.imagen_url
+          ? <img src={p.imagen_url} className="w-full h-full object-cover" alt={p.nombre} />
+          : <span className="text-2xl">{p.emoji}</span>
+        }
+        {isPausado && (
+          <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center">
+            <EyeOff size={14} className="text-white" />
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <h4 className="font-black text-slate-800 truncate">{p.nombre}</h4>
+        <div className="flex items-center gap-3 mt-0.5">
+          <span className="text-xs font-bold text-slate-400">€{parseFloat(p.precio).toFixed(2)}</span>
+          <span className="w-1 h-1 bg-slate-200 rounded-full" />
+          <span className={`text-[10px] font-black uppercase tracking-widest ${isLowStock ? 'text-rose-500' : 'text-slate-400'}`}>
+            Stock: {p.stock}
+          </span>
+        </div>
+      </div>
+
+      {/* Botón editar */}
+      <button
+        onClick={() => onEdit(p)}
+        className="p-2.5 bg-slate-50 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl transition-all shrink-0"
+      >
+        <Pencil size={16} />
+      </button>
+    </div>
+  )
+}
+
+// ── Componente de tarjeta arrastrable (vista Grid) ──────────────────────────
 function SortableProductCard({ producto: p, categorias, activeId }) {
   const {
     attributes,
@@ -295,6 +367,33 @@ export default function ProductosPage() {
     setIsSlideOpen(true)
   }
 
+  async function handleCreateCategory() {
+    if (!newCategoryName.trim()) return
+    setCreatingCategory(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/categorias', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ nombre: newCategoryName.trim(), emoji: '📁' })
+      })
+      if (res.ok) {
+        const nueva = await res.json()
+        setCategorias(prev => [...prev, nueva])
+        setCategoriaId(nueva.id)
+        setNewCategoryName('')
+        setShowNewCategoryInput(false)
+      }
+    } catch (err) {
+      console.error('Error creando categoría:', err)
+    } finally {
+      setCreatingCategory(false)
+    }
+  }
+
   function resetForm() {
     setEditingId(null)
     setNombre('')
@@ -434,8 +533,8 @@ export default function ProductosPage() {
                   <h3 className="text-xl font-black text-slate-800 mb-2">No hay productos aquí</h3>
                   <p className="text-slate-400 max-w-xs mx-auto">Parece que aún no tienes productos en esta categoría o con este nombre.</p>
                </div>
-            ) : isDragMode && viewMode === 'grid' ? (
-              /* ---- MODO DRAG-AND-DROP ---- */
+            ) : isDragMode ? (
+              /* ---- MODO DRAG-AND-DROP (Grid + Lista) ---- */
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -443,21 +542,47 @@ export default function ProductosPage() {
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext items={filteredProducts.map(p => p.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {filteredProducts.map((p) => (
-                      <SortableProductCard
-                        key={p.id}
-                        producto={p}
-                        categorias={categorias}
-                        activeId={activeId}
-                      />
-                    ))}
-                  </div>
+                  {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                      {filteredProducts.map((p) => (
+                        <SortableProductCard
+                          key={p.id}
+                          producto={p}
+                          categorias={categorias}
+                          activeId={activeId}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {filteredProducts.map((p) => (
+                        <SortableListRow
+                          key={p.id}
+                          producto={p}
+                          onEdit={openEdit}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </SortableContext>
                 <DragOverlay>
                   {activeId ? (() => {
                     const p = filteredProducts.find(x => x.id === activeId)
                     if (!p) return null
+                    if (viewMode === 'list') {
+                      return (
+                        <div className="bg-white rounded-[32px] p-5 border-2 border-violet-400 shadow-2xl shadow-violet-200 flex items-center gap-4 opacity-95 scale-105">
+                          <div className="p-2 bg-violet-500 text-white rounded-xl shrink-0"><GripVertical size={16} /></div>
+                          <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100">
+                            {p.imagen_url ? <img src={p.imagen_url} className="w-full h-full object-cover" alt={p.nombre} /> : <span className="text-2xl">{p.emoji}</span>}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-black text-slate-800 truncate">{p.nombre}</h4>
+                            <span className="text-xs font-bold text-slate-400">€{parseFloat(p.precio).toFixed(2)}</span>
+                          </div>
+                        </div>
+                      )
+                    }
                     return (
                       <div className="bg-white rounded-[40px] border-2 border-violet-400 shadow-2xl shadow-violet-200 overflow-hidden opacity-95 rotate-2 scale-105 transition-none">
                         <div className="aspect-square bg-slate-50 flex items-center justify-center text-7xl">
@@ -692,13 +817,23 @@ export default function ProductosPage() {
                        </div>
                        {showNewCategoryInput ? (
                           <div className="flex gap-2">
-                            <input 
+                            <input
                               value={newCategoryName}
                               onChange={(e) => setNewCategoryName(e.target.value)}
-                              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm"
-                              placeholder="Nombre categoría..."
+                              onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+                              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none text-sm font-medium"
+                              placeholder="Nombre de la categoría..."
+                              autoFocus
                             />
-                            {/* logic for inline create same as current... */}
+                            <button
+                              type="button"
+                              onClick={handleCreateCategory}
+                              disabled={creatingCategory || !newCategoryName.trim()}
+                              className="px-4 py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-1"
+                            >
+                              {creatingCategory ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                              Crear
+                            </button>
                           </div>
                        ) : (
                           <select 

@@ -233,7 +233,7 @@ Inventario del comercio.
 
 ---
 
-### Tabla: `clientes` (CRM + Fiados)
+### Tabla: `clientes` (CRM + Fiados + Portal)
 
 | Columna | Tipo | Notas |
 |---------|------|-------|
@@ -244,9 +244,13 @@ Inventario del comercio.
 | `email` | text | |
 | `deuda_actual` | numeric | Saldo de fiado pendiente |
 | `total_gastado` | numeric | Historial de compras totales |
+| `user_id` | uuid | FK → `auth.users` — vincula con cuenta del portal del cliente |
+| `fecha_nacimiento` | date | Opcional — para descuentos de cumpleaños |
 | `full_name` | text | Columna legacy (NOT NULL removido) — usar `nombre` |
 | `phone` | text | Columna legacy — usar `telefono` |
 | `updated_at` | timestamptz | |
+
+> ⚠️ Al vincular `user_id`, buscamos primero si ya existe un cliente con el mismo email en la tienda (compras anteriores como invitado). Si existe, actualizamos `user_id` en el registro existente para preservar el historial.
 
 ---
 
@@ -961,3 +965,186 @@ Cloudflare recibe HTTPS del browser → vuelve a enviar HTTP a Traefik
 
 > ⚠️ **Nota de deploy:** El campo `orden` ya existía en la tabla `productos`. No se requiere migración de DB.
 > ⚠️ **Límite Free de `@vercel/og`:** El runtime `edge` en Vercel Free tiene un límite de 1MB por respuesta y 30s timeout — más que suficiente para estas imágenes OG.
+
+---
+
+### [2026-04-16] Sesión 12 — Correcciones de bugs post-deploy + Portal del Cliente completo
+
+#### Parte A — Correcciones de bugs (arrastradas de Sesión 11)
+
+| Bug | Síntoma | Causa | Fix |
+|-----|---------|-------|-----|
+| Crash `/dashboard/ajustes` | React Error #130 — pantalla blanca | lucide-react v1.7.0 no incluye iconos de marcas: `Facebook`, `Instagram`, `Youtube`, `Twitter` | Reemplazados con iconos disponibles: `Link`, `AtSign`, `PlayCircle`, `Bird` |
+| URL duplicada en Diseño | El subdominio `*.tiendaonline.it` aparecía en la card de Diseño Y en Ajustes | Campo de subdominio estaba en ambas páginas | Eliminado de `diseno/page.js`; botón "Ver Tienda" reajustado (`shrink-0`, icono antes de texto) |
+| Botón "Nueva categoría" roto | Al hacer clic aparecía el input pero no se podía guardar | Función `handleCreateCategory()` era un placeholder vacío en el código | Implementada la función completa con `POST /api/categorias` y limpieza del estado |
+| Drag-and-drop solo en Grid | En modo Lista, activar "Reordenar" no mostraba handles de arrastre | Condición `isDragMode && viewMode === 'grid'` bloqueaba la vista lista | Eliminada la restricción de viewMode; implementado `SortableListRow` con handle lateral para vista Lista |
+| Mensaje WhatsApp de pedidos | Al notificar al cliente por WhatsApp solo salía "PEDIDO CONFIRMADO" con un carácter corrupto (✅ → □) | Emoji incompatible + mensaje sin información de contexto | Reescrita la función `sendWhatsappReminder()` con saludo, número de pedido, lista de productos, info de envío, método de pago y total |
+
+**Formato nuevo del mensaje WhatsApp de notificación:**
+```
+🛍️ *Hola {nombre}!*
+
+Gracias por tu pedido. Aquí tienes el resumen:
+
+📋 *Pedido {codigo}*
+━━━━━━━━━━━━━━━━━━━━━━━
+🛒 *Productos:*
+  • 2x Producto A — €10.00
+  • 1x Producto B — €5.00
+
+🚚 *Envío a domicilio*
+  Dirección: Calle Ejemplo 123
+
+💳 *Transferencia bancaria*
+  Por favor envíanos el comprobante por este chat.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+💰 *Total a pagar: €25.00*
+
+Nos ponemos en contacto contigo para coordinar los detalles. Cualquier duda, escríbenos por aquí. 😊
+```
+
+---
+
+#### Parte B — Portal del Cliente (Feature completo)
+
+**Motivación:** Los clientes que compran en el catálogo público pueden ahora registrarse para tener un panel donde ver sus pedidos en tiempo real, consultar su saldo de fiado, editar sus datos y dejar reseñas en Google.
+
+##### Migración de base de datos
+
+```sql
+-- Nuevas columnas
+ALTER TABLE public.clientes
+  ADD COLUMN user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN fecha_nacimiento DATE;
+
+ALTER TABLE public.tiendas
+  ADD COLUMN link_resena_google TEXT;
+
+CREATE INDEX idx_clientes_user_id ON public.clientes(user_id);
+```
+
+> ✅ Ejecutado directamente vía Supabase MCP (`execute_sql`) en el proyecto `bripfrfkwahsxtegmils`.
+
+##### Nuevas tablas / columnas
+
+| Tabla | Columna nueva | Descripción |
+|-------|--------------|-------------|
+| `clientes` | `user_id` | Vincula el CRM con una cuenta de Supabase Auth |
+| `clientes` | `fecha_nacimiento` | Opcional — para descuentos de cumpleaños |
+| `tiendas` | `link_resena_google` | URL del perfil de Google Reviews del negocio |
+
+##### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `app/api/auth/cliente/route.js` | API completa: `POST` registro, `PUT` actualizar perfil, `DELETE` eliminar cuenta (GDPR) |
+| `app/store/[domain]/cuenta/page.js` | Página de registro/login del cliente con 3 vistas: bienvenida con beneficios, formulario de registro, formulario de login |
+| `app/store/[domain]/mis-pedidos/page.js` | Portal del cliente con 3 pestañas: Pedidos, Perfil, Cuenta |
+
+##### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/dashboard/ajustes/page.js` | Nueva sección "Google Reviews" con campo URL + preview link; campo `linkResenaGoogle` en estado y `handleSave` |
+| `components/StoreClient.js` | Modal de éxito tras pedido ahora muestra bloque violeta invitando al cliente a crear su cuenta |
+
+##### Flujo de registro del cliente
+
+```
+Cliente llega al catálogo → /store/{domain}/cuenta
+  → Pantalla de bienvenida: 4 beneficios visuales + badge privacidad
+  → Botón "Crear mi cuenta gratis" → Formulario de registro:
+      • Email (obligatorio)
+      • Contraseña (obligatorio, mín. 6 caracteres)
+      • Nombre (opcional)
+      • Teléfono (opcional)
+      • Fecha de nacimiento (opcional — "para recibir sorpresas 🎂")
+  → POST /api/auth/cliente (registro con supabaseAdmin.auth.admin.createUser)
+      • email_confirm: true (acceso inmediato, sin email de verificación)
+      • Busca si ya existe un cliente con ese email en la tienda
+      • Si existe: vincula user_id al registro existente (historial de compras preservado)
+      • Si no existe: INSERT en clientes
+  → Login automático con supabase.auth.signInWithPassword
+  → Redirige a /store/{domain}/mis-pedidos
+```
+
+##### Portal del cliente (`/store/[domain]/mis-pedidos`)
+
+**Requiere sesión activa** — si no hay sesión, redirige a `/cuenta?modo=login`
+
+**Tab: Mis Pedidos**
+- Lista todos los pedidos que coinciden con el email del cliente
+- Card expandible: estado con badge de color + ícono, fecha, resumen de productos, total
+- Seguimiento en **tiempo real** vía `supabase.channel` — canal `UPDATE` en `pedidos`
+
+**Tab: Mi Perfil**
+- Ver/editar nombre, teléfono, fecha de nacimiento (inline con toggle editar/guardar)
+- Email del usuario (readonly — es la cuenta de Supabase Auth)
+- Botón "¿Cómo fue tu experiencia?" → abre `link_resena_google` en nueva pestaña (solo si el dueño lo configuró en Ajustes)
+
+**Tab: Cuenta**
+- Saldo de fiado: banner verde (sin deuda) o rojo (deuda pendiente) + total gastado acumulado
+- Total gastado en la tienda
+- Botón "Cerrar sesión" → `supabase.auth.signOut()` + redirect a catálogo
+- Botón "Eliminar cuenta" → confirmación en 2 pasos → `DELETE /api/auth/cliente`:
+  - Anonimiza el registro en `clientes` (nombre → "Cliente eliminado", email/tel → null, user_id → null)
+  - Borra el usuario de `supabase.auth.admin.deleteUser(userId)`
+  - Los pedidos históricos quedan preservados (con cliente anónimo — cumplimiento GDPR)
+
+##### API `POST /api/auth/cliente`
+
+```
+Campos requeridos: email, password, domain
+Campos opcionales: nombre, telefono, fecha_nacimiento
+
+Validaciones:
+- password.length >= 6
+- Verifica existencia de tienda por subdominio
+- Si email ya registrado → 409 "Email ya tiene una cuenta, inicia sesión"
+- Si cliente ya existe en la tienda con ese email → vincula user_id sin crear duplicado
+```
+
+##### API `PUT /api/auth/cliente`
+
+```
+Header: Authorization: Bearer {token}
+Body: { nombre, telefono, fecha_nacimiento }
+Actualiza el registro en clientes donde user_id = auth.uid
+```
+
+##### API `DELETE /api/auth/cliente`
+
+```
+Header: Authorization: Bearer {token}
+1. Anonimiza clientes WHERE user_id = auth.uid
+2. supabaseAdmin.auth.admin.deleteUser(user.id)
+```
+
+##### Google Reviews en Ajustes del dueño
+
+- Nueva sección en `/dashboard/ajustes` entre "Redes Sociales" y "Dirección Web"
+- Campo URL con botón "Ver" que abre el link en nueva pestaña
+- Tip integrado: cómo obtener el link desde Google Maps
+- Se guarda automáticamente junto al resto de ajustes vía `PATCH /api/tienda`
+- El campo `link_resena_google` pasa directo al `UPDATE` de Supabase (la API hace `update(updates)` genérico)
+
+##### Actualizaciones del mapa de rutas
+
+| Ruta nueva | Archivo | Descripción |
+|------------|---------|-------------|
+| `/store/[domain]/cuenta` | `app/store/[domain]/cuenta/page.js` | Login y registro del cliente (3 vistas: bienvenida, registro, login) |
+| `/store/[domain]/mis-pedidos` | `app/store/[domain]/mis-pedidos/page.js` | Portal del cliente autenticado |
+| `POST /api/auth/cliente` | `app/api/auth/cliente/route.js` | Registro de cliente con email+contraseña |
+| `PUT /api/auth/cliente` | `app/api/auth/cliente/route.js` | Actualizar perfil del cliente |
+| `DELETE /api/auth/cliente` | `app/api/auth/cliente/route.js` | Eliminar cuenta (GDPR) |
+
+##### Decisiones de arquitectura (Sesión 12)
+
+| Decisión | Razón | Alternativa descartada |
+|----------|-------|----------------------|
+| Email + contraseña (sin Magic Link) | El dueño quería un registro visual completo con formulario — más confianza para el cliente final | Magic Link (menos fricción pero más frío, sin formulario) |
+| `email_confirm: true` en createUser | Acceso inmediato sin bloquear por email. Los clientes del portal son usuarios finales de micronegocios, no empresas | Verificación por email (requiere Resend configurado) |
+| Anonimizar en DELETE (no borrar fila) | Los pedidos históricos quedan válidos aunque sin datos del cliente. Cumple GDPR | Borrar la fila de clientes (rompería integridad de pedidos) |
+| Vincular por email (no por user_id desde el inicio) | Un cliente puede haber comprado como invitado antes de registrarse — el historial previo queda vinculado | Siempre crear registro nuevo (perdería historial de compras como invitado) |
+| Seguimiento Realtime solo en UPDATE | Solo nos interesa notificar cambios de estado al cliente, no los inserts | Escuchar también INSERT y DELETE |

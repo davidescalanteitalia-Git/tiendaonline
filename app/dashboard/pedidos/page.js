@@ -211,16 +211,17 @@ export default function PedidosPage() {
       : `💵 *Efectivo* al momento de la entrega`
 
     const message =
-      `✅ *PEDIDO CONFIRMADO — ${p.codigo}*%0A` +
+      `🛍️ *Hola ${p.cliente_nombre}!*%0A%0A` +
+      `Gracias por tu pedido. Aquí tienes el resumen:%0A%0A` +
+      `📋 *Pedido ${p.codigo}*%0A` +
       `━━━━━━━━━━━━━━━━━━━━━━━%0A` +
-      `👤 *Cliente:* ${p.cliente_nombre}%0A%0A` +
       `🛒 *Productos:*%0A${lineasProductos}%0A%0A` +
       `${envioInfo}%0A%0A` +
       `${pagoInfo}%0A%0A` +
       `━━━━━━━━━━━━━━━━━━━━━━━%0A` +
-      (shipping > 0 ? `  Subtotal: €${subtotal.toFixed(2)}%0A  Envío: €${shipping.toFixed(2)}%0A` : '') +
+      (shipping > 0 ? `  Subtotal: €${subtotal.toFixed(2)}%0A  Envío: +€${shipping.toFixed(2)}%0A` : '') +
       `💰 *Total a pagar: €${parseFloat(p.total).toFixed(2)}*%0A%0A` +
-      `¡Gracias por tu compra! Nos ponemos en contacto para coordinar los detalles. 🙌`
+      `Nos ponemos en contacto contigo para coordinar los detalles. Cualquier duda, escríbenos por aquí. 😊`
 
     window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${message}`, '_blank')
   }
