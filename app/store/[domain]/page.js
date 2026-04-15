@@ -4,6 +4,50 @@ import StoreClient from '../../../components/StoreClient'
 
 export const dynamic = 'force-dynamic'
 
+export async function generateMetadata({ params }) {
+  const { domain } = params
+  try {
+    const supabase = getSupabaseAdmin()
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('nombre, descripcion, emoji, subdominio')
+      .eq('subdominio', domain)
+      .single()
+
+    if (!tienda) return {}
+
+    const nombre = tienda.nombre || 'Tienda Online'
+    const descripcion = tienda.descripcion || `Catálogo y pedidos online de ${nombre}`
+    const ogImageUrl = `https://tiendaonline.it/api/og/${domain}`
+
+    return {
+      title: nombre,
+      description: descripcion,
+      openGraph: {
+        title: nombre,
+        description: descripcion,
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${nombre} — Tienda Online`,
+          },
+        ],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: nombre,
+        description: descripcion,
+        images: [ogImageUrl],
+      },
+    }
+  } catch {
+    return {}
+  }
+}
+
 async function getStoreData(domain) {
   try {
     const supabase = getSupabaseAdmin()

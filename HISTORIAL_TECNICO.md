@@ -907,3 +907,57 @@ Cloudflare recibe HTTPS del browser → vuelve a enviar HTTP a Traefik
    - Configuración del Checklist de inicio para que aparezca **contraído por defecto**, evitando saturar al usuario al entrar al dashboard mientras mantiene el acceso rápido a las misiones.
 
 ---
+
+### [2026-04-15] Sesión 11 — OG Image Dinámica + Filtro de Fechas en Reportes + Drag-and-Drop de Productos
+
+**Objetivo:** Implementar las 3 mejoras pendientes de mayor impacto en UX y marketing: imagen de previsualización social personalizada por tienda, analítica filtrable por período, y reordenación visual de inventario.
+
+#### 1. OG Image dinámica por tienda (`@vercel/og`)
+
+**Archivo creado:** `app/api/og/[domain]/route.js`
+
+- Runtime: `edge` (sin Node.js, máximo rendimiento en Vercel Edge Network)
+- Genera imagen PNG 1200×630px única por tienda usando `ImageResponse` de `next/og`
+- Incluye: logo o emoji de la tienda, nombre en tipografía grande, descripción truncada, badge "tiendaonline.it", gradiente de fondo basado en el `color_principal` del comercio
+- Fallback genérico si el dominio no existe
+
+**Archivo modificado:** `app/store/[domain]/page.js`
+- Añadida función `generateMetadata()` (Server Component) que inyecta `og:image`, `og:title`, `og:description` y `twitter:card` usando la URL `https://tiendaonline.it/api/og/{domain}`
+- Ahora cada tienda tiene su propia imagen al compartirse en WhatsApp, Telegram, Twitter y LinkedIn
+
+#### 2. Filtro de fechas en Reportes
+
+**Archivo modificado:** `app/api/reportes/route.js`
+- Acepta query params `?desde=YYYY-MM-DD&hasta=YYYY-MM-DD`
+- Filtra pedidos con `.gte('created_at', ...)` y `.lte('created_at', fin_del_dia)`
+- Nuevo campo en la respuesta: `graficoDias` — array `[{ fecha: "YYYY-MM-DD", total: number }]` ordenado cronológicamente para el gráfico
+
+**Archivo modificado:** `app/dashboard/reportes/page.js`
+- Selector de 5 rangos predefinidos: Hoy / Esta semana / Este mes / Este año / Todo
+- Recarga automática al cambiar de rango (sin botón de "aplicar")
+- Gráfico de barras de ventas por día: componente `GraficoBarras` puro (solo Tailwind, sin Chart.js ni Recharts). Tooltips al hover. Labels adaptados (muestra 1 de cada N días si hay muchos datos)
+- Nueva métrica visible: **Ticket Promedio** (ventas / pedidos)
+- Indicador de margen con flecha ArrowUpRight/ArrowDownRight según si es positivo o negativo
+
+#### 3. Drag-and-drop de productos (`@dnd-kit`)
+
+**Paquetes instalados:** `@dnd-kit/core ^6.3.1`, `@dnd-kit/sortable ^10.0.0`, `@dnd-kit/utilities ^3.2.2`
+
+**Archivo creado:** `app/api/productos/reorder/route.js`
+- `PATCH /api/productos/reorder`
+- Body: `{ items: [{ id, orden }] }`
+- Verifica ownership: solo actualiza productos de la tienda del usuario autenticado
+- Ejecuta los UPDATEs en paralelo con `Promise.all`
+
+**Archivo modificado:** `app/dashboard/productos/page.js`
+- Nuevo componente `SortableProductCard` (useSortable de @dnd-kit)
+- Botón "Reordenar" en el header: activa/desactiva el modo drag-and-drop
+- En modo reordenar: el grid se envuelve en `DndContext` + `SortableContext` con estrategia `rectSortingStrategy`
+- Sensores: `PointerSensor` (mouse, distancia mínima 8px) + `TouchSensor` (touch, delay 200ms) — compatible con móvil
+- `DragOverlay`: muestra la tarjeta siendo arrastrada con rotación y borde violeta
+- Al soltar: actualiza el estado local con `arrayMove` inmediatamente (optimistic update) y persiste en DB en background
+- Banner informativo morado mientras el modo está activo
+- El modo drag solo funciona en vista Grid (no Lista) para mantener coherencia visual
+
+> ⚠️ **Nota de deploy:** El campo `orden` ya existía en la tabla `productos`. No se requiere migración de DB.
+> ⚠️ **Límite Free de `@vercel/og`:** El runtime `edge` en Vercel Free tiene un límite de 1MB por respuesta y 30s timeout — más que suficiente para estas imágenes OG.

@@ -1,16 +1,82 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { 
-  Package, Plus, Search, Pencil, Trash2, X, Save, 
-  Loader2, Camera, Upload, Image as ImageIcon, 
-  Filter, FolderClosed, ArrowUpToLine, Download, 
+import { useState, useEffect, useRef, useCallback } from 'react'
+import {
+  Package, Plus, Search, Pencil, Trash2, X, Save,
+  Loader2, Camera, Upload, Image as ImageIcon,
+  Filter, FolderClosed, ArrowUpToLine, Download,
   Star, Check, LayoutGrid, List, ChevronRight,
-  MoreVertical, Eye, EyeOff, Tag
+  MoreVertical, Eye, EyeOff, Tag, GripVertical
 } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../../../lib/supabase'
 import { useLang } from '../../../components/LanguageProvider'
 import { DICTIONARY } from '../../../lib/dictionaries'
+
+// ── Componente de tarjeta arrastrable ──────────────────────────────────────
+function SortableProductCard({ producto: p, categorias, activeId }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: p.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-[40px] border border-violet-200 overflow-hidden relative group select-none"
+    >
+      {/* Handle de arrastre */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute top-3 right-3 z-10 p-2 bg-violet-500 text-white rounded-xl cursor-grab active:cursor-grabbing shadow-lg"
+        title="Arrastrar para reordenar"
+      >
+        <GripVertical size={16} />
+      </div>
+
+      <div className="aspect-square bg-slate-50 flex items-center justify-center overflow-hidden">
+        {p.imagen_url
+          ? <img src={p.imagen_url} className="w-full h-full object-cover" alt={p.nombre} />
+          : <span className="text-7xl select-none">{p.emoji}</span>
+        }
+      </div>
+      <div className="p-6">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+          {categorias.find(c => c.id === p.categoria_id)?.nombre || 'General'}
+        </p>
+        <h4 className="text-lg font-black text-slate-800 truncate">{p.nombre}</h4>
+        <p className="text-xl font-black text-slate-900 mt-2">€{parseFloat(p.precio).toFixed(2)}</p>
+      </div>
+    </div>
+  )
+}
 
 export default function ProductosPage() {
   const { lang } = useLang()
@@ -45,8 +111,54 @@ export default function ProductosPage() {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [creatingCategory, setCreatingCategory] = useState(false)
   const [errorMsg, setErrorMsg] = useState(null)
+  const [isDragMode, setIsDragMode] = useState(false)
+  const [activeId, setActiveId] = useState(null)
+  const [savingOrder, setSavingOrder] = useState(false)
 
   const fileInputRef = useRef(null)
+
+  // Sensores para dnd-kit: soporte mouse + touch
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+  )
+
+  async function saveOrder(newOrder) {
+    setSavingOrder(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const items = newOrder.map((p, idx) => ({ id: p.id, orden: idx }))
+      await fetch('/api/productos/reorder', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ items })
+      })
+    } catch (err) {
+      console.error('Error saving order:', err)
+    } finally {
+      setSavingOrder(false)
+    }
+  }
+
+  function handleDragStart({ active }) {
+    setActiveId(active.id)
+  }
+
+  function handleDragEnd({ active, over }) {
+    setActiveId(null)
+    if (!over || active.id === over.id) return
+
+    setProductos(prev => {
+      const oldIndex = prev.findIndex(p => p.id === active.id)
+      const newIndex = prev.findIndex(p => p.id === over.id)
+      const newOrder = arrayMove(prev, oldIndex, newIndex)
+      saveOrder(newOrder)
+      return newOrder
+    })
+  }
 
   useEffect(() => {
     fetchData()
@@ -237,7 +349,7 @@ export default function ProductosPage() {
                <p className="text-slate-500 font-medium">Gestiona tus productos y existencias de forma profesional.</p>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
                <div className="bg-white p-1 rounded-2xl border border-slate-200 flex shadow-sm">
                   <button onClick={() => setViewMode('grid')} className={`p-2.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}>
                      <LayoutGrid size={20} />
@@ -246,7 +358,27 @@ export default function ProductosPage() {
                      <List size={20} />
                   </button>
                </div>
-               <button 
+
+               {/* Botón de modo orden */}
+               <button
+                 onClick={() => setIsDragMode(d => !d)}
+                 className={`flex items-center gap-2 px-5 py-3.5 rounded-2xl font-bold transition-all border ${
+                   isDragMode
+                     ? 'bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-200'
+                     : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600'
+                 }`}
+                 title="Activar modo arrastrar para reordenar"
+               >
+                  <GripVertical size={18} />
+                  {isDragMode ? (
+                    <>
+                      {savingOrder ? <Loader2 size={14} className="animate-spin" /> : null}
+                      Guardando orden…
+                    </>
+                  ) : 'Reordenar'}
+               </button>
+
+               <button
                  onClick={() => { resetForm(); setIsSlideOpen(true); }}
                  className="flex items-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-emerald-100 active:scale-95"
                >
@@ -277,6 +409,17 @@ export default function ProductosPage() {
                </div>
             </div>
 
+            {/* Banner modo orden */}
+            {isDragMode && (
+              <div className="bg-violet-50 border border-violet-200 rounded-2xl px-5 py-3 flex items-center gap-3 text-violet-700 font-bold text-sm animate-in fade-in">
+                <GripVertical size={18} className="shrink-0" />
+                <span>Modo reordenar activo — arrastra las tarjetas para cambiar su posición en el catálogo. El orden se guarda automáticamente.</span>
+                <button onClick={() => setIsDragMode(false)} className="ml-auto p-1 hover:bg-violet-100 rounded-lg transition-colors">
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
             {/* 3. Products Area */}
             {loading ? (
                <div className="py-20 flex flex-col items-center justify-center">
@@ -291,6 +434,47 @@ export default function ProductosPage() {
                   <h3 className="text-xl font-black text-slate-800 mb-2">No hay productos aquí</h3>
                   <p className="text-slate-400 max-w-xs mx-auto">Parece que aún no tienes productos en esta categoría o con este nombre.</p>
                </div>
+            ) : isDragMode && viewMode === 'grid' ? (
+              /* ---- MODO DRAG-AND-DROP ---- */
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={filteredProducts.map(p => p.id)} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {filteredProducts.map((p) => (
+                      <SortableProductCard
+                        key={p.id}
+                        producto={p}
+                        categorias={categorias}
+                        activeId={activeId}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+                <DragOverlay>
+                  {activeId ? (() => {
+                    const p = filteredProducts.find(x => x.id === activeId)
+                    if (!p) return null
+                    return (
+                      <div className="bg-white rounded-[40px] border-2 border-violet-400 shadow-2xl shadow-violet-200 overflow-hidden opacity-95 rotate-2 scale-105 transition-none">
+                        <div className="aspect-square bg-slate-50 flex items-center justify-center text-7xl">
+                          {p.imagen_url
+                            ? <img src={p.imagen_url} className="w-full h-full object-cover" alt={p.nombre} />
+                            : p.emoji
+                          }
+                        </div>
+                        <div className="p-6">
+                          <h4 className="text-lg font-black text-slate-800 truncate">{p.nombre}</h4>
+                          <p className="text-xl font-black text-slate-900 mt-2">€{parseFloat(p.precio).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    )
+                  })() : null}
+                </DragOverlay>
+              </DndContext>
             ) : (
                <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" : "space-y-4"}>
                   {filteredProducts.map((p) => {
