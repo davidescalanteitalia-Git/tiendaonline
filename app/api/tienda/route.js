@@ -37,6 +37,21 @@ export async function PATCH(req) {
 
     const updates = await req.json()
     const supabase = getSupabaseAdmin()
+
+    // Si viene config_diseno_patch, lo fusionamos con el config_diseno existente
+    if (updates.config_diseno_patch) {
+      const { data: current } = await supabase
+        .from('tiendas')
+        .select('config_diseno')
+        .eq('user_id', userId)
+        .single()
+
+      updates.config_diseno = {
+        ...(current?.config_diseno || {}),
+        ...updates.config_diseno_patch,
+      }
+      delete updates.config_diseno_patch
+    }
     
     const { data, error } = await supabase
       .from('tiendas')

@@ -884,3 +884,26 @@ Cloudflare recibe HTTPS del browser → vuelve a enviar HTTP a Traefik
 | `components/StoreClient.js` | Inyección del input para Código Promocional just antes de confirmar la orden de WhatsApp. Calcula descuentos transparentemente informando de cuánto ahorró el cliente (+ info adjunta al mensaje WA). |
 
 > ℹ️ El uso progresivo de API web nativas (como BarcodeDetector y Web Audio API) posiciona estratégicamente al ecosistema para que no dependamos de ZXing y Quagga mejorando considerablemente la métrica First Contentful Paint.
+
+### [2026-04-15] Sesión 10 — Rediseño Premium y Multicanal Social
+**Objetivo:** Elevar la estética del panel y el sitio público, eliminando el "ruido visual" mediante la agrupación de navegación y expandiendo la presencia social de las tiendas con un sistema de activadores individuales para redes sociales.
+
+**Implementaciones clave:**
+
+1. **Agrupación de Sidebar (Dashboard):**
+   - Refactorización de `app/dashboard/layout.js` para pasar de una lista plana de 11 ítems a 3 grupos colapsables: **Ventas**, **Catálogo** y **Configuración**.
+   - Íconos añadidos a las cabeceras de grupo y "Clientes" movido dentro de Catálogo para una jerarquía más lógica.
+
+2. **Footer Universal Premium:**
+   - Rediseño de `components/UniversalFooter.js` con estética **Slate-950 Dark**.
+   - Efectos de glow esmeralda, bordes gradientes, links estilo "píldora" con glassmorphism y un badge de estado operativo animado para transmitir confianza técnica.
+
+3. **Sistema Multicanal de Redes Sociales:**
+   - **Dashboard:** Nueva sección en `Ajustes` con inputs para Facebook, TikTok, Instagram, YouTube, X/Twitter y WhatsApp Business, cada uno con su propio **Master Toggle** de visibilidad.
+   - **API:** Mejora del endpoint `/api/tienda` para soportar `config_diseno_patch`, permitiendo fusiones de metadatos JSON sin pérdida de integridad.
+   - **Storefront:** Actualización de `StoreClient.js` para renderizar dinámicamente los iconos sociales configurados en la barra lateral del catálogo.
+
+4. **UX Onboarding:**
+   - Configuración del Checklist de inicio para que aparezca **contraído por defecto**, evitando saturar al usuario al entrar al dashboard mientras mantiene el acceso rápido a las misiones.
+
+---

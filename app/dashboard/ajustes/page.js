@@ -6,9 +6,19 @@ import { DICTIONARY } from '../../../lib/dictionaries'
 import {
   Settings, User, Store, Bell, ShieldCheck, Loader2, Save,
   CheckCircle2, Copy, ExternalLink, Image as ImageIcon,
-  Smartphone, Info, Camera, Trash2, Globe, X, Clock
+  Smartphone, Info, Camera, Trash2, Globe, X, Clock,
+  Facebook, Instagram, Youtube, Twitter, Music2, MessageCircle
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
+
+const REDES_CONFIG = [
+  { key: 'facebook',  label: 'Facebook',  Icon: Facebook,        color: '#1877F2', placeholder: 'https://facebook.com/tu_tienda' },
+  { key: 'instagram', label: 'Instagram', Icon: Instagram,       color: '#E1306C', placeholder: '@tu_tienda o URL completa' },
+  { key: 'tiktok',    label: 'TikTok',    Icon: Music2,          color: '#010101', placeholder: '@tu_tienda' },
+  { key: 'youtube',   label: 'YouTube',   Icon: Youtube,         color: '#FF0000', placeholder: 'https://youtube.com/@tu_canal' },
+  { key: 'twitter',   label: 'X / Twitter', Icon: Twitter,       color: '#1DA1F2', placeholder: 'https://x.com/tu_tienda' },
+  { key: 'whatsapp',  label: 'WhatsApp Business', Icon: MessageCircle, color: '#25D366', placeholder: '+39...' },
+]
 
 export default function AjustesPage() {
   const { lang } = useLang()
@@ -26,10 +36,20 @@ export default function AjustesPage() {
   const [subdominio, setSubdominio] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
-  const [instagram, setInstagram] = useState('')
   const [horario, setHorario] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [emoji, setEmoji] = useState('🏪')
+
+  // Redes sociales: { facebook: {url, visible}, instagram: {url, visible}, ... }
+  const [redes, setRedes] = useState(() => {
+    const init = {}
+    REDES_CONFIG.forEach(r => { init[r.key] = { url: '', visible: false } })
+    return init
+  })
+
+  const updateRed = (key, field, value) => {
+    setRedes(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }))
+  }
   
   // Operational Settings
   const [aceptarPedidos, setAceptarPedidos] = useState(true)
@@ -57,13 +77,27 @@ export default function AjustesPage() {
         setSubdominio(data.subdominio || '')
         setDescripcion(data.descripcion || '')
         setWhatsapp(data.whatsapp || '')
-        setInstagram(data.instagram || '')
         setHorario(data.horario || '')
         setLogoUrl(data.logo_url || '')
         setEmoji(data.emoji || '🏪')
         setAceptarPedidos(data.aceptar_pedidos ?? true)
         setEnviarWhatsapp(data.enviar_whatsapp ?? true)
         setMensajePostPedido(data.mensaje_post_pedido || '')
+
+        // Cargar redes sociales desde config_diseno
+        const config = data.config_diseno || {}
+        const savedRedes = config.redes_sociales || {}
+        const instagram_legacy = data.instagram || ''
+        setRedes(prev => {
+          const merged = { ...prev }
+          REDES_CONFIG.forEach(r => {
+            merged[r.key] = {
+              url: savedRedes[r.key]?.url ?? (r.key === 'instagram' ? instagram_legacy : ''),
+              visible: savedRedes[r.key]?.visible ?? false,
+            }
+          })
+          return merged
+        })
       }
     } catch (err) {
       console.error('Error fetching store info:', err)
@@ -139,11 +173,13 @@ export default function AjustesPage() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          nombre, descripcion, whatsapp, instagram, horario,
+          nombre, descripcion, whatsapp, horario,
+          instagram: redes.instagram?.url || '',
           logo_url: logoUrl,
           aceptar_pedidos: aceptarPedidos,
           enviar_whatsapp: enviarWhatsapp,
-          mensaje_post_pedido: mensajePostPedido
+          mensaje_post_pedido: mensajePostPedido,
+          config_diseno_patch: { redes_sociales: redes },
         })
       })
 
@@ -276,21 +312,6 @@ export default function AjustesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        @ Instagram
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">@</span>
-                        <input
-                          type="text"
-                          value={instagram.replace('@', '')}
-                          onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
-                          className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                          placeholder="tu_tienda"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                         <Clock size={13} /> Horario
                       </label>
                       <input
@@ -317,7 +338,52 @@ export default function AjustesPage() {
             </div>
           </div>
 
-          {/* Subdominio Card */}
+          {/* ─── Redes Sociales ─── */}
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-8">
+            <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+              <Globe className="text-pink-500" size={22} /> Redes Sociales
+            </h3>
+            <p className="text-xs text-slate-500 mb-6">Activa las redes que quieres mostrar en tu tienda online. Los clientes verán los iconos y podrán seguirte.</p>
+
+            <div className="space-y-4">
+              {REDES_CONFIG.map(({ key, label, Icon, color, placeholder }) => (
+                <div key={key} className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                  {/* Icon */}
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '18', border: `1.5px solid ${color}30` }}>
+                    <Icon size={18} style={{ color }} />
+                  </div>
+
+                  {/* Label + URL input */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-600 mb-1">{label}</p>
+                    <input
+                      type="text"
+                      value={redes[key]?.url || ''}
+                      onChange={e => updateRed(key, 'url', e.target.value)}
+                      placeholder={placeholder}
+                      className="w-full text-sm px-3 py-2 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 outline-none transition-all"
+                    />
+                  </div>
+
+                  {/* Toggle visible */}
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Mostrar</span>
+                    <button
+                      type="button"
+                      onClick={() => updateRed(key, 'visible', !redes[key]?.visible)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        redes[key]?.visible ? 'bg-emerald-500' : 'bg-slate-200'
+                      }`}
+                    >
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                        redes[key]?.visible ? 'translate-x-5' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-8 text-white shadow-xl">
              <div className="flex items-center gap-4 mb-6">
                 <div className="bg-white/10 p-3 rounded-2xl">

@@ -247,40 +247,83 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             )
           })()}
 
-          {/* Bloque: CONTACTO */}
-          {(tienda.whatsapp || tienda.instagram || tienda.email || configEnvios.retiro?.direccion) && (
-            <div className="sidebar-block">
-              <p className="sidebar-label">ENTRA EN CONTACTO</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {tienda.whatsapp && (
-                  <a href={`https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}`}
-                    target="_blank" rel="noopener noreferrer" className="sidebar-contact-row">
-                    <span className="sidebar-contact-icon">💬</span>
-                    <span>{tienda.whatsapp}</span>
-                  </a>
-                )}
-                {tienda.instagram && (
-                  <a href={`https://instagram.com/${tienda.instagram.replace('@', '')}`}
-                    target="_blank" rel="noopener noreferrer" className="sidebar-contact-row">
-                    <span className="sidebar-contact-icon">📷</span>
-                    <span>@{tienda.instagram.replace('@', '')}</span>
-                  </a>
-                )}
-                {tienda.email && (
-                  <a href={`mailto:${tienda.email}`} className="sidebar-contact-row">
-                    <span className="sidebar-contact-icon">✉️</span>
-                    <span style={{ wordBreak: 'break-all' }}>{tienda.email}</span>
-                  </a>
-                )}
-                {configEnvios.retiro?.direccion && (
-                  <div className="sidebar-contact-row" style={{ cursor: 'default' }}>
-                    <span className="sidebar-contact-icon">📍</span>
-                    <span>{configEnvios.retiro.direccion}</span>
-                  </div>
-                )}
+          {/* Bloque: CONTACTO Y REDES */}
+          {(() => {
+            const redes = config.redes_sociales || {}
+            const hasExisting = tienda.whatsapp || tienda.instagram || tienda.email || configEnvios.retiro?.direccion
+            const hasRedes = Object.values(redes).some(r => r.visible && r.url)
+            
+            if (!hasExisting && !hasRedes) return null
+
+            const redesList = [
+              { key: 'facebook', label: 'Facebook', icon: '🔵', domain: 'facebook.com/' },
+              { key: 'instagram', label: 'Instagram', icon: '📸', domain: 'instagram.com/' },
+              { key: 'tiktok', label: 'TikTok', icon: '🎵', domain: 'tiktok.com/@' },
+              { key: 'youtube', label: 'YouTube', icon: '🔴', domain: 'youtube.com/' },
+              { key: 'twitter', label: 'X / Twitter', icon: '🐦', domain: 'x.com/' },
+              { key: 'whatsapp', label: 'WhatsApp', icon: '💬', domain: 'wa.me/' },
+            ]
+
+            return (
+              <div className="sidebar-block">
+                <p className="sidebar-label">ENTRA EN CONTACTO</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  
+                  {/* WhatsApp Principal (tienda.whatsapp) */}
+                  {tienda.whatsapp && !redes.whatsapp?.visible && (
+                    <a href={`https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}`}
+                      target="_blank" rel="noopener noreferrer" className="sidebar-contact-row">
+                      <span className="sidebar-contact-icon">💬</span>
+                      <span>{tienda.whatsapp}</span>
+                    </a>
+                  )}
+
+                  {/* Redes dinámicas */}
+                  {redesList.map(r => {
+                    const cfg = redes[r.key]
+                    if (!cfg?.visible || !cfg?.url) return null
+                    
+                    let finalUrl = cfg.url
+                    if (!finalUrl.startsWith('http')) {
+                      finalUrl = `https://${r.domain}${finalUrl.replace('@', '')}`
+                    }
+
+                    return (
+                      <a key={r.key} href={finalUrl} target="_blank" rel="noopener noreferrer" className="sidebar-contact-row">
+                        <span className="sidebar-contact-icon">{r.icon}</span>
+                        <span>{cfg.url.startsWith('http') ? r.label : (cfg.url.startsWith('@') ? cfg.url : `@${cfg.url}`)}</span>
+                      </a>
+                    )
+                  })}
+
+                  {/* Instagram Legacy (si no está en las redes dinámicas) */}
+                  {tienda.instagram && !redes.instagram?.visible && (
+                    <a href={`https://instagram.com/${tienda.instagram.replace('@', '')}`}
+                      target="_blank" rel="noopener noreferrer" className="sidebar-contact-row">
+                      <span className="sidebar-contact-icon">📸</span>
+                      <span>@{tienda.instagram.replace('@', '')}</span>
+                    </a>
+                  )}
+
+                  {/* Email */}
+                  {tienda.email && (
+                    <a href={`mailto:${tienda.email}`} className="sidebar-contact-row">
+                      <span className="sidebar-contact-icon">✉️</span>
+                      <span style={{ wordBreak: 'break-all' }}>{tienda.email}</span>
+                    </a>
+                  )}
+
+                  {/* Dirección */}
+                  {configEnvios.retiro?.direccion && (
+                    <div className="sidebar-contact-row" style={{ cursor: 'default' }}>
+                      <span className="sidebar-contact-icon">📍</span>
+                      <span>{configEnvios.retiro.direccion}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* Bloque: ENTREGA */}
           <div className="sidebar-block">
