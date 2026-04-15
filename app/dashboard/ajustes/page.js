@@ -7,7 +7,7 @@ import {
   Settings, User, Store, Bell, ShieldCheck, Loader2, Save,
   CheckCircle2, Copy, ExternalLink, Image as ImageIcon,
   Smartphone, Info, Camera, Trash2, Globe, X, Clock,
-  Facebook, Instagram, Youtube, Twitter, Music2, MessageCircle
+  Facebook, Instagram, Music2, MessageCircle, Bird, PlayCircle
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 
@@ -15,8 +15,8 @@ const REDES_CONFIG = [
   { key: 'facebook',  label: 'Facebook',  Icon: Facebook,        color: '#1877F2', placeholder: 'https://facebook.com/tu_tienda' },
   { key: 'instagram', label: 'Instagram', Icon: Instagram,       color: '#E1306C', placeholder: '@tu_tienda o URL completa' },
   { key: 'tiktok',    label: 'TikTok',    Icon: Music2,          color: '#010101', placeholder: '@tu_tienda' },
-  { key: 'youtube',   label: 'YouTube',   Icon: Youtube,         color: '#FF0000', placeholder: 'https://youtube.com/@tu_canal' },
-  { key: 'twitter',   label: 'X / Twitter', Icon: Twitter,       color: '#1DA1F2', placeholder: 'https://x.com/tu_tienda' },
+  { key: 'youtube',   label: 'YouTube',   Icon: PlayCircle,      color: '#FF0000', placeholder: 'https://youtube.com/@tu_canal' },
+  { key: 'twitter',   label: 'X / Twitter', Icon: Bird,          color: '#1DA1F2', placeholder: 'https://x.com/tu_tienda' },
   { key: 'whatsapp',  label: 'WhatsApp Business', Icon: MessageCircle, color: '#25D366', placeholder: '+39...' },
 ]
 
