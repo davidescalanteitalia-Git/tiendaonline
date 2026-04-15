@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 
 export default function DashboardChecklist({ tienda, productos, pedidos, clientes }) {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
   const [manualChecks, setManualChecks] = useState({})
 
   // Cargar checks manuales

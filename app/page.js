@@ -229,12 +229,18 @@ export default function Home() {
             </span>
           </a>
 
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+          <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border transition-colors ${isScrolled ? 'bg-slate-100/50 border-slate-200' : 'bg-white/10 border-white/20'}`}>
             {['it', 'es', 'en'].map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${lang === l ? 'bg-emerald-500 text-white shadow-lg' : 'text-emerald-100 hover:text-white'}`}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
+                  lang === l 
+                    ? 'bg-emerald-500 text-white shadow-lg' 
+                    : isScrolled
+                      ? 'text-slate-500 hover:text-emerald-700'
+                      : 'text-emerald-100 hover:text-white'
+                }`}
               >
                 {l}
               </button>

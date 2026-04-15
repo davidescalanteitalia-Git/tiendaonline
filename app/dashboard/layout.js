@@ -9,7 +9,7 @@ import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
 import OnboardingWizard from '../../components/OnboardingWizard'
 import DashboardChecklist from '../../components/DashboardChecklist'
-import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle } from 'lucide-react'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle, ChevronDown } from 'lucide-react'
 
 async function fetchTienda(access_token) {
   const res = await fetch('/api/me', {
@@ -44,6 +44,9 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  const [openGroups, setOpenGroups] = useState({ ventas: true })
+
+  const toggleGroup = (key) => setOpenGroups(prev => ({ ...prev, [key]: !prev[key] }))
 
   useEffect(() => {
     let channel = null
@@ -125,18 +128,54 @@ export default function DashboardLayout({ children }) {
     router.replace('/login')
   }
 
-  const menuItems = [
-    { icon: Home, label: dict.home || 'Inicio', href: '/dashboard' },
-    { icon: Calculator, label: 'Caja (POS)', href: '/dashboard/pos' },
-    { icon: Package, label: dict.prodotti || 'Productos', href: '/dashboard/productos' },
-    { icon: ShoppingBag, label: dict.compras || 'Compras', href: '/dashboard/compras' },
-    { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
-    { icon: ShoppingCart, label: dict.ordini || 'Pedidos', href: '/dashboard/pedidos' },
-    { icon: Users, label: dict.clienti || 'Clientes', href: '/dashboard/clientes' },
-    { icon: PieChart, label: 'Reportes', href: '/dashboard/reportes' },
-    { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
-    { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
-    { icon: UserCircle, label: 'Mi Cuenta', href: '/dashboard/cuenta' },
+  const navGroups = [
+    {
+      key: 'inicio',
+      single: true,
+      icon: Home,
+      label: dict.home || 'Inicio',
+      href: '/dashboard',
+    },
+    {
+      key: 'ventas',
+      label: 'Ventas',
+      items: [
+        { icon: Calculator, label: 'Caja (POS)', href: '/dashboard/pos' },
+        { icon: ShoppingCart, label: dict.ordini || 'Pedidos', href: '/dashboard/pedidos' },
+      ],
+    },
+    {
+      key: 'catalogo',
+      label: 'Catálogo',
+      items: [
+        { icon: Package, label: dict.prodotti || 'Productos', href: '/dashboard/productos' },
+        { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
+        { icon: ShoppingBag, label: dict.compras || 'Compras', href: '/dashboard/compras' },
+      ],
+    },
+    {
+      key: 'clientes',
+      single: true,
+      icon: Users,
+      label: dict.clienti || 'Clientes',
+      href: '/dashboard/clientes',
+    },
+    {
+      key: 'reportes',
+      single: true,
+      icon: PieChart,
+      label: 'Reportes',
+      href: '/dashboard/reportes',
+    },
+    {
+      key: 'config',
+      label: 'Configuración',
+      items: [
+        { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
+        { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
+        { icon: UserCircle, label: 'Mi Cuenta', href: '/dashboard/cuenta' },
+      ],
+    },
   ]
 
   // En producción usamos el subdominio real; en desarrollo la ruta interna /store/
@@ -174,28 +213,77 @@ export default function DashboardLayout({ children }) {
         )}
 
         {/* Nav */}
-        <nav className="flex flex-col gap-1.5">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href
-            const Icon = item.icon
+        <nav className="flex flex-col gap-0.5">
+          {navGroups.map((group) => {
+            if (group.single) {
+              const isActive = pathname === group.href
+              const Icon = group.icon
+              return (
+                <button
+                  key={group.key}
+                  onClick={() => router.push(group.href)}
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
+                    ${isActive
+                      ? 'bg-primary/10 text-primary border border-primary/10'
+                      : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
+                    }`}
+                >
+                  <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                  <span className="flex-1">{group.label}</span>
+                </button>
+              )
+            }
+
+            const isGroupOpen = !!openGroups[group.key]
+            const hasActiveChild = group.items?.some(i => pathname === i.href)
+
             return (
-              <button
-                key={item.href}
-                onClick={() => router.push(item.href)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
-                  ${isActive
-                    ? 'bg-primary/10 text-primary border border-primary/10 shadow-[0_2px_10px_rgba(37,99,235,0.05)]'
-                    : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
+              <div key={group.key}>
+                {/* Group Header */}
+                <button
+                  onClick={() => toggleGroup(group.key)}
+                  className={`flex items-center gap-2 w-full px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                    hasActiveChild
+                      ? 'text-primary'
+                      : 'text-slate-400 hover:text-slate-600'
                   }`}
-              >
-                <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-400'} />
-                <span className="flex-1">{item.label}</span>
-                {item.href === '/dashboard/pedidos' && pendingCount > 0 && (
-                  <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse shadow-sm shadow-emerald-500/40">
-                    {pendingCount}
-                  </span>
+                >
+                  <span className="flex-1 text-left">{group.label}</span>
+                  <ChevronDown
+                    size={13}
+                    className={`transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                {/* Group Items */}
+                {isGroupOpen && (
+                  <div className="pl-2 flex flex-col gap-0.5 mb-1">
+                    {group.items.map((item) => {
+                      const isActive = pathname === item.href
+                      const Icon = item.icon
+                      return (
+                        <button
+                          key={item.href}
+                          onClick={() => router.push(item.href)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
+                            ${isActive
+                              ? 'bg-primary/10 text-primary border border-primary/10'
+                              : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
+                            }`}
+                        >
+                          <Icon size={16} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                          <span className="flex-1">{item.label}</span>
+                          {item.href === '/dashboard/pedidos' && pendingCount > 0 && (
+                            <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
+                              {pendingCount}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 )}
-              </button>
+              </div>
             )
           })}
         </nav>
