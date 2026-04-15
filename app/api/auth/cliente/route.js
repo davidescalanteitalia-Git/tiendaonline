@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 
 // POST /api/auth/cliente — Registro de nuevo cliente
 export async function POST(request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const body = await request.json()
     const { email, password, nombre, telefono, fecha_nacimiento, domain } = body
 
@@ -105,6 +101,7 @@ export async function POST(request) {
 // PUT /api/auth/cliente — Actualizar datos del perfil del cliente
 export async function PUT(request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const authHeader = request.headers.get('authorization')
     if (!authHeader) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
@@ -137,6 +134,7 @@ export async function PUT(request) {
 // DELETE /api/auth/cliente — Eliminar cuenta (GDPR)
 export async function DELETE(request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin()
     const authHeader = request.headers.get('authorization')
     if (!authHeader) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
