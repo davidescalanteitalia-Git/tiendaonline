@@ -138,6 +138,7 @@ export default function DashboardLayout({ children }) {
     },
     {
       key: 'ventas',
+      icon: ShoppingCart,
       label: 'Ventas',
       items: [
         { icon: Calculator, label: 'Caja (POS)', href: '/dashboard/pos' },
@@ -146,19 +147,14 @@ export default function DashboardLayout({ children }) {
     },
     {
       key: 'catalogo',
+      icon: Package,
       label: 'Catálogo',
       items: [
         { icon: Package, label: dict.prodotti || 'Productos', href: '/dashboard/productos' },
         { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
         { icon: ShoppingBag, label: dict.compras || 'Compras', href: '/dashboard/compras' },
+        { icon: Users, label: dict.clienti || 'Clientes', href: '/dashboard/clientes' },
       ],
-    },
-    {
-      key: 'clientes',
-      single: true,
-      icon: Users,
-      label: dict.clienti || 'Clientes',
-      href: '/dashboard/clientes',
     },
     {
       key: 'reportes',
@@ -169,6 +165,7 @@ export default function DashboardLayout({ children }) {
     },
     {
       key: 'config',
+      icon: Settings,
       label: 'Configuración',
       items: [
         { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
@@ -242,16 +239,19 @@ export default function DashboardLayout({ children }) {
                 {/* Group Header */}
                 <button
                   onClick={() => toggleGroup(group.key)}
-                  className={`flex items-center gap-2 w-full px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+                  className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
                     hasActiveChild
-                      ? 'text-primary'
-                      : 'text-slate-400 hover:text-slate-600'
+                      ? 'bg-primary/8 text-primary'
+                      : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-700'
                   }`}
                 >
+                  {group.icon && (
+                    <group.icon size={17} className={hasActiveChild ? 'text-primary' : 'text-slate-400'} />
+                  )}
                   <span className="flex-1 text-left">{group.label}</span>
                   <ChevronDown
                     size={13}
-                    className={`transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
+                    className={`text-slate-400 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
