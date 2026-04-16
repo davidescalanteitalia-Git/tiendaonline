@@ -162,4 +162,6 @@ export async function DELETE(request) {
 
   } catch (err) {
     console.error('Error eliminando cuenta:', err)
-    return NextResponse.json({ error: 'Error intern
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
+  }
+}
