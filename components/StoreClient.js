@@ -1,14 +1,26 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useLang } from './LanguageProvider'
 import { DICTIONARY } from '../lib/dictionaries'
+
+const CART_KEY_PREFIX = 'to_cart_'
+
+function loadCartFromStorage(domain) {
+  if (typeof window === 'undefined') return []
+  try { return JSON.parse(localStorage.getItem(CART_KEY_PREFIX + domain) || '[]') } catch { return [] }
+}
+function saveCartToStorage(domain, cart) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(CART_KEY_PREFIX + domain, JSON.stringify(cart))
+}
 
 export default function StoreClient({ tienda, groupedProducts, uncategorized, C, config = {} }) {
   const { lang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['es']
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [cart, setCart] = useState([])
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -40,6 +52,29 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
   const configPagos = config.pagos || {}
   const configEnvios = config.envios || {}
   const stockBehavior = config.mostrar_sin_stock || 'normal'
+
+  // ── Sync cart with localStorage ────────────────────
+  useEffect(() => {
+    const stored = loadCartFromStorage(tienda.subdominio)
+    if (stored.length > 0) setCart(stored)
+  }, [tienda.subdominio])
+
+  useEffect(() => {
+    saveCartToStorage(tienda.subdominio, cart)
+  }, [cart, tienda.subdominio])
+
+  // ── Open cart if coming from product detail page ───
+  useEffect(() => {
+    if (searchParams?.get('openCart') === '1') {
+      setIsCartOpen(true)
+      // Remove the param from URL without causing navigation
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        url.searchParams.delete('openCart')
+        window.history.replaceState({}, '', url.toString())
+      }
+    }
+  }, [searchParams])
 
   const totalProductos = cart.reduce((acc, item) => acc + (parseFloat(item.price || item.precio) * item.quantity), 0)
   let discount = 0
@@ -178,6 +213,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           window.open(`https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`, '_blank')
         }
         setIsModalOpen(false); setIsCartOpen(false); setCart([])
+        saveCartToStorage(tienda.subdominio, [])
         setCustomerName(''); setMetodoEnvio(''); setZonaSeleccionada(null)
         setDireccionCliente(''); setMetodoPago(''); setCuponAplicado(null)
         setCuponInput(''); setCheckoutStep(1); setSuccessMessageOpen(true)
