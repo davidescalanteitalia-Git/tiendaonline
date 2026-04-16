@@ -144,7 +144,11 @@ El perfil del comercio. Una por usuario.
 | `mensaje_post_pedido` | text | Mensaje al comprador al finalizar |
 | `link_resena_google` | text | URL del perfil de Google Reviews — visible en portal del cliente |
 | `estado` | text | 'activo' o 'suspendido' |
-| `plan_suscripcion` | text | 'free', 'pro', 'grow' (futuro Stripe) |
+| `plan_suscripcion` | text | `'trial'` \| `'gratis'` \| `'basico'` \| `'pro'` \| `'grow'` |
+| `trial_fin` | date | Fecha de vencimiento del mes gratuito (30 días desde registro) |
+| `trial_usado` | boolean | Marca que el trial ya fue utilizado (evita dobles trials) |
+| `stripe_customer_id` | text | ID de cliente en Stripe — pendiente integración |
+| `stripe_subscription_id` | text | ID de suscripción activa en Stripe — pendiente integración |
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | |
 
@@ -330,6 +334,7 @@ idx_clientes_user_id         ON clientes(user_id)         -- Portal del cliente 
 | `/dashboard/ajustes/pagos` | `ajustes/pagos/page.js` | Métodos de pago del catálogo |
 | `/dashboard/ajustes/envios` | `ajustes/envios/page.js` | Zonas de envío |
 | `/dashboard/cuenta` | `cuenta/page.js` | Cambiar email y contraseña |
+| `/dashboard/planes` | `planes/page.js` | Selección de plan con precios, toggle mensual/anual, estado del trial |
 
 ### Rutas de superadmin (solo `davidescalanteitalia@gmail.com`)
 | Ruta | Archivo | |
@@ -354,6 +359,7 @@ idx_clientes_user_id         ON clientes(user_id)         -- Portal del cliente 
 | `/api/stats` | GET | Stats simples del dashboard |
 | `/api/register` | POST | Crear usuario Auth + tienda en la misma transacción |
 | `/api/auth/cliente` | POST, PUT, DELETE | Registro de cliente, actualizar perfil, eliminar cuenta (GDPR) |
+| `/api/store/[domain]/producto/[id]` | GET | API pública: devuelve producto + tienda + categoría + relacionados |
 | `/api/admin/stats` | GET | Stats globales (solo admin) |
 | `/api/admin/tiendas` | GET, PATCH, DELETE | Gestión de tiendas (solo admin) |
 | `/api/admin/usuarios` | GET, PATCH, DELETE | Gestión de usuarios (solo admin) |
@@ -1155,3 +1161,201 @@ Header: Authorization: Bearer {token}
 | Anonimizar en DELETE (no borrar fila) | Los pedidos históricos quedan válidos aunque sin datos del cliente. Cumple GDPR | Borrar la fila de clientes (rompería integridad de pedidos) |
 | Vincular por email (no por user_id desde el inicio) | Un cliente puede haber comprado como invitado antes de registrarse — el historial previo queda vinculado | Siempre crear registro nuevo (perdería historial de compras como invitado) |
 | Seguimiento Realtime solo en UPDATE | Solo nos interesa notificar cambios de estado al cliente, no los inserts | Escuchar también INSERT y DELETE |
+
+---
+
+### [2026-04-16] Sesión 13 — Rediseño del catálogo público + Página de detalle de producto + Sistema de planes SaaS
+
+---
+
+#### Parte A — Correcciones visuales en Ajustes (arrastradas de Sesión 12)
+
+| Bug | Síntoma | Fix |
+|-----|---------|-----|
+| Borde amarillo en campo Google Reviews | `focus:ring-yellow-400/40` se veía mal visualmente | Cambiado a `focus:ring-slate-300/60 focus:border-slate-300` (gris neutro) |
+| Botón "Abrir" salía fuera del card de Subdominio | Layout `flex-col md:flex-row` desbordaba el contenedor | URL en línea propia con `break-all`; botones debajo en `flex` con `flex-1` en cada uno |
+
+---
+
+#### Parte B — Rediseño completo del catálogo público (`StoreClient.js`)
+
+**Motivación:** El catálogo anterior era funcional pero sin diferenciación visual. Se rediseñó completamente para parecer un e-commerce profesional (referencia: Sodimac / tienda de comida latina).
+
+**Archivo modificado:** `components/StoreClient.js` — reescrito completamente (~500 líneas).
+
+**Nuevas funcionalidades de UI:**
+
+| Elemento | Descripción |
+|----------|-------------|
+| Navbar top | Logo + nombre de tienda · barra de búsqueda centrada · link "Mi cuenta" · botón carrito con contador |
+| Sidebar desktop | Descripción + estado Abierto/Cerrado · filtro de categorías · filtro de precio (4 rangos) · filtro "Solo con stock" · contacto · "Powered by" footer |
+| Cards de producto | Ratio 1:1, label de categoría, nombre (2 líneas máx.), descripción preview, precio en color primario, botón "Agregar" → contador +/− inline al añadir |
+| Búsqueda en tiempo real | Filtra por nombre + descripción + código de barras. Combinable con filtros de precio y stock |
+| Grid responsive | `repeat(2,1fr)` → `repeat(3,1fr)` → `repeat(4,1fr)` según ancho de pantalla |
+| Navegación a detalle | Clic en la card navega a `/store/{domain}/producto/{id}` vía `router.push` |
+| Carrito persistente | Cart sincronizado con `localStorage` (clave `to_cart_{subdominio}`) — sobrevive entre páginas |
+| Limpiar carrito | Al confirmar pedido exitoso, `saveCartToStorage(tienda.subdominio, [])` limpia el localStorage |
+
+**Toda la lógica de negocio fue preservada:** checkout 2 pasos, integración WhatsApp, cupones, zonas de envío, métodos de pago, portal del cliente post-pedido.
+
+---
+
+#### Parte C — Página de detalle de producto
+
+**Archivos creados:**
+
+| Archivo | Descripción |
+|---------|-------------|
+| `app/store/[domain]/producto/[id]/page.js` | Página Client Component que carga el producto via fetch a la API |
+| `app/api/store/[domain]/producto/[id]/route.js` | API pública GET: devuelve producto + tienda + categoría + hasta 8 relacionados |
+
+**Características de la página de detalle:**
+
+- **Navbar propio** con botón "← Nombre de la tienda" (vuelve al catálogo) y botón de carrito con contador en vivo
+- **Breadcrumb**: Catálogo › Categoría › Nombre del producto
+- **Imagen grande** (ratio 1:1), badge "Sin stock" si aplica, fallback a emoji
+- **Información del producto**: nombre, precio (+ precio tachado si hay `precio_antes`), semáforo de stock (verde/amarillo/rojo), descripción en caja destacada, código de barras/SKU
+- **Botón "Agregar al carrito"**: al hacer clic se convierte en contador +/− inline + botón "Ver pedido"
+- **Botón WhatsApp**: consulta directa por el producto específico
+- **Productos relacionados**: grid de la misma categoría (hasta 8), 2→3→4→5 columnas según pantalla
+
+**Carrito compartido entre páginas:**
+
+```
+Catálogo (StoreClient) ←──localStorage(to_cart_{domain})──→ Página de detalle
+```
+
+Al pulsar "Ver pedido" en la página de detalle: navega a `/store/{domain}?openCart=1`.  
+`StoreClient` detecta `?openCart=1` en `useSearchParams` y abre el cajón del carrito automáticamente.
+
+**API `GET /api/store/[domain]/producto/[id]`:**
+```
+1. Busca tienda por subdominio
+2. Busca producto WHERE id = {id} AND tienda_id = tienda.id AND estado = 'activo'
+3. Busca relacionados WHERE categoria_id = mismo AND estado = 'activo' LIMIT 8
+4. Devuelve: { tienda, producto, categoria, relacionados }
+```
+
+---
+
+#### Parte D — Sistema de planes SaaS (4 niveles)
+
+**Motivación:** Monetizar la plataforma con un modelo freemium. El primer mes de registro es Pro gratis (trial). Al vencer, baja automáticamente a Free si no se elige plan. Recordatorio visual 7 días antes del vencimiento del trial.
+
+##### Migración de base de datos
+
+```sql
+ALTER TABLE public.tiendas
+  ADD COLUMN IF NOT EXISTS plan_suscripcion TEXT DEFAULT 'trial',
+  ADD COLUMN IF NOT EXISTS trial_fin DATE,
+  ADD COLUMN IF NOT EXISTS trial_usado BOOLEAN DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT,
+  ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;
+
+-- Tiendas existentes: 30 días de trial desde hoy
+UPDATE public.tiendas
+SET plan_suscripcion = 'trial',
+    trial_fin = CURRENT_DATE + INTERVAL '30 days',
+    trial_usado = TRUE
+WHERE trial_fin IS NULL;
+```
+
+> ✅ Ejecutado vía Supabase MCP (`execute_sql`) el 2026-04-16.
+
+##### Nuevas columnas en `tiendas`
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `plan_suscripcion` | text | `'trial'` \| `'gratis'` \| `'basico'` \| `'pro'` \| `'grow'` |
+| `trial_fin` | date | Fecha de vencimiento del mes gratuito |
+| `trial_usado` | boolean | Evita dar un segundo trial a la misma tienda |
+| `stripe_customer_id` | text | Pendiente integración Stripe (Sprint 5) |
+| `stripe_subscription_id` | text | Pendiente integración Stripe (Sprint 5) |
+
+##### Planes definidos (`lib/planes.js`)
+
+| Plan | Precio | Productos | Features clave |
+|------|--------|-----------|----------------|
+| **Gratis** | €0 | 50 | POS, WhatsApp checkout, subdominio |
+| **Básico** | €15/mes | 500 | + Stripe/PayPal, CSV export, soporte email |
+| **Pro** | €25/mes | 5.000 | + Reportes avanzados, cupones, fiados, portal cliente |
+| **Grow** | €40/mes | Ilimitados | + Carritos abandonados, puntos, facturación, consultor |
+
+**Lógica de `getPlan(tienda)`:**
+```js
+// Si plan = 'trial' y trial_fin >= hoy → tratada como Pro
+// Si plan = 'trial' y trial_fin < hoy → baja automática a Gratis
+// Si plan = 'basico'/'pro'/'grow' → plan correspondiente
+```
+
+##### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `lib/planes.js` | Definición de los 4 planes + `getPlan()` + `tieneFeature()` + `maxProductos()` + `FEATURE_REQUIERE` |
+| `components/PlanBanner.js` | Banner dinámico en el dashboard según estado del trial/plan |
+| `components/UpgradeModal.js` | Modal de bloqueo al intentar usar feature Pro/Básico sin el plan |
+| `app/dashboard/planes/page.js` | Página de precios dentro del dashboard con toggle mensual/anual |
+
+##### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/api/register/route.js` | Nuevas tiendas arrancan con `plan_suscripcion = 'trial'`, `trial_fin = hoy + 30 días`, `trial_usado = true` |
+| `app/dashboard/layout.js` | Importa `PlanBanner` y lo renderiza antes de `{children}`. Añadido link "Planes y precios" en sidebar bajo Configuración |
+
+##### Comportamiento del PlanBanner
+
+| Situación | Banner mostrado |
+|-----------|-----------------|
+| Trial activo > 7 días | Nada (no molesta) |
+| Trial activo ≤ 7 días | Banner amarillo "Tu prueba vence en X días" |
+| Trial activo ≤ 3 días | Banner naranja urgente "¡Solo X días!" |
+| Trial vencido | Banner rojo permanente "Período de prueba terminado" |
+| Plan Gratis (sin trial) | Banner azul suave "Estás en el plan Gratis" |
+| Plan Básico/Pro/Grow | Sin banner |
+
+##### Página `/dashboard/planes`
+
+- 4 cards de planes con colores diferenciados (gris / azul / verde / violeta)
+- Toggle mensual / anual (descuento 20% en anual)
+- Plan actual marcado con badge "ACTUAL" o "TRIAL"
+- Si trial activo: banner verde con días restantes
+- Botones: "Usar plan Gratis" / "Empezar ahora" / "Contactar" (los de pago muestran alerta provisional hasta integrar Stripe)
+- Accesible desde sidebar: Configuración → "Planes y precios"
+
+##### Decisiones de arquitectura (Sesión 13)
+
+| Decisión | Razón | Alternativa descartada |
+|----------|-------|----------------------|
+| Trial 30 días como 'pro' (no plan separado) | Los dueños experimentan el valor máximo desde el inicio — mayor conversión | Trial de funciones limitadas (experiencia mediocre) |
+| Baja automática a Free (no bloquear tienda) | El dueño sigue operando sin interrupción; más tiempo para convertirlo | Bloquear la tienda (experiencia agresiva, genera pérdida de confianza) |
+| Recordatorio solo visual en dashboard | El sistema no tiene emails transaccionales aún (Resend pendiente) | Email automático a los 7 días (requiere Resend) |
+| Carrito en localStorage (no Context global) | Las páginas de producto y catálogo son rutas diferentes en Next.js — no comparten estado React | Context global (requeriría refactorizar todo el routing del catálogo) |
+| Botones de plan con `alert()` provisional | Stripe no está integrado aún — mantiene la UX sin romper nada | Desactivar botones (confuso para el usuario) |
+
+---
+
+#### Rutas nuevas añadidas en Sesión 13
+
+| Ruta | Archivo | Descripción |
+|------|---------|-------------|
+| `/store/[domain]/producto/[id]` | `app/store/[domain]/producto/[id]/page.js` | Página de detalle de producto |
+| `/dashboard/planes` | `app/dashboard/planes/page.js` | Página de precios y selección de plan |
+| `GET /api/store/[domain]/producto/[id]` | `app/api/store/[domain]/producto/[id]/route.js` | API pública para detalle de producto |
+
+#### Roadmap actualizado tras Sesión 13
+
+| Estado | Feature |
+|--------|---------|
+| ✅ Hecho | Rediseño catálogo público (navbar, sidebar filtros, cards) |
+| ✅ Hecho | Página de detalle de producto con productos relacionados |
+| ✅ Hecho | Carrito persistente en localStorage entre páginas |
+| ✅ Hecho | Sistema de 4 planes (Gratis/Básico/Pro/Grow) con trial 30 días |
+| ✅ Hecho | PlanBanner inteligente con alertas escalonadas |
+| ✅ Hecho | Página `/dashboard/planes` con toggle mensual/anual |
+| 🔴 Pendiente | **Stripe** — cobro real de suscripciones (Sprint 5) |
+| 🔴 Pendiente | **Resend** — email de recordatorio del trial por correo |
+| 🔴 Pendiente | **Guards de features** — bloqueo con UpgradeModal en cupones, fiados, reportes según plan |
+| 🟢 Pendiente | Wizard de registro campo a campo (UX mejorada) |
+| 🟢 Pendiente | Correo corporativo `@tiendaonline.it` (Zoho Mail recomendado) |

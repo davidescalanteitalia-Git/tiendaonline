@@ -139,49 +139,22 @@ export default async function StoreFrontPage({ params }) {
 
   return (
     <div style={{ backgroundColor: C.grayBg, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
-      
-      {/* Banner de la Tienda */}
+
+      {/* Banner de la Tienda — solo si está configurado */}
       {config.banner_url && (
-         <div className="w-full h-32 md:h-48 overflow-hidden">
-            <img src={config.banner_url} className="w-full h-full object-cover" alt="Store Banner" />
-         </div>
+        <div className="w-full h-32 md:h-48 overflow-hidden">
+          <img src={config.banner_url} className="w-full h-full object-cover" alt="Banner" />
+        </div>
       )}
 
-      {/* Header Fijo con Logo de Tienda */}
-      <div style={{ 
-        position: 'sticky', top: 0, zIndex: 40,
-        backgroundColor: C.white, borderBottom: `1px solid ${C.grayBorder}`, 
-        padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px'
-      }}>
-        <div style={{ 
-          width: '48px', height: '48px', borderRadius: '50%', background: C.grayBg, 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem',
-          border: `2px solid ${C.grayBorder}`, flexShrink: 0, overflow: 'hidden'
-        }}>
-          {tienda.logo_url ? <img src={tienda.logo_url} className="w-full h-full object-cover" alt="Logo" /> : (tienda.emoji || '🏪')}
-        </div>
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: C.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {tienda.nombre}
-          </h1>
-          {tienda.descripcion && (
-            <p style={{ margin: 0, fontSize: '0.85rem', color: C.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {tienda.descripcion}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Client Component handles the Sidebar, Grid logic, and Cart */}
-        <StoreClient 
-          tienda={tienda} 
-          groupedProducts={groupedProducts} 
-          uncategorized={uncategorized} 
-          C={C}
-          config={config}
-        />
-      </div>
+      {/* El navbar con logo, búsqueda y carrito está dentro de StoreClient */}
+      <StoreClient
+        tienda={tienda}
+        groupedProducts={groupedProducts}
+        uncategorized={uncategorized}
+        C={C}
+        config={config}
+      />
     </div>
   )
 }

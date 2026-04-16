@@ -82,6 +82,24 @@ export async function POST(req) {
       return NextResponse.json({ error: 'store_error', message: tiendaError.message }, { status: 400 })
     }
 
+    // PostHog: registrar evento de nueva tienda (fire-and-forget)
+    fetch('https://eu.i.posthog.com/capture/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        api_key: 'phc_BiKU9NPq9aQjxs9EZoVM7DLb6EWuFLwxeZhmU6UNniLF',
+        event: 'tienda_registrada',
+        distinct_id: userData.user.id,
+        properties: {
+          nombre_tienda: nombre,
+          subdominio,
+          sector: sector || null,
+          tipo_vendedor: tipo_vendedor || null,
+          plan: 'trial',
+        },
+      }),
+    }).catch(() => {}) // No bloquear el registro si PostHog falla
+
     return NextResponse.json({ ok: true })
 
   } catch (err) {

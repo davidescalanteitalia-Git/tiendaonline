@@ -11,6 +11,7 @@ import OnboardingWizard from '../../components/OnboardingWizard'
 import DashboardChecklist from '../../components/DashboardChecklist'
 import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle, ChevronDown, CreditCard } from 'lucide-react'
 import PlanBanner from '../../components/PlanBanner'
+import { identificarDueno, resetearIdentidad } from '../../components/PostHogProvider'
 
 async function fetchTienda(access_token) {
   const res = await fetch('/api/me', {
@@ -59,6 +60,8 @@ export default function DashboardLayout({ children }) {
       }
       const t = await fetchTienda(session.access_token)
       setTienda(t)
+      // Identificar al dueño en PostHog para analytics personalizados
+      if (t) identificarDueno(session.user.id, t)
 
       if (t?.id) {
         // Fetch resources in parallel for the sidebar checklist
@@ -125,6 +128,7 @@ export default function DashboardLayout({ children }) {
   }, [pathname])
 
   const handleLogout = async () => {
+    resetearIdentidad()
     await supabase.auth.signOut()
     router.replace('/login')
   }

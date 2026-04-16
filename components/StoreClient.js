@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useLang } from './LanguageProvider'
 import { DICTIONARY } from '../lib/dictionaries'
+import { registrarEvento, EVENTOS } from './PostHogProvider'
 
 const CART_KEY_PREFIX = 'to_cart_'
 
@@ -211,7 +212,18 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             cart.map(item => `- ${item.quantity}x ${item.nombre} (€${parseFloat(item.price || item.precio).toFixed(2)})`).join('%0A') +
             `%0A%0A${shippingInfo}%0A%0A${paymentInfo}${bankDetails}${discountInfo}%0A%0A*Total: €${total.toFixed(2)}*%0A%0A_Enviado desde: ${tienda.nombre}_`
           window.open(`https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`, '_blank')
+          registrarEvento(EVENTOS.WHATSAPP_ABIERTO, { tienda_id: tienda.id, total })
         }
+        // PostHog: pedido completado
+        registrarEvento(EVENTOS.PEDIDO_COMPLETADO, {
+          tienda_id: tienda.id,
+          tienda_nombre: tienda.nombre,
+          total,
+          num_productos: cart.reduce((s, i) => s + i.quantity, 0),
+          metodo_pago: metodoPago,
+          metodo_envio: metodoEnvio,
+          cupon_usado: !!cuponAplicado,
+        })
         setIsModalOpen(false); setIsCartOpen(false); setCart([])
         saveCartToStorage(tienda.subdominio, [])
         setCustomerName(''); setMetodoEnvio(''); setZonaSeleccionada(null)

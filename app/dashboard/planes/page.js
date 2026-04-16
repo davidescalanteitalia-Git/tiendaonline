@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getPlan, PLANES } from '../../../lib/planes'
+import { registrarEvento, EVENTOS } from '../../../components/PostHogProvider'
 
 const PLANES_ORDEN = ['gratis', 'basico', 'pro', 'grow']
 
@@ -258,10 +259,14 @@ export default function PlanesPage() {
                   width: '100%',
                 }}
                 onClick={() => {
+                  registrarEvento(EVENTOS.PLAN_CLICK_UPGRADE, {
+                    plan_seleccionado: key,
+                    plan_actual: info?.planKey,
+                    es_trial: info?.esTrial,
+                    dias_trial: info?.diasRestantesTrial,
+                  })
                   if (key === 'gratis') {
-                    // Confirmar degradación
                     if (confirm('¿Confirmas que quieres pasar al plan Gratis?')) {
-                      // TODO: llamar API para actualizar plan
                       alert('Funcionalidad de pago con Stripe próximamente. Contacta con soporte.')
                     }
                   } else {
