@@ -388,36 +388,53 @@ export default function AjustesPage() {
             </div>
           </div>
           {/* ─── Google Reviews ─── */}
-          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm p-8">
-            <h3 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-              <Star className="text-yellow-400 fill-yellow-300" size={22} /> Google Reviews
-            </h3>
-            <p className="text-xs text-slate-500 mb-6">
-              Pega aquí el link de tu perfil de Google Reviews. Tus clientes registrados verán un botón
-              para dejarte una opinión directamente desde su cuenta.
-            </p>
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                Enlace de Google Reviews
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+            {/* Header con fondo degradado sutil */}
+            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-b border-amber-100 px-8 py-5 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-2xl bg-white shadow-sm border border-amber-100 flex items-center justify-center shrink-0">
+                <Star className="text-yellow-400 fill-yellow-400" size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-800">Google Reviews</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Tus clientes podrán dejarte una reseña con un solo toque</p>
+              </div>
+            </div>
+
+            {/* Cuerpo */}
+            <div className="p-8">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">
+                Enlace de tu perfil en Google
               </label>
-              <div className="flex gap-3">
-                <input
-                  type="url"
-                  value={linkResenaGoogle}
-                  onChange={e => setLinkResenaGoogle(e.target.value)}
-                  placeholder="https://g.page/r/TU_CODIGO/review"
-                  className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/40 placeholder-slate-300"
-                />
+              <div className="flex gap-3 items-center">
+                <div className="relative flex-1">
+                  <ExternalLink size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                  <input
+                    type="url"
+                    value={linkResenaGoogle}
+                    onChange={e => setLinkResenaGoogle(e.target.value)}
+                    placeholder="https://g.page/r/TU_CODIGO/review"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300/60 focus:border-slate-300 placeholder-slate-300 transition-all"
+                  />
+                </div>
                 {linkResenaGoogle && (
-                  <a href={linkResenaGoogle} target="_blank" rel="noopener noreferrer"
-                    className="px-4 py-3 rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-600 hover:bg-yellow-100 transition-colors flex items-center gap-1.5 text-sm font-bold shrink-0">
-                    <ExternalLink size={14} /> Ver
+                  <a
+                    href={linkResenaGoogle}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold flex items-center gap-1.5 transition-all active:scale-95 shrink-0 shadow-sm"
+                  >
+                    <ExternalLink size={14} /> Probar
                   </a>
                 )}
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                💡 Para obtener tu link: abre Google Maps → busca tu negocio → toca <strong>Reseñas</strong> → comparte el link.
-              </p>
+
+              {/* Instrucción visual */}
+              <div className="mt-4 flex items-start gap-3 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <span className="text-base shrink-0">📍</span>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  <strong className="text-slate-700">¿Cómo obtener tu link?</strong> Abre Google Maps en tu teléfono → busca tu negocio → toca <strong className="text-slate-700">Reseñas</strong> → icono de compartir → copia el link.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -432,15 +449,13 @@ export default function AjustesPage() {
                 </div>
              </div>
 
-             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                   <p className="text-xs font-bold text-slate-400 uppercase mb-2">URL del Catálogo</p>
-                   <p className="text-lg font-mono text-blue-400">https://{storeUrl}</p>
-                </div>
-                <div className="flex gap-3 w-full md:w-auto">
+             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                <p className="text-xs font-bold text-slate-400 uppercase mb-2">URL del Catálogo</p>
+                <p className="text-base font-mono text-blue-400 mb-4 break-all">https://{storeUrl}</p>
+                <div className="flex gap-3">
                    <button
                      onClick={copyLink}
-                     className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all font-bold ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}
+                     className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all font-bold text-sm ${copiedLink ? 'bg-emerald-500 text-white' : 'bg-white/10 hover:bg-white/20'}`}
                    >
                      {copiedLink ? <CheckCircle2 size={18} /> : <Copy size={18} />}
                      {copiedLink ? (dict.enlaceCopiado || '¡Copiado!') : (dict.copiar || 'Copiar')}
@@ -450,9 +465,9 @@ export default function AjustesPage() {
                        ? `https://${subdominio}.tiendaonline.it`
                        : `/store/${subdominio}`}
                      target="_blank"
-                     className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-xl transition-all font-bold"
+                     className="flex-1 flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 px-4 py-3 rounded-xl transition-all font-bold text-sm"
                    >
-                     <ExternalLink size={18} /> {dict.abrir || 'Ver Tienda'}
+                     <ExternalLink size={16} /> {dict.abrir || 'Abrir'}
                    </a>
                 </div>
              </div>
