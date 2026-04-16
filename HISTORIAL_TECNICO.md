@@ -142,6 +142,7 @@ El perfil del comercio. Una por usuario.
 | `aceptar_pedidos` | boolean | Default true |
 | `enviar_whatsapp` | boolean | Default true |
 | `mensaje_post_pedido` | text | Mensaje al comprador al finalizar |
+| `link_resena_google` | text | URL del perfil de Google Reviews — visible en portal del cliente |
 | `estado` | text | 'activo' o 'suspendido' |
 | `plan_suscripcion` | text | 'free', 'pro', 'grow' (futuro Stripe) |
 | `created_at` | timestamptz | |
@@ -291,6 +292,7 @@ idx_productos_categoria_id   ON productos(categoria_id)
 idx_pedidos_tienda_id        ON pedidos(tienda_id)
 idx_pedidos_created_at       ON pedidos(created_at DESC)
 idx_clientes_tienda_id       ON clientes(tienda_id)
+idx_clientes_user_id         ON clientes(user_id)         -- Portal del cliente (Sesión 12)
 ```
 
 ---
@@ -304,6 +306,8 @@ idx_clientes_tienda_id       ON clientes(tienda_id)
 | `/login` | `app/login/page.js` | Login con Supabase Auth |
 | `/register` | `app/register/page.js` | Registro de nuevos comercios |
 | `/store/[domain]` | `app/store/[domain]/page.js` | Catálogo público del comercio (Server Component) |
+| `/store/[domain]/cuenta` | `app/store/[domain]/cuenta/page.js` | Registro y login del cliente (3 vistas: bienvenida, registro, login) |
+| `/store/[domain]/mis-pedidos` | `app/store/[domain]/mis-pedidos/page.js` | Portal del cliente autenticado (pedidos, perfil, cuenta) |
 | `/privacy` | `app/privacy/page.js` | Política de privacidad |
 | `/terms` | `app/terms/page.js` | Términos de uso |
 | `/cookie-policy` | `app/cookie-policy/page.js` | Política de cookies |
@@ -349,6 +353,7 @@ idx_clientes_tienda_id       ON clientes(tienda_id)
 | `/api/reportes` | GET | KPIs financieros (ventas, costos, utilidad, top productos) |
 | `/api/stats` | GET | Stats simples del dashboard |
 | `/api/register` | POST | Crear usuario Auth + tienda en la misma transacción |
+| `/api/auth/cliente` | POST, PUT, DELETE | Registro de cliente, actualizar perfil, eliminar cuenta (GDPR) |
 | `/api/admin/stats` | GET | Stats globales (solo admin) |
 | `/api/admin/tiendas` | GET, PATCH, DELETE | Gestión de tiendas (solo admin) |
 | `/api/admin/usuarios` | GET, PATCH, DELETE | Gestión de usuarios (solo admin) |
@@ -559,16 +564,17 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 | Riesgo | Impacto | Mitigación actual |
 |--------|---------|-------------------|
 | Email admin hardcodeado | Si cambia propietario → rompe acceso admin | Documentado arriba. Cambiar en 3 archivos. |
-| OG image en SVG | No renderiza en Facebook/LinkedIn | Pendiente migrar a `@vercel/og` |
+| OG image en SVG | ~~No renderiza en Facebook/LinkedIn~~ | ✅ Resuelto en Sesión 11 — migrado a `@vercel/og` Edge Function |
 | Horario detectado en TZ del cliente | El dueño en Madrid, cliente en NY → estado incorrecto | Pendiente campo TZ en ajustes |
-| Sin filtro de fechas en reportes | No puedes ver ventas de esta semana vs. el mes | Pendiente selector de rango |
+| Sin filtro de fechas en reportes | ~~No puedes ver ventas de esta semana vs. el mes~~ | ✅ Resuelto en Sesión 11 — selector de 5 rangos |
 | `items` como JSONB | Dificulta queries SQL avanzadas en reportes | Aceptable por ahora. Migrar si escala. |
 | Columnas huérfanas en inglés | Confunden el esquema DB | Mantener para retrocompatibilidad |
 | Sin emails transaccionales | Ningún email sale del sistema | Pendiente Resend integration |
-| Sin lector de barras activo | `codigo_barras` existe en DB pero cámara no se activa | Pendiente `@zxing/browser` |
-| Sin filtro de rango en reportes | Todo el historial siempre | Pendiente UI de filtro |
+| Sin lector de barras activo | ~~`codigo_barras` existe en DB pero cámara no se activa~~ | ✅ Resuelto en Sesión 9 — BarcodeDetector API nativa |
 | Stripe no integrado | Sin modelo de negocio activo | Pendiente Sprint 5 |
 | Bug Rollup (Windows) | Servidor local no carga | Borrar node_modules y re-instalar |
+| Portal del cliente sin email de bienvenida | Al registrarse no recibe ningún email | Pendiente cuando se integre Resend |
+| `fecha_nacimiento` sin uso activo | Columna existe en clientes pero no hay lógica de descuento por cumpleaños | Pendiente — feature futuro |
 
 ---
 
@@ -578,10 +584,11 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 |-----------|---------|-------------|
 | 🔴 Alta | **Stripe B2B** | Cobro mensual a comercios. Planes: Free / Pro (€9/mes) / Grow (€19/mes). Desbloquea: subdominios propios, analítica avanzada, catálogos automáticos IG. |
 | 🔴 Alta | **Resend (emails transaccionales)** | Confirmación de registro, resumen de pedido al comprador, notificación al vendedor, recibo de abono de fiado. |
-| 🟡 Media | **`@vercel/og` — OG Image PNG** | Edge Function que genera imagen 1200×630 con el nombre y logo de cada tienda dinámicamente. |
-| 🟡 Media | **Lector código de barras** | Activar cámara en POS con `BarcodeDetector` API nativa o `@zxing/browser`. El campo `codigo_barras` ya existe en la DB. |
-| 🟡 Media | **Filtro de fechas en Reportes** | Selector: Hoy / Esta semana / Este mes / Personalizado. Pasar `desde` y `hasta` como query params a `/api/reportes`. |
-| 🟡 Media | **Drag-and-drop para orden** | El campo `orden` ya existe en `productos` y `categorias`. Falta UI con `@dnd-kit` o similar. |
+| ✅ Hecho | **`@vercel/og` — OG Image PNG** | ~~Edge Function que genera imagen 1200×630 con el nombre y logo de cada tienda dinámicamente.~~ Implementado en Sesión 11. |
+| ✅ Hecho | **Lector código de barras** | ~~Activar cámara en POS con `BarcodeDetector` API nativa.~~ Implementado en Sesión 9. |
+| ✅ Hecho | **Filtro de fechas en Reportes** | ~~Selector de rangos predefinidos.~~ Implementado en Sesión 11. |
+| ✅ Hecho | **Drag-and-drop para orden** | ~~Falta UI con `@dnd-kit`.~~ Implementado en Sesión 11 (grid) y 12 (lista también). |
+| ✅ Hecho | **Portal del Cliente** | Registro email+contraseña, historial de pedidos, seguimiento realtime, saldo fiado, reseña Google, eliminar cuenta. Implementado en Sesión 12. |
 | 🟢 Baja | **Export CSV/PDF de reportes** | Para contabilidad e impuestos del comerciante. |
 | 🟢 Baja | **Feed para Instagram Shopping / Facebook** | Exportar catálogo en formato compatible. |
 | 🟢 Baja | **TZ del dueño en ajustes** | Para que el badge Abierto/Cerrado use la zona horaria del negocio, no del cliente. |
