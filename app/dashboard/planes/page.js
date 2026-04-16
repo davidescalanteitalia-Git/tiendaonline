@@ -1,0 +1,299 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { getPlan, PLANES } from '../../../lib/planes'
+
+const PLANES_ORDEN = ['gratis', 'basico', 'pro', 'grow']
+
+const PLAN_CONFIG = {
+  gratis: {
+    color: '#64748b',
+    bg: '#f8fafc',
+    border: '#e2e8f0',
+    emoji: '🏪',
+    tag: null,
+    features: [
+      '50 productos',
+      'POS táctil incluido',
+      'Checkout por WhatsApp',
+      'Subdominio personalizado',
+      '100 MB almacenamiento',
+      'GDPR compliance',
+    ],
+    noFeatures: ['Cupones de descuento', 'Reportes financieros', 'Fiados', 'Portal del cliente'],
+  },
+  basico: {
+    color: '#0284c7',
+    bg: '#f0f9ff',
+    border: '#7dd3fc',
+    emoji: '⭐',
+    tag: null,
+    features: [
+      '500 productos',
+      'Subdominio personalizado',
+      'Pagos Stripe / PayPal',
+      'Exportación CSV / PDF',
+      '1 GB almacenamiento',
+      'Soporte por email',
+    ],
+    noFeatures: ['Cupones de descuento', 'Reportes avanzados', 'Fiados', 'Portal del cliente'],
+  },
+  pro: {
+    color: '#16a34a',
+    bg: '#f0fdf4',
+    border: '#86efac',
+    emoji: '🚀',
+    tag: '⭐ EL MÁS ELEGIDO',
+    features: [
+      '5.000 productos',
+      'Reportes financieros avanzados',
+      'Catálogo Instagram / Facebook',
+      'Cupones de descuento ilimitados',
+      'Fiados y cuentas corrientes',
+      'Portal del cliente',
+      '5 GB almacenamiento',
+      'Soporte prioritario',
+    ],
+    noFeatures: [],
+  },
+  grow: {
+    color: '#7c3aed',
+    bg: '#faf5ff',
+    border: '#c4b5fd',
+    emoji: '💎',
+    tag: null,
+    features: [
+      'Productos ilimitados',
+      'Recuperación de carritos abandonados',
+      'Programa de puntos y afiliados',
+      'Facturación electrónica',
+      '20 GB almacenamiento',
+      'Consultor dedicado',
+      'Backup diario',
+    ],
+    noFeatures: [],
+  },
+}
+
+export default function PlanesPage() {
+  const [tienda, setTienda] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [anualizacion, setAnualizacion] = useState(false)
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    if (!token) return
+    fetch('/api/tienda', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { setTienda(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const info = tienda ? getPlan(tienda) : null
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '4px solid #e2e8f0', borderTopColor: '#16a34a', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px 60px' }}>
+
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 900, color: '#0f172a' }}>
+          Elige tu plan
+        </h1>
+        <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
+          Sin comisión por venta en todos los planes. Cancela cuando quieras.
+        </p>
+
+        {/* Toggle anual/mensual */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginTop: 16, background: '#f1f5f9', borderRadius: 30, padding: '6px 8px' }}>
+          <button
+            onClick={() => setAnualizacion(false)}
+            style={{
+              padding: '6px 18px', borderRadius: 24, border: 'none',
+              background: !anualizacion ? '#fff' : 'transparent',
+              color: !anualizacion ? '#0f172a' : '#64748b',
+              fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+              boxShadow: !anualizacion ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            Mensual
+          </button>
+          <button
+            onClick={() => setAnualizacion(true)}
+            style={{
+              padding: '6px 18px', borderRadius: 24, border: 'none',
+              background: anualizacion ? '#fff' : 'transparent',
+              color: anualizacion ? '#0f172a' : '#64748b',
+              fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+              boxShadow: anualizacion ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            Anual <span style={{ background: '#dcfce7', color: '#15803d', borderRadius: 8, padding: '1px 7px', fontSize: '0.72rem', fontWeight: 700 }}>-20%</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Trial activo → mostrar estado */}
+      {info?.esTrial && (
+        <div style={{
+          background: '#f0fdf4', border: '1.5px solid #86efac',
+          borderRadius: 12, padding: '12px 18px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <span style={{ fontSize: '1.4rem' }}>🎁</span>
+          <div>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#14532d' }}>
+              Estás usando el plan Pro gratis — quedan <strong>{info.diasRestantesTrial} días</strong> de prueba
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#166534' }}>
+              Al finalizar el trial, si no eliges un plan pasarás al plan Gratis automáticamente.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Cards de planes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }} className="planes-grid">
+        {PLANES_ORDEN.map(key => {
+          const plan = PLANES[key]
+          const cfg = PLAN_CONFIG[key]
+          const esActual = info?.planKey === key || (info?.esTrial && key === 'pro')
+          const precio = anualizacion && plan.precio > 0
+            ? Math.round(plan.precio * 0.8)
+            : plan.precio
+
+          return (
+            <div
+              key={key}
+              style={{
+                background: esActual ? cfg.bg : '#fff',
+                border: `${esActual ? '2.5px' : '1.5px'} solid ${esActual ? cfg.color : '#e2e8f0'}`,
+                borderRadius: 18,
+                padding: 22,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                position: 'relative',
+                boxShadow: esActual ? `0 4px 24px ${cfg.color}20` : '0 1px 4px rgba(0,0,0,0.04)',
+              }}
+            >
+              {/* Tag "El más elegido" */}
+              {cfg.tag && (
+                <div style={{
+                  position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
+                  background: cfg.color, color: '#fff',
+                  borderRadius: 20, padding: '3px 14px', fontSize: '0.7rem', fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}>
+                  {cfg.tag}
+                </div>
+              )}
+
+              {/* Plan actual badge */}
+              {esActual && (
+                <div style={{
+                  position: 'absolute', top: 14, right: 14,
+                  background: cfg.color, color: '#fff',
+                  borderRadius: 20, padding: '2px 10px', fontSize: '0.68rem', fontWeight: 700,
+                }}>
+                  {info?.esTrial ? 'TRIAL' : 'ACTUAL'}
+                </div>
+              )}
+
+              {/* Emoji + Nombre */}
+              <div>
+                <div style={{ fontSize: '1.5rem', marginBottom: 4 }}>{cfg.emoji}</div>
+                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>{plan.nombre}</h2>
+              </div>
+
+              {/* Precio */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                {precio === 0 ? (
+                  <span style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a' }}>Gratis</span>
+                ) : (
+                  <>
+                    <span style={{ fontSize: '2rem', fontWeight: 900, color: cfg.color }}>€{precio}</span>
+                    <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>/mes</span>
+                    {anualizacion && plan.precio > 0 && (
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', textDecoration: 'line-through', marginLeft: 4 }}>€{plan.precio}</span>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Features */}
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                {cfg.features.map((f, i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.82rem', color: '#334155' }}>
+                    <span style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }}>✓</span>
+                    {f}
+                  </li>
+                ))}
+                {cfg.noFeatures.map((f, i) => (
+                  <li key={`no-${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.82rem', color: '#94a3b8' }}>
+                    <span style={{ flexShrink: 0, marginTop: 1 }}>—</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Botón */}
+              <button
+                disabled={esActual && !info?.esTrial}
+                style={{
+                  marginTop: 4,
+                  padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: esActual && !info?.esTrial ? '#f1f5f9' : cfg.color,
+                  color: esActual && !info?.esTrial ? '#94a3b8' : '#fff',
+                  fontWeight: 700, fontSize: '0.9rem',
+                  cursor: esActual && !info?.esTrial ? 'default' : 'pointer',
+                  width: '100%',
+                }}
+                onClick={() => {
+                  if (key === 'gratis') {
+                    // Confirmar degradación
+                    if (confirm('¿Confirmas que quieres pasar al plan Gratis?')) {
+                      // TODO: llamar API para actualizar plan
+                      alert('Funcionalidad de pago con Stripe próximamente. Contacta con soporte.')
+                    }
+                  } else {
+                    alert('Integración con Stripe próximamente. Contacta con soporte para activar tu plan.')
+                  }
+                }}
+              >
+                {esActual && !info?.esTrial
+                  ? 'Plan actual'
+                  : key === 'gratis'
+                    ? 'Usar plan Gratis'
+                    : key === 'grow'
+                      ? 'Contactar →'
+                      : 'Empezar ahora →'
+                }
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Nota */}
+      <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.78rem', color: '#94a3b8' }}>
+        0% de comisión por venta en todos los planes · Alta gratis · Cancela cuando quieras<br />
+        ¿Tienes dudas? Escríbenos a <a href="mailto:hola@tiendaonline.it" style={{ color: '#64748b' }}>hola@tiendaonline.it</a>
+      </p>
+
+      <style>{`
+        @media (max-width: 600px) {
+          .planes-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
+  )
+}

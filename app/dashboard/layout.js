@@ -9,7 +9,8 @@ import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
 import OnboardingWizard from '../../components/OnboardingWizard'
 import DashboardChecklist from '../../components/DashboardChecklist'
-import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle, ChevronDown } from 'lucide-react'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle, ChevronDown, CreditCard } from 'lucide-react'
+import PlanBanner from '../../components/PlanBanner'
 
 async function fetchTienda(access_token) {
   const res = await fetch('/api/me', {
@@ -171,6 +172,7 @@ export default function DashboardLayout({ children }) {
         { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
         { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
         { icon: UserCircle, label: 'Mi Cuenta', href: '/dashboard/cuenta' },
+        { icon: CreditCard, label: 'Planes y precios', href: '/dashboard/planes' },
       ],
     },
   ]
@@ -404,6 +406,8 @@ export default function DashboardLayout({ children }) {
         {/* Content */}
         <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
           <div className="flex-1 max-w-5xl w-full mx-auto">
+            {/* Banner de plan/trial — solo se muestra cuando es necesario */}
+            {!loading && tienda && <PlanBanner tienda={tienda} />}
             {children}
           </div>
         </div>

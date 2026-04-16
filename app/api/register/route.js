@@ -46,6 +46,11 @@ export async function POST(req) {
     }
 
     // 4. Insertar tienda en la base de datos con columnas en español SaaS
+    // Trial Pro de 30 días automático para nuevos registros
+    const trialFin = new Date()
+    trialFin.setDate(trialFin.getDate() + 30)
+    const trialFinStr = trialFin.toISOString().split('T')[0] // YYYY-MM-DD
+
     const { error: tiendaError } = await supabaseAdmin
       .from('tiendas')
       .insert({
@@ -54,6 +59,9 @@ export async function POST(req) {
         whatsapp: whatsapp,
         user_id: userData.user.id,
         estado:  'activo',
+        plan_suscripcion: 'trial',
+        trial_fin: trialFinStr,
+        trial_usado: true,
         config_diseno: {
           publicado: true,
           color_principal: '#2563EB',
