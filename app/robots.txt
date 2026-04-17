@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /administrador/
+Disallow: /api/
+
+Sitemap: https://tiendaonline.it/sitemap.xml

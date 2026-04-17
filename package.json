@@ -19,7 +19,8 @@
     "next": "14.2.29",
     "posthog-js": "^1.240.6",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "stripe": "^22.0.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.27",

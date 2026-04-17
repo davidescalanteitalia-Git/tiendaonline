@@ -35,8 +35,7 @@ const nextConfig = {
 
 // Solo aplicamos Sentry si hay auth token disponible (evita fallos de build en Coolify)
 const hasSentryToken = !!process.env.SENTRY_AUTH_TOKEN
-const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN ||
-  'https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984'
+const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN
 
 export default hasSentryToken
   ? withSentryConfig(nextConfig, {

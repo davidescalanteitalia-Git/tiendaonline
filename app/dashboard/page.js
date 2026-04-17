@@ -234,7 +234,7 @@ export default function DashboardPage() {
                   <h3 className="text-lg font-black text-slate-800 mb-2">Ayuda & Soporte</h3>
                   <p className="text-slate-400 text-sm font-medium mb-6">¿Tienes dudas con tu configuración o necesitas funciones extra?</p>
                   <a 
-                    href="https://wa.me/5491100000000" 
+                    href="https://wa.me/393751239515" 
                     target="_blank"
                     className="flex justify-center items-center gap-2 py-4 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-sm transition-all active:scale-95"
                   >

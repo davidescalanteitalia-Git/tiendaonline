@@ -1,10 +1,16 @@
 import { getSupabaseAdmin } from '../../../lib/supabase-admin'
 import { NextResponse } from 'next/server'
+import { checkRateLimit } from '../../../lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
+    if (!checkRateLimit(ip, 5, 60000)) { // 5 peticiones por minuto
+      return NextResponse.json({ error: 'rate_limit_exceeded', message: 'Demasiadas peticiones. Intenta de nuevo más tarde.' }, { status: 429 })
+    }
+
     const { nombre, subdominio, whatsapp, email, password, sector, tipo_vendedor } = await req.json()
 
     // Validaciones de entrada (FASE 2 de auditoría de seguridad)

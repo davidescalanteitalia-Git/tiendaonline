@@ -225,13 +225,14 @@ export default function DashboardLayout({ children }) {
                 <button
                   key={group.key}
                   onClick={() => router.push(group.href)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
                     ${isActive
                       ? 'bg-primary/10 text-primary border border-primary/10'
                       : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
                     }`}
                 >
-                  <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                  <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-500'} />
                   <span className="flex-1">{group.label}</span>
                 </button>
               )
@@ -252,12 +253,12 @@ export default function DashboardLayout({ children }) {
                   }`}
                 >
                   {group.icon && (
-                    <group.icon size={17} className={hasActiveChild ? 'text-primary' : 'text-slate-400'} />
+                    <group.icon size={17} className={hasActiveChild ? 'text-primary' : 'text-slate-500'} />
                   )}
                   <span className="flex-1 text-left">{group.label}</span>
                   <ChevronDown
                     size={13}
-                    className={`text-slate-400 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
+                    className={`text-slate-500 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
 
@@ -271,13 +272,14 @@ export default function DashboardLayout({ children }) {
                         <button
                           key={item.href}
                           onClick={() => router.push(item.href)}
+                          aria-current={isActive ? 'page' : undefined}
                           className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
                             ${isActive
                               ? 'bg-primary/10 text-primary border border-primary/10'
                               : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
                             }`}
                         >
-                          <Icon size={16} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                          <Icon size={16} className={isActive ? 'text-primary' : 'text-slate-500'} />
                           <span className="flex-1">{item.label}</span>
                           {item.href === '/dashboard/pedidos' && pendingCount > 0 && (
                             <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
@@ -372,12 +374,17 @@ export default function DashboardLayout({ children }) {
       )}
       {/* Drawer */}
       <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menú principal móvil"
+        aria-hidden={!sidebarOpen}
         className={`fixed top-0 left-0 h-full w-72 bg-white z-50 flex flex-col shadow-2xl transition-transform duration-300 md:hidden
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         {/* Botón cerrar */}
         <button
           onClick={() => setSidebarOpen(false)}
+          aria-label="Cerrar menú"
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 text-slate-500 z-20"
         >
           <X size={20} />
@@ -386,19 +393,22 @@ export default function DashboardLayout({ children }) {
       </aside>
 
       {/* ───── MAIN ───── */}
-      <main className="flex-1 flex flex-col min-w-0 bg-slate-50">
+      <main id="main-content" className="flex-1 flex flex-col min-w-0 bg-slate-50" tabIndex="-1">
         {/* Topbar */}
         <header className="h-16 bg-white/70 backdrop-blur-md border-b border-slate-200 sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
           <div className="flex items-center gap-3">
             {/* Botón hamburguesa - solo en móvil */}
             <button
               onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir menú"
+              aria-expanded={sidebarOpen}
+              aria-controls="mobile-sidebar"
               className="md:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors"
             >
               <Menu size={22} />
             </button>
             <div className="font-semibold text-slate-800 flex items-center gap-2">
-              <Store size={18} className="text-slate-400 hidden md:block" />
+              <Store size={18} className="text-slate-500 hidden md:block" />
               {loading ? '...' : (tienda?.nombre || dict.dashboard || 'Dashboard')}
             </div>
           </div>
@@ -408,15 +418,4 @@ export default function DashboardLayout({ children }) {
         </header>
 
         {/* Content */}
-        <div className="flex-1 p-4 md:p-8 overflow-y-auto flex flex-col">
-          <div className="flex-1 max-w-5xl w-full mx-auto">
-            {/* Banner de plan/trial — solo se muestra cuando es necesario */}
-            {!loading && tienda && <PlanBanner tienda={tienda} />}
-            {children}
-          </div>
-        </div>
-        <UniversalFooter />
-      </main>
-    </div>
-  )
-}
+        <div cl

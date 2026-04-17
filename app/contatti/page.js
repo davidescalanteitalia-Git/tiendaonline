@@ -96,10 +96,10 @@ export default function ContattiPage() {
                 {t.phoneDesc}
               </p>
               <a
-                href="tel:+393717701185"
+                href="tel:+393751239515"
                 className="glow-btn bg-[#25d366] text-white font-bold text-sm px-6 py-3.5 rounded-xl inline-block hover:bg-[#20bd5a] transition-all shadow-xl shadow-[#25d366]/20"
               >
-                +39 371 770 1185
+                +39 375 123 9515
               </a>
             </AnimatedSection>
 

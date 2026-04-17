@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
+import { checkRateLimit } from '../../../../lib/rate-limit'
 
 // POST /api/auth/cliente — Registro de nuevo cliente
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    if (!checkRateLimit(ip, 5, 60000)) {
+      return NextResponse.json({ error: 'rate_limit_exceeded', message: 'Demasiadas peticiones.' }, { status: 429 })
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
     const body = await request.json()
     const { email, password, nombre, telefono, fecha_nacimiento, domain } = body

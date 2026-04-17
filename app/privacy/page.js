@@ -102,9 +102,9 @@ export default function PrivacyPage() {
                   <span className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">✉️</span>
                   davidescalanteitalia@gmail.com
                 </a>
-                <a href="tel:+393717701185" className="flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition-colors">
+                <a href="tel:+393751239515" className="flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition-colors">
                   <span className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">📞</span>
-                  +39 371 770 1185
+                  +39 375 123 9515
                 </a>
               </div>
             </div>

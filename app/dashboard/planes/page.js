@@ -1,10 +1,24 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { supabase } from '../../../lib/supabase'
 import { getPlan, PLANES } from '../../../lib/planes'
 import { registrarEvento, EVENTOS } from '../../../components/PostHogProvider'
 
 const PLANES_ORDEN = ['gratis', 'basico', 'pro', 'grow']
+
+const STRIPE_PRICE_IDS = {
+  mensual: {
+    basico: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_MO || 'price_mock_basico_mo',
+    pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MO || 'price_mock_pro_mo',
+    grow: process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_MO || 'price_mock_grow_mo',
+  },
+  anual: {
+    basico: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_YR || 'price_mock_basico_yr',
+    pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YR || 'price_mock_pro_yr',
+    grow: process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_YR || 'price_mock_grow_yr',
+  }
+}
 
 const PLAN_CONFIG = {
   gratis: {
@@ -82,12 +96,28 @@ export default function PlanesPage() {
   const [anualizacion, setAnualizacion] = useState(false)
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    if (!token) return
-    fetch('/api/tienda', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { setTienda(d); setLoading(false) })
-      .catch(() => setLoading(false))
+    async function load() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          setLoading(false)
+          return
+        }
+
+        const headers = { Authorization: `Bearer ${session.access_token}` }
+        const r = await fetch('/api/me', { headers })
+        
+        if (r.ok) {
+           const d = await r.json()
+           setTienda(d.tienda || null)
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [])
 
   const info = tienda ? getPlan(tienda) : null
@@ -258,7 +288,7 @@ export default function PlanesPage() {
                   cursor: esActual && !info?.esTrial ? 'default' : 'pointer',
                   width: '100%',
                 }}
-                onClick={() => {
+                onClick={async () => {
                   registrarEvento(EVENTOS.PLAN_CLICK_UPGRADE, {
                     plan_seleccionado: key,
                     plan_actual: info?.planKey,
@@ -266,11 +296,40 @@ export default function PlanesPage() {
                     dias_trial: info?.diasRestantesTrial,
                   })
                   if (key === 'gratis') {
-                    if (confirm('¿Confirmas que quieres pasar al plan Gratis?')) {
-                      alert('Funcionalidad de pago con Stripe próximamente. Contacta con soporte.')
+                    if (confirm('¿Confirmas que quieres pasar al plan Gratis? Si tenías datos pro se ocultarán.')) {
+                      alert('El downgrade debe hacerse cancelando desde el portal en Stripe (Próximamente).')
                     }
-                  } else {
-                    alert('Integración con Stripe próximamente. Contacta con soporte para activar tu plan.')
+                    return
+                  }
+                  if (key === 'grow') {
+                    window.location.href = 'mailto:hola@tiendaonline.it?subject=Consulta Plan Grow'
+                    return
+                  }
+                  
+                  const priceId = anualizacion ? STRIPE_PRICE_IDS.anual[key] : STRIPE_PRICE_IDS.mensual[key]
+                  
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession()
+                    const token = session?.access_token
+                    
+                    const res = await fetch('/api/stripe/checkout', {
+                        method: 'POST',
+                        headers: {
+                           'Content-Type': 'application/json',
+                           'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ priceId, tiendaId: tienda.id })
+                    })
+                    const data = await res.json()
+                    
+                    if (data.url) {
+                        // Redirige al Hosted Checkout seguro de Stripe
+                        window.location.href = data.url
+                    } else {
+                        alert(data.error || 'Error conectando con la pasarela')
+                    }
+                  } catch (e) {
+                    alert('Oops, hubo un error de conexión intentando abrir el cajero.')
                   }
                 }}
               >

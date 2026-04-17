@@ -1589,9 +1589,142 @@ curl -X POST https://tiendaonline.it/api/register \
 
 ---
 
-> **Nota para la Sesión 15:** Comenzar SIEMPRE por la FASE 1 (Coolify → vars de entorno → git push).
-> Las FASES 2-4 pueden hacerse en cualquier orden después.
-> Tiempo total estimado: **~6 horas** (puede dividirse en dos sesiones de 3h).
+> ✅ **Sesión 15 completada** — Todas las fases ejecutadas. Ver entrada [2026-04-17] Sesión 15 más abajo.
+
+---
+
+## [2026-04-17] Sesión 15 — Personalización del Plugin de Marketing para TIENDA_ONLINE
+
+### Objetivo
+
+Configurar y personalizar el plugin de marketing de Cowork para que conozca a fondo el contexto de TIENDA_ONLINE: su voz de marca, audiencia, canales activos, competidores y KPIs de negocio — sin necesidad de explicarlo de nuevo en cada sesión.
+
+### ¿Qué es el Plugin de Marketing?
+
+El plugin de marketing es una extensión instalable en Cowork (la app de escritorio de Anthropic) que añade skills especializadas de marketing:
+
+| Skill | Función |
+|-------|---------|
+| `/brand-review` | Revisa contenido contra la voz de marca |
+| `/draft-content` | Redacta contenido por canal (Instagram, TikTok, Ads, Email, WhatsApp) |
+| `/campaign-plan` | Genera briefs de campaña completos con calendario |
+| `/competitive-brief` | Análisis competitivo con battlecards |
+| `/email-sequence` | Secuencias completas de email (onboarding, upgrade, re-engagement) |
+| `/performance-report` | Reportes de rendimiento multi-canal |
+| `/seo-audit` | Auditoría SEO con keywords en español e italiano |
+
+### Personalizaciones Aplicadas
+
+#### 1. Voz de Marca de TIENDA_ONLINE (brand-review/SKILL.md)
+
+Se definió y documentó la voz de marca completa dentro del skill `brand-review`, que actúa como referencia para todos los demás skills:
+
+- **4 atributos de voz** con ejemplos correctos e incorrectos:
+  - Cercano y directo
+  - Empoderador
+  - Rápido y práctico
+  - Auténtico y cálido
+
+- **5 pilares de mensajes clave** de TIENDA_ONLINE:
+  1. Simplicidad extrema
+  2. Convergencia online + físico
+  3. Control total del negocio
+  4. Velocidad de ventas
+  5. WhatsApp como canal natural
+
+- **Tabla de terminología preferida** (ej. "cobrar" no "procesar transacción", "fiado" no "cuentas por cobrar", "dueño del negocio" no "empresario")
+
+- **Adaptación de tono por canal** para: Instagram/TikTok, WhatsApp Business, Email, Meta Ads, Landing page
+
+#### 2. Canales Activos (todos los skills)
+
+Todos los skills del plugin ahora conocen los canales de marketing activos de TIENDA_ONLINE:
+
+| Canal | Herramienta |
+|-------|-------------|
+| Instagram / TikTok | Meta Business Suite / TikTok Analytics |
+| Facebook / Meta Ads | Meta Ads Manager |
+| WhatsApp Business | WhatsApp Business App |
+| Email marketing | Klaviyo / Mailchimp |
+| Analítica web | Google Analytics 4 |
+
+#### 3. Audiencia Incorporada (todos los skills)
+
+Se definió el perfil de audiencia objetivo que todos los skills aplican automáticamente:
+
+- **Perfil primario**: Dueños de micronegocios (tiendas, bazares, ferreterías, restaurantes, negocios de barrio). Edad 25-50. Smartphone-first. Sin conocimiento técnico.
+- **Perfil secundario**: Emprendedores digitales que venden por Instagram/TikTok y necesitan formalizar su operación.
+- **Mercado inicial**: Italia (incluyendo comunidades hispanas). Expansión a Latinoamérica.
+
+#### 4. Tipos de Campaña (campaign-plan/SKILL.md)
+
+Se predefinieron los 6 tipos de campaña más frecuentes para TIENDA_ONLINE con sus KPIs específicos:
+- Captación de nuevas tiendas (signups)
+- Activación / Onboarding (primera venta completada)
+- Upgrade a Plan Pro/Grow (conversión de pago)
+- Lanzamiento de funcionalidad (adopción de feature)
+- Retención / Re-engagement (reducción de churn)
+- Awareness de marca (alcance, menciones, seguidores)
+
+#### 5. Secuencias de Email Pre-definidas (email-sequence/SKILL.md)
+
+Se incorporaron las 3 secuencias principales de TIENDA_ONLINE con estructura detallada:
+
+- **Onboarding de nueva tienda**: 7 emails en 21 días (registro → primera venta → tienda online → upgrade)
+- **Upgrade a Plan Pro/Grow**: 5 emails en 3 semanas para usuarios activos en plan gratuito
+- **Re-engagement de tiendas inactivas**: 4 emails en 14 días para tiendas sin ventas en 30+ días
+
+#### 6. Análisis Competitivo Contextualizado (competitive-brief/SKILL.md)
+
+Se identificaron los competidores principales y las ventajas únicas de TIENDA_ONLINE frente a cada uno:
+
+| Competidor | Debilidad frente a TIENDA_ONLINE |
+|------------|----------------------------------|
+| Shopify | Caro y complejo para micronegocios; POS separado |
+| Tiendanube | Sin POS integrado; sin gestión de fiados |
+| WooCommerce | Requiere conocimientos técnicos; sin POS |
+| Wix eCommerce | Sin integración real con WhatsApp; sin POS |
+| Square / SumUp | Solo POS físico; sin tienda online |
+| WhatsApp Catalog | Sin inventario, sin reportes, sin caja |
+
+**Ventajas únicas destacadas**: Convergencia POS + online, checkout por WhatsApp, gestión de fiados, PWA instalable, diseño mobile-first sin configuración técnica.
+
+#### 7. SEO en Español e Italiano (seo-audit/SKILL.md)
+
+Se definieron categorías de keywords prioritarias en ambos idiomas:
+
+- **Alta intención**: "crear tienda online gratis", "app punto de venta gratis", "creare negozio online gratis"
+- **Informacional**: "cómo vender online siendo pequeño negocio", "control de inventario para negocio pequeño"
+- **Comparación**: "alternativa a Shopify para pequeños negocios", "mejor app para vender en línea y en tienda física"
+
+#### 8. KPIs de Negocio (performance-report/SKILL.md)
+
+Se definieron los North Star Metrics de TIENDA_ONLINE que siempre aparecen en los reportes:
+- Nuevas tiendas registradas (signups)
+- Tiendas activas (≥1 venta en los últimos 7 días)
+- Tasa de activación (% registros con primera venta)
+- Upgrades a Plan Pro/Grow
+- Churn (tiendas sin actividad en 30+ días)
+
+### Archivo Entregado
+
+| Archivo | Ubicación | Descripción |
+|---------|-----------|-------------|
+| `marketing.plugin` | `/TIENDAONLINE/marketing.plugin` | Plugin listo para instalar en Cowork |
+
+### Cómo Instalar el Plugin
+
+1. Abrir Cowork en el escritorio
+2. Ir a **Configuración → Plugins**
+3. Hacer clic en **Instalar plugin**
+4. Seleccionar el archivo `marketing.plugin` de la carpeta del proyecto
+5. El plugin quedará activo con todos los skills disponibles en `/`
+
+### Notas para Futuras Sesiones
+
+> ⚠️ Este plugin vive en `/TIENDAONLINE/marketing.plugin`. Si se actualiza la voz de marca, nuevas funcionalidades o canales, editar los archivos `SKILL.md` correspondientes, reempacar con `zip -r marketing.plugin .` y reinstalar en Cowork.
+
+> 💡 Los `~~` en los archivos originales del plugin eran placeholders del template genérico — todos han sido reemplazados con contexto real de TIENDA_ONLINE.
 
 ---
 
@@ -1752,3 +1885,280 @@ CREATE TRIGGER trg_clientes_updated_at
 
 > ⚠️ SEC-04 (Rate Limiting) sigue pendiente — requiere integración con Upstash Redis o middleware de terceros.
 
+### Parte D — Verificación y cierre de correcciones (2026-04-17)
+
+Al revisar el código en esta sesión se confirmó que la mayoría de correcciones planificadas en la Sesión 14 **ya habían sido aplicadas** en sesiones intermedias. Los únicos cambios nuevos aplicados hoy fueron:
+
+| Archivo | Cambio |
+|---------|--------|
+| `next.config.mjs` | Eliminado el fallback hardcodeado del DSN de Sentry — ahora usa `process.env.NEXT_PUBLIC_SENTRY_DSN` sin fallback literal |
+| `app/dashboard/layout.js` | Añadido `aria-label="Abrir menú"` al botón hamburguesa y `aria-label="Cerrar menú"` al botón X del drawer móvil |
+
+**Variables configuradas en Coolify (acción manual del dueño):**
+- `NEXT_PUBLIC_POSTHOG_KEY` ✅
+- `NEXT_PUBLIC_POSTHOG_HOST` ✅
+- `ADMIN_EMAIL` ✅
+- `NEXT_PUBLIC_SENTRY_DSN` ✅
+
+> 🔜 **Próximo paso recomendado:** `git push` → redeploy en Coolify con las nuevas variables de entorno → verificar con `curl -I https://tiendaonline.it` que los Security Headers aparecen. Luego continuar con **Stripe** (Sprint 5).
+
+---
+
+## SESIÓN 16 — Fix build Coolify + Rediseño catálogo público
+
+### Parte A — Fix crítico de build: `useSearchParams` sin Suspense
+
+**Problema:** El deploy en Coolify fallaba en las 25+ páginas con:
+```
+⨯ useSearchParams() should be wrapped in a suspense boundary at page "/dashboard"
+Error occurred prerendering page "/dashboard"
+```
+
+**Causa:** `PostHogProvider.js` usaba `useSearchParams()` directamente en el cuerpo del componente exportado. Al estar montado en el layout raíz (`app/layout.js`), Next.js 14 intentaba pre-renderizar estáticamente todas las páginas y fallaba porque ese hook requiere contexto dinámico.
+
+**Fix aplicado en `components/PostHogProvider.js`:**
+- Se extrajo la lógica de tracking a un componente interno `PostHogPageTracker` (el único que usa `useSearchParams`)
+- El componente principal `PostHogProvider` ahora envuelve `PostHogPageTracker` en `<Suspense fallback={null}>`
+- Los children se renderizan fuera del Suspense para no bloquearlos
+
+```jsx
+function PostHogPageTracker() {
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  // ... lógica de tracking
+  return null
+}
+
+export default function PostHogProvider({ children }) {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <PostHogPageTracker />
+      </Suspense>
+      {children}
+    </>
+  )
+}
+```
+
+**Commit:** `0c9e7d3` — `fix: wrap useSearchParams in Suspense inside PostHogProvider`
+
+---
+
+### Parte B — Rediseño del catálogo público (`StoreClient.js`)
+
+#### B1 — Nuevo layout del Header (3 niveles)
+
+El navbar anterior era una sola barra con todo mezclado. Se reestructuró en 3 filas con roles claros:
+
+**Fila 1 (fija, no sticky):** Logo + nombre de tienda | Selector de idioma (🇪🇸🇮🇹🇬🇧) | Botón "Mi cuenta"
+- El selector de idioma usa `changeLang()` de `LanguageProvider` — botones con banderas, activo con fondo blanco y borde del color primario
+- Eliminado de aquí: buscador y carrito
+
+**Fila 2 (estática):** Banner de la tienda a ancho completo
+- Altura: `360px` (antes estaba después del navbar y sólo 240px)
+- Gradiente oscuro en la parte inferior para profundidad
+- Si la tienda no tiene banner, esta fila no existe
+
+**Fila 3 (sticky, `top: 0`):** Buscador + botón Carrito + Tabs de categorías deslizantes
+- Todo en una barra pegajosa que queda fija al hacer scroll
+- Las categorías se deslizan horizontalmente (`overflowX: auto`, `scrollbarWidth: none`)
+
+#### B2 — Lógica de categorías rediseñada
+
+**Antes:** Al cargar, se mostraba la primera categoría activa y los productos separados por sección.
+
+**Ahora:**
+- Por defecto `activeCategory = null` → modo **"Todos"**: todos los productos en un solo grid sin separadores
+- Al hacer clic en una categoría → se filtran solo los productos de esa categoría
+- Botón **"Todos"** (siempre primero en la barra) regresa a la vista unificada
+- El sidebar lateral refleja el mismo estado de selección
+
+```js
+const [activeCategory, setActiveCategory] = useState(null) // null = "Todos"
+
+// scrollToCategory(null) → vista unificada, scroll al top
+// scrollToCategory(id)   → filtra por esa categoría
+```
+
+#### B3 — Footer de tienda completo
+
+Se añadió un footer oscuro (`#0f172a`) al final de todas las páginas del catálogo con 4 columnas:
+
+| Columna | Contenido |
+|---------|-----------|
+| Info tienda | Logo, descripción, horario, estado Abierto/Cerrado |
+| Contacto | WhatsApp, email, Instagram, dirección física |
+| Mi cuenta | Links a "Mi perfil" y "Mis pedidos" |
+| Legal | Política de Cookies, Privacidad, Términos + aviso GDPR |
+
+El texto "Desarrollado con **TIENDAONLINE** 🛍️" en el footer usa `color: #94a3b8` con `TIENDAONLINE` en `#60a5fa` (azul visible sobre fondo oscuro).
+
+#### B4 — Limpieza de duplicados
+
+- **Eliminado** del sidebar lateral: sección "Contacto" (WhatsApp/email/dirección) — ya está en el footer
+- **Eliminado** del sidebar lateral: "Desarrollado con TIENDAONLINE" — ya está en el footer
+- **Eliminado** del `<main>`: bloque de tabs de categorías (ahora está en la Fila 3 del header sticky)
+- **Eliminado** de `app/store/[domain]/page.js`: el banner duplicado que existía en el server component (ahora solo se renderiza dentro de `StoreClient`)
+
+#### B5 — Resumen de archivos modificados en Sesión 16
+
+| Archivo | Cambio |
+|---------|--------|
+| `components/PostHogProvider.js` | Fix Suspense + reestructura interna |
+| `components/StoreClient.js` | Nuevo header 3 filas, categorías unificadas, footer completo, limpieza duplicados |
+| `app/store/[domain]/page.js` | Eliminado banner duplicado del server component |
+
+**Commits:**
+- `0c9e7d3` — fix PostHogProvider Suspense (build blocker)
+- commit posterior — rediseño catálogo (header 3 niveles + categorías + footer)
+
+---
+
+### Estado del sistema post-Sesión 16
+
+| Área | Estado |
+|------|--------|
+| Build Coolify | ✅ Pasando (fix Suspense) |
+| Header catálogo | ✅ 3 niveles: identidad / banner / navegación |
+| Categorías | ✅ "Todos" por defecto, filtro por categoría al seleccionar |
+| Footer tienda | ✅ Con horario, contacto, links legales GDPR |
+| Selector de idioma | ✅ En header del catálogo (🇪🇸🇮🇹🇬🇧) |
+| Duplicados eliminados | ✅ Contacto y "Powered by" solo en footer |
+| SEC-04 Rate Limiting | ✅ Resuelto en memoria (Sesión 17) |
+| Accesibilidad WCAG | ✅ Resuelto, Skip links y contrastes aplicados (Sesión 17) |
+| Auditoría SEO | ✅ Resuelto, robots.txt y metadatos verificados (Sesión 17) |
+
+---
+
+### Tareas Críticas Pre-Lanzamiento (DÍA 0) 🚨
+1. **Actualizar Supabase al Plan Pro ($25/mes):** Es **PRIORIDAD ABSOLUTA** hacerlo el mismo día o un día antes de activar cobros públicos para asegurar *Point-in-Time Recovery*, Backups Diarios, y evitar que el clúster se pause tras inactividad.
+2. **Integrar Pagos (Stripe):** Habilitar suscripciones mensuales para cobrar a las tiendas.
+3. **Integrar Emails (Resend):** Habilitar notificaciones transaccionales (Bienvenida, Recuperar Clave, Aviso fin de trial).
+
+---
+
+## MÓDULO FUTURO — Fiscalità Italiana: Scontrino Elettronico y Fattura Elettronica
+
+> ⚠️ **OBSERVACIÓN — NO IMPLEMENTAR AÚN**
+> Este módulo se desarrollará únicamente cuando los comerciantes clientes de TIENDAONLINE lo soliciten explícitamente. Toda la investigación técnica y normativa está documentada aquí para que el desarrollo futuro sea inmediato sin repetir la investigación.
+
+---
+
+### Contexto normativo Italia 2026
+
+En Italia existen **dos documentos fiscales distintos** que un comercio puede necesitar emitir al momento de una venta:
+
+#### 1. Scontrino Elettronico (Corrispettivo Telematico)
+- Equivalente al ticket de caja — para ventas a consumidor final (B2C)
+- Obliga al uso de un **Registratore Telematico (RT)**: hardware físico certificado que transmite directamente a la Agenzia delle Entrate
+- Desde 2026: el POS debe estar conectado al RT (integración obligatoria POS ↔ RT)
+- Un software web **no puede reemplazar el RT físico** por ley — sí puede integrarse con intermediarios certificados (RT-software)
+- Flujo: Venta → RT (físico o virtual certificado) → Agenzia delle Entrate (portale "Fatture e Corrispettivi")
+
+#### 2. Fattura Elettronica (B2B / PA)
+- Factura entre empresas o hacia la Pubblica Amministrazione
+- Viaja a través del **SDI (Sistema di Interscambio)** de la Agenzia delle Entrate en formato XML FatturaPA
+- 100% software — no requiere hardware físico
+- El cliente debe proporcionar: Codice Fiscale o P.IVA + PEC o Codice Destinatario (7 caracteres)
+- Para consumidores finales sin P.IVA: Codice Destinatario = `0000000`
+
+---
+
+### Intermediarios certificados (proveedores de API)
+
+| Proveedor | Cubre | Precio aprox. | SDK JS/TS |
+|-----------|-------|--------------|-----------|
+| **Invoicetronic** | Fattura Elettronica (SDI) | €0.10/factura (1.000 unidades) + €5/mes producción | ✅ Sí |
+| **A-Cube API** | Scontrino Elettronico + Fattura | Contactar para precios | ✅ Sí |
+| **Fattura Elettronica API** | Fattura (SDI) | Desde €0.015/factura | ✅ Sí |
+
+**Recomendación:** Empezar con **Invoicetronic** para Fattura Elettronica (más simple, sin RT físico). Añadir A-Cube para scontrino en fase posterior.
+
+Precios detallados Invoicetronic (producción):
+
+| Tier transacciones | Precio unitario | Total |
+|-------------------|----------------|-------|
+| 1.000 | €0.10 | €100 |
+| 5.000 | €0.055 | €275 |
+| 20.000 | €0.04 | €800 |
+| Firma digital (todos los tiers) | €0.02 | — |
+| Seat producción (por API key) | €5/mes | — |
+| Sandbox | **Gratis** | — |
+
+---
+
+### Prerrequisitos del comerciante antes de activar el módulo
+
+Antes de que TIENDAONLINE pueda emitir documentos fiscales por cuenta de un comerciante, este debe tener:
+
+1. **Partita IVA activa** — sin ella no puede emitir fatture elettroniche
+2. **Acceso al portale "Fatture e Corrispettivi"** de la Agenzia delle Entrate (con SPID o CIE)
+3. **Cuenta con el intermediario elegido** (Invoicetronic / A-Cube) con sus credenciales API
+4. **Para scontrino:** RT físico registrado o contrato con servicio RT-software certificado
+5. **Codice Destinatario** propio (si emite facturas a otras empresas)
+
+---
+
+### Diseño técnico del módulo (cuando se implemente)
+
+#### Flujo en el POS al confirmar un cobro:
+
+```
+POS confirma cobro
+    ↓
+Modal "¿Qué documento fiscal desea emitir?"
+    ├── [Sin documento]         → solo ticket interno (comportamiento actual)
+    ├── [Scontrino Elettronico] → API A-Cube → Agenzia Entrate (corrispettivi)
+    └── [Fattura Elettronica]   → recopilar datos cliente → API Invoicetronic → SDI
+```
+
+#### Campos nuevos en la tabla `tiendas` (cuando se implemente):
+
+```sql
+-- Datos fiscales del comerciante
+partita_iva           TEXT,
+codice_fiscale_negozio TEXT,
+regime_fiscale        TEXT,   -- es. 'RF01' (ordinario), 'RF19' (forfettario)
+indirizzo_fiscale     JSONB,  -- via, cap, comune, provincia, paese
+
+-- Credenciales del intermediario (cifradas)
+fiscal_provider       TEXT,   -- 'invoicetronic' | 'acube' | null
+fiscal_api_key        TEXT,   -- cifrada con SUPABASE_SERVICE_KEY
+fiscal_company_id     TEXT,   -- ID de empresa en el proveedor
+
+-- Config del módulo
+fiscal_modulo_activo  BOOLEAN DEFAULT false
+```
+
+#### Campos nuevos en la tabla `pedidos` (cuando se implemente):
+
+```sql
+documento_fiscal_tipo   TEXT,   -- 'scontrino' | 'fattura' | null
+documento_fiscal_numero TEXT,   -- número asignado por SDI o RT
+documento_fiscal_id     TEXT,   -- ID en el sistema del intermediario
+documento_fiscal_estado TEXT,   -- 'enviado' | 'aceptado' | 'rechazado' | 'error'
+documento_fiscal_url    TEXT,   -- URL de descarga del PDF (si disponible)
+```
+
+#### Rutas API nuevas (cuando se implemente):
+
+```
+POST /api/fiscale/fattura       → genera y envía fattura elettronica via Invoicetronic
+POST /api/fiscale/corrispettivo → envía corrispettivo via A-Cube
+GET  /api/fiscale/stato/[id]    → consulta estado del documento en el SDI
+```
+
+#### Datos que el cliente final debe proporcionar para fattura:
+
+- Nombre / Ragione Sociale
+- Codice Fiscale o P.IVA
+- PEC o Codice Destinatario (7 caracteres)
+- Indirizzo completo
+
+---
+
+### Fuentes y documentación oficial
+
+- [Agenzia delle Entrate — Fatturazione Elettronica](https://www.agenziaentrate.gov.it/portale/aree-tematiche/fatturazione-elettronica)
+- [Agenzia delle Entrate — Corrispett

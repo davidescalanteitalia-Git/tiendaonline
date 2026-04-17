@@ -31,3 +31,10 @@ yarn-error.log*
 # vercel
 .vercel
 scratch/
+
+# IDE and Temp
+.idea
+*.swp
+*.tmp
+*.bak
+Thumbs.db

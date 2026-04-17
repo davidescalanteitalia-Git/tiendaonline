@@ -55,6 +55,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[9999] bg-slate-900 text-white p-3 rounded-xl font-medium shadow-2xl outline-none focus:ring-4 focus:ring-primary/50">
+          Saltar al contenido
+        </a>
         <LanguageProvider>
           <PostHogProvider>
             {children}

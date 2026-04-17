@@ -1,0 +1,6 @@
+{
+  "theme": "dark",
+  "preferredLanguage": "es",
+  "customInstructions": "Como desarrollador experto de Next.js, por favor mantén todos los logs y mensajes en Español. Protege las llaves API y asegúrate de verificar .env.local sobre código hardcodeado.",
+  "dangerouslySkipPermissions": []
+}
