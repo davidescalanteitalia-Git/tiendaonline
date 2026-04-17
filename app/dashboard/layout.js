@@ -418,4 +418,13 @@ export default function DashboardLayout({ children }) {
         </header>
 
         {/* Content */}
-        <div cl
+        <div className="flex-1 flex flex-col">
+          <PlanBanner tienda={tienda} />
+          {children}
+        </div>
+
+        <UniversalFooter />
+      </main>
+    </div>
+  )
+}
