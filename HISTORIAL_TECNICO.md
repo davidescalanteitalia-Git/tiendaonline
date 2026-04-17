@@ -1359,3 +1359,236 @@ WHERE trial_fin IS NULL;
 | 🔴 Pendiente | **Guards de features** — bloqueo con UpgradeModal en cupones, fiados, reportes según plan |
 | 🟢 Pendiente | Wizard de registro campo a campo (UX mejorada) |
 | 🟢 Pendiente | Correo corporativo `@tiendaonline.it` (Zoho Mail recomendado) |
+
+---
+
+## [2026-04-16] Sesión 14 — Auditoría de Seguridad y Accesibilidad
+
+### Objetivo
+Auditoría estática completa del codebase (commit `6360df8`) aplicando los frameworks:
+- OWASP Top 10 (seguridad de aplicaciones web)
+- WCAG 2.1 AA (accesibilidad)
+- Revisión de dependencias y configuración
+
+### Herramienta utilizada
+Análisis estático manual con Antigravity AI (sin ejecutar código en producción).
+
+### Puntuaciones obtenidas
+
+| Área | Puntuación |
+|---|---|
+| Seguridad General | 6.5 / 10 |
+| Autenticación & Autorización | 7 / 10 |
+| Seguridad de API | 6 / 10 |
+| Accesibilidad WCAG 2.1 | 5 / 10 |
+| Dependencias | 8 / 10 |
+
+---
+
+### Hallazgos de Seguridad
+
+#### 🔴 Críticos (P0)
+
+| ID | Problema | Archivo |
+|---|---|---|
+| SEC-01 | **API Key de PostHog hardcodeada** en código fuente (visible en GitHub y bundle cliente) | `components/PostHogProvider.js:7` · `app/api/register/route.js:90` |
+| SEC-02 | **Email del admin hardcodeado** en `verifyAdmin()` | `lib/supabase-admin.js:35` |
+| SEC-03 | **DSN de Sentry en código fuente** — permite inyectar errores falsos | `next.config.mjs:23` |
+
+#### 🟠 Altos (P1)
+
+| ID | Problema | Archivo |
+|---|---|---|
+| SEC-04 | Sin Rate Limiting en endpoints de registro | `app/api/register/route.js` · `app/api/auth/cliente/route.js` |
+| SEC-05 | Sin validación de formato en datos de entrada (subdominio, email, whatsapp) | `app/api/register/route.js` |
+| SEC-06 | Sin Security Headers HTTP (`X-Frame-Options`, `CSP`, etc.) | `next.config.mjs` |
+| SEC-07 | `email_confirm: true` bypasea verificación real de email | Ambas rutas de registro |
+
+#### 🟡 Medios (P2)
+
+| ID | Problema | Archivo |
+|---|---|---|
+| SEC-08 | Middleware confía en headers manipulables (`x-tenant-host`) sin whitelist | `middleware.js:18` |
+| SEC-09 | Debug headers expuestos en producción (`x-debug-*`) | `middleware.js:47-50` |
+| SEC-10 | UUID interno devuelto innecesariamente en respuesta de registro de cliente | `app/api/auth/cliente/route.js:92` |
+
+---
+
+### Hallazgos de Accesibilidad
+
+| ID | Problema | Nivel WCAG | Archivo |
+|---|---|---|---|
+| ACC-01 | Botones de nav sin `aria-current="page"` | 4.1.2 (AA) | `app/dashboard/layout.js` |
+| ACC-02 | Sidebar móvil sin focus trap ni `role="dialog"` | 2.1.2 (A) | `app/dashboard/layout.js` |
+| ACC-03 | Imágenes de productos posiblemente con `alt` genérico | 1.1.1 (A) | `components/StoreClient.js` |
+| ACC-04 | `text-slate-400` — contraste 3:1 (mínimo WCAG: 4.5:1) | 1.4.3 (AA) | `app/dashboard/layout.js` |
+| ACC-05 | `<html lang="it">` fijo aunque el usuario cambie el idioma | 3.1.2 (AA) | `app/layout.js` |
+| ACC-06 | Sin Skip Navigation Link (obligatorio WCAG 2.4.1) | 2.4.1 (A) | `app/layout.js` |
+
+---
+
+### Lo que está bien (no tocar)
+
+- ✅ `.env.local` en `.gitignore` — vars de entorno no subidas a GitHub
+- ✅ `SUPABASE_SERVICE_KEY` como variable de entorno (nunca hardcodeada)
+- ✅ Lazy singleton para Supabase Admin — patrón correcto
+- ✅ Verificación JWT en endpoints PUT/DELETE de clientes
+- ✅ Anonimización GDPR en DELETE de cuenta (no borra pedidos, desvincula datos)
+- ✅ PostHog con `maskAllInputs: true` — protege contraseñas en grabaciones
+- ✅ PostHog desactivado en desarrollo (`opt_out_capturing`)
+- ✅ `rel="noopener noreferrer"` en todos los links externos
+- ✅ Sentry integrado con `deleteSourcemapsAfterUpload: true`
+- ✅ RLS activo en todas las tablas de Supabase
+
+---
+
+## 🗓️ PLAN DE CORRECCIONES — PRÓXIMA SESIÓN (Sesión 15)
+
+> Organizado por fases de menor a mayor esfuerzo. Empezar siempre por FASE 1 (variables de entorno en Coolify PRIMERO, luego el código).
+
+### ⚠️ ORDEN CRÍTICO: Configurar Coolify antes de hacer git push con los cambios
+
+```
+1. Ir a Coolify → Variables de entorno del proyecto TIENDAONLINE
+2. Añadir las 4 variables nuevas (ver tabla abajo)
+3. Solo después: hacer git push con los cambios de código
+```
+
+---
+
+### FASE 1 — Variables de entorno (⏱ 25 min)
+
+**Variables a añadir en Coolify + `.env.local`:**
+
+| Variable | Valor |
+|---|---|
+| `NEXT_PUBLIC_POSTHOG_KEY` | `phc_BiKU9NPq9aQjxs9EZoVM7DLb6EWuFLwxeZhmU6UNniLF` |
+| `NEXT_PUBLIC_POSTHOG_HOST` | `https://eu.i.posthog.com` |
+| `ADMIN_EMAIL` | `davidescalanteitalia@gmail.com` |
+| `NEXT_PUBLIC_SENTRY_DSN` | `https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984` |
+
+**Archivos a modificar:**
+
+| Archivo | Cambio |
+|---|---|
+| `components/PostHogProvider.js` | `POSTHOG_KEY` → `process.env.NEXT_PUBLIC_POSTHOG_KEY` |
+| `app/api/register/route.js` | `api_key:` hardcoded → `process.env.NEXT_PUBLIC_POSTHOG_KEY` |
+| `lib/supabase-admin.js` | email hardcoded → `process.env.ADMIN_EMAIL` |
+| `next.config.mjs` | DSN hardcoded → `process.env.NEXT_PUBLIC_SENTRY_DSN` |
+| `app/administrador/layout.js` | Verificar si tiene email hardcodeado → `process.env.ADMIN_EMAIL` |
+| `app/login/page.js` | Verificar si tiene email hardcodeado → `process.env.NEXT_PUBLIC_ADMIN_EMAIL` |
+
+---
+
+### FASE 2 — Validaciones de API (⏱ ~2h)
+
+**Archivo:** `app/api/register/route.js`
+
+Añadir al inicio del handler POST (antes de cualquier lógica de negocio):
+```js
+// Validaciones de entrada
+if (!nombre || !subdominio || !email || !password) {
+  return NextResponse.json({ error: 'missing_fields' }, { status: 400 })
+}
+if (!/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/.test(subdominio)) {
+  return NextResponse.json({ error: 'invalid_subdomain' }, { status: 400 })
+}
+const RESERVED = ['www', 'api', 'admin', 'dashboard', 'login', 'register', 'store', 'app']
+if (RESERVED.includes(subdominio)) {
+  return NextResponse.json({ error: 'subdomain_reserved' }, { status: 400 })
+}
+if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  return NextResponse.json({ error: 'invalid_email' }, { status: 400 })
+}
+if (password.length < 8) {
+  return NextResponse.json({ error: 'password_too_short' }, { status: 400 })
+}
+```
+
+**Archivo:** `app/api/auth/cliente/route.js`
+
+```js
+// Validar dominio — evitar path traversal
+if (!domain || !/^[a-z0-9-]{1,30}$/.test(domain)) {
+  return NextResponse.json({ error: 'Dominio inválido' }, { status: 400 })
+}
+```
+
+---
+
+### FASE 3 — Security Headers (⏱ 30 min)
+
+**Archivo:** `next.config.mjs`
+
+Añadir bloque de `headers` al `nextConfig`:
+```js
+const securityHeaders = [
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
+]
+// Añadir dentro de nextConfig: headers: async () => [{ source: '/(.*)', headers: securityHeaders }]
+```
+
+**Archivo:** `middleware.js` (líneas 47-50)
+
+```js
+// Quitar los headers de debug en producción:
+if (process.env.NODE_ENV !== 'production') {
+  headers.set('x-debug-hostname-detected', hostname)
+  headers.set('x-debug-is-subdomain', isSubdomain.toString())
+  headers.set('x-debug-current-host', currentHost || 'none')
+}
+```
+
+---
+
+### FASE 4 — Accesibilidad (⏱ ~1.5h)
+
+**Archivo:** `app/layout.js`
+
+1. Añadir skip link como primer elemento del `<body>`
+2. Añadir script inline para `lang` dinámico desde localStorage
+
+**Archivo:** `app/dashboard/layout.js`
+
+1. `aria-current={isActive ? 'page' : undefined}` en todos los botones de nav
+2. `id="main-content"` en el `<main>`
+3. `role="dialog" aria-modal="true" aria-label="Menú de navegación"` en sidebar móvil
+4. `aria-label="Abrir menú"` / `aria-label="Cerrar menú"` en botones hamburguesa/X
+5. Cambiar `text-slate-400` → `text-slate-500` en textos informativos
+
+---
+
+### Checklist de Verificación Post-Correcciones
+
+```bash
+# 1. Verificar Security Headers en producción
+curl -I https://tiendaonline.it
+# Debe mostrar: X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+
+# 2. Verificar que debug headers NO aparecen en producción
+curl -I https://tiendaonline.it | grep x-debug
+# No debe devolver nada
+
+# 3. Probar validaciones con inputs maliciosos
+curl -X POST https://tiendaonline.it/api/register \
+  -H "Content-Type: application/json" \
+  -d '{"subdominio":"../../../etc","email":"no-es-email","password":"123"}'
+# Debe devolver 400 con error descriptivo
+```
+
+**Pruebas manuales:**
+- [ ] Navegar dashboard solo con teclado → Tab → debe aparecer skip link → Enter → salta al contenido
+- [ ] Abrir sidebar móvil → el foco debe quedar dentro del drawer
+- [ ] Lector de pantalla (NVDA/VoiceOver) en página dashboard → nav items activos deben decir "página actual"
+- [ ] Cambiar idioma a Español → `document.documentElement.lang` debe ser `"es"` (verificar en consola)
+- [ ] Registrar tienda con subdominio `www`, `admin`, `api` → debe mostrar error de subdominio reservado
+
+---
+
+> **Nota para la Sesión 15:** Comenzar SIEMPRE por la FASE 1 (Coolify → vars de entorno → git push).
+> Las FASES 2-4 pueden hacerse en cualquier orden después.
+> Tiempo total estimado: **~6 horas** (puede dividirse en dos sesiones de 3h).
