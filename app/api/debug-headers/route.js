@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 
-export async function GET(req) {
-  const headers = {};
-  req.headers.forEach((value, key) => {
-    headers[key] = value;
-  });
-
-  return NextResponse.json({
-    message: "Debug Headers",
-    url: req.url,
-    method: req.method,
-    headers: headers
-  });
+// Ruta de debug deshabilitada en producción por seguridad.
+// Exponer headers HTTP internos (cookies, tokens, IPs) es un riesgo de seguridad.
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Esta ruta está deshabilitada en producción.' },
+    { status: 403 }
+  );
 }

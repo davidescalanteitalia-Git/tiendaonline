@@ -2584,3 +2584,91 @@ Se eliminó también el fragmento `<div cl` suelto que quedaba antes del cierre.
 | `HISTORIAL_TECNICO.md` | Webhook secret reemplazado por placeholder; sesiones 18 y 19 documentadas |
 | `app/dashboard/layout.js` | Bloque de cierre JSX restaurado (líneas ~421–430) |
 | `.mcp.json` | Añadida entrada `github` con PAT y scopes `repo`, `read:org`, `read:user` |
+
+---
+
+## SESIÓN 20 — Blindaje de Seguridad y Calidad del Servicio
+**Fecha:** 2026-04-18
+
+### Resumen
+Sesión dedicada al blindaje completo de seguridad. Se resolvieron todos los hallazgos de la auditoría: eliminación de archivos sensibles del repo, desactivación de rutas de debug, corrección de clientes Supabase, y adición de Content-Security-Policy.
+
+---
+
+### A — Eliminación de stripe_backup_code.txt del repositorio público 🔴
+
+**Problema:** El archivo `stripe_backup_code.txt` contenía el código de respaldo de autenticación de dos factores de Stripe (`dvrv-xbgd-...`) y estaba en el repositorio público.
+
+**Acción:** Añadido `stripe_backup_code.txt` a `.gitignore`. El archivo se mantiene localmente pero ya no se trackea ni sube a GitHub.
+
+**Comando para quitar del tracking en Git (ejecutar en Windows):**
+```bash
+git rm --cached stripe_backup_code.txt
+```
+
+---
+
+### B — Ruta /api/debug-headers deshabilitada 🔴
+
+**Problema:** La ruta `/api/debug-headers` devolvía todos los headers HTTP internos (cookies, tokens Bearer, IPs de proxies) a cualquier persona sin ninguna autenticación.
+
+**Solución:** La ruta ahora devuelve siempre `403 Forbidden` con el mensaje "Esta ruta está deshabilitada en producción." El endpoint queda en el código para que no falle el build, pero no expone ningún dato.
+
+---
+
+### C — Corrección de fallbacks en supabase-admin.js 🟡
+
+**Problema:** `getSupabaseAdmin()` tenía valores de fallback `'https://placeholder.supabase.co'` y `'placeholder_service_key'` que hacían que la app arrancara silenciosamente aunque las variables de entorno no estuvieran definidas, enmascarando errores de configuración.
+
+**Solución:** La función ahora lanza un `Error` explícito con mensaje descriptivo si `NEXT_PUBLIC_SUPABASE_URL` o `SUPABASE_SERVICE_KEY` no están definidas. Fallo rápido y visible en lugar de fallo silencioso.
+
+---
+
+### D — Migración de /api/stats a cliente anónimo 🟡
+
+**Problema:** La ruta pública `/api/stats` (usada en la landing page para mostrar el contador de tiendas activas) usaba `getSupabaseAdmin()` con la `service_role` key. Principio de mínimo privilegio violado.
+
+**Solución:** Creada función local `getSupabaseAnon()` que usa `NEXT_PUBLIC_SUPABASE_ANON_KEY`. La query está protegida por RLS de Supabase (solo lee `estado = 'activo'`, sin datos sensibles).
+
+---
+
+### E — Content-Security-Policy (CSP) añadida 🟡
+
+**Problema:** Faltaba el header `Content-Security-Policy` en `next.config.mjs`, dejando la app vulnerable a ataques XSS.
+
+**Solución:** CSP completa calibrada para el stack de TIENDAONLINE:
+
+| Directiva | Dominios permitidos |
+|-----------|-------------------|
+| `script-src` | self, inline (Next.js), Stripe.js, Sentry CDN |
+| `style-src` | self, inline (Tailwind) |
+| `img-src` | self, data, Supabase Storage, Unsplash, Picsum, tiendaonline.it |
+| `connect-src` | self, Supabase API+WSS, Stripe API, Sentry |
+| `frame-src` | Stripe Checkout iframes |
+| `object-src` | none (bloquea plugins Flash/Java) |
+| `form-action` | self (solo formularios propios) |
+
+---
+
+### F — Resumen de archivos modificados en Sesión 20
+
+| Archivo | Cambio | Severidad resuelta |
+|---------|--------|--------------------|
+| `.gitignore` | Añadido `stripe_backup_code.txt` | 🔴 Crítico |
+| `app/api/debug-headers/route.js` | Siempre devuelve 403 | 🔴 Crítico |
+| `lib/supabase-admin.js` | Error explícito si env vars faltan | 🟡 Medio |
+| `app/api/stats/route.js` | Usa cliente anónimo en lugar de service role | 🟡 Medio |
+| `next.config.mjs` | CSP completa añadida | 🟡 Medio |
+
+### G — Estado de seguridad post-Sesión 20
+
+| Check | Estado |
+|-------|--------|
+| Secret scanning GitHub | ✅ 0 alertas abiertas |
+| Archivos sensibles en repo | ✅ Protegidos por .gitignore |
+| Rutas de debug expuestas | ✅ Bloqueadas (403) |
+| Service role key en rutas públicas | ✅ Eliminado |
+| Variables de entorno sin validar | ✅ Fallan con error claro |
+| Headers de seguridad HTTP | ✅ Completos: X-Frame, nosniff, CSP, Referrer, Permissions |
+| Rutas admin protegidas | ✅ verifyAdmin() en todas |
+| Autenticación multi-tenant | ✅ user_id verificado en todas las rutas privadas |

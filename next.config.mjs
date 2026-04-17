@@ -13,8 +13,31 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
-  // Security Headers — FASE 3 de la auditoría de seguridad (Sesión 14)
+  // Security Headers — FASE 3 (Sesión 14) + CSP (Sesión 20)
   async headers() {
+    // Content-Security-Policy calibrada para Next.js + Supabase + Stripe + Sentry
+    const csp = [
+      "default-src 'self'",
+      // Scripts: Next.js inline scripts + Stripe.js
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://browser.sentry-cdn.com",
+      // Estilos: inline styles que usa Tailwind/Next.js
+      "style-src 'self' 'unsafe-inline'",
+      // Imágenes: Supabase Storage, Unsplash, Picsum, tiendaonline.it
+      "img-src 'self' data: blob: https://bripfrfkwahsxtegmils.supabase.co https://images.unsplash.com https://picsum.photos https://*.tiendaonline.it",
+      // Fuentes
+      "font-src 'self' data:",
+      // Conexiones: Supabase API, Stripe API, Sentry
+      "connect-src 'self' https://bripfrfkwahsxtegmils.supabase.co wss://bripfrfkwahsxtegmils.supabase.co https://api.stripe.com https://*.sentry.io https://o4509068217901056.ingest.sentry.io",
+      // iFrames de Stripe Checkout
+      "frame-src https://js.stripe.com https://hooks.stripe.com",
+      // Sin objetos embebidos
+      "object-src 'none'",
+      // Base URI restringida
+      "base-uri 'self'",
+      // Form actions solo al mismo origen
+      "form-action 'self'",
+    ].join('; ')
+
     return [
       {
         source: '/(.*)',
@@ -24,9 +47,10 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()'
+            value: 'camera=(), microphone=(), geolocation=()',
           },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'Content-Security-Policy', value: csp },
         ],
       },
     ]

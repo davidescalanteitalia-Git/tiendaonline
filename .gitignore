@@ -34,4 +34,6 @@ scratch/
 
 # MCP config (contiene tokens de acceso)
 .mcp.json
-"stripe_backup_code.txt" 
+
+# Archivos sensibles de Stripe (códigos de respaldo 2FA, claves de backup)
+stripe_backup_code.txt
