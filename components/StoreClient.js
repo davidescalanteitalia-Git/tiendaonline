@@ -30,7 +30,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessageOpen, setSuccessMessageOpen] = useState(false)
   const [orderError, setOrderError] = useState(null)
-  const [activeCategory, setActiveCategory] = useState(groupedProducts[0]?.id || 'uncategorized')
+  const [activeCategory, setActiveCategory] = useState(null) // null = "Todos"
   const [searchQuery, setSearchQuery] = useState('')
   const [activeMobileFilters, setActiveMobileFilters] = useState(false)
   const [selectedPriceRange, setSelectedPriceRange] = useState(null) // null | 'low' | 'mid' | 'high'
@@ -155,12 +155,21 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
   const getItemQty = (productId) => cart.find(item => item.id === productId)?.quantity || 0
 
   const scrollToCategory = (id) => {
-    setActiveCategory(id)
-    const element = document.getElementById(`category-${id}`)
-    if (element) {
-      const y = element.getBoundingClientRect().top + window.scrollY - 160
-      window.scrollTo({ top: y, behavior: 'smooth' })
+    if (id === null) {
+      // "Todos" — reset a vista unificada, scroll al top
+      setActiveCategory(null)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
     }
+    setActiveCategory(id)
+    // Si está en modo separado, scroll a esa sección
+    setTimeout(() => {
+      const element = document.getElementById(`category-${id}`)
+      if (element) {
+        const y = element.getBoundingClientRect().top + window.scrollY - 100
+        window.scrollTo({ top: y, behavior: 'smooth' })
+      }
+    }, 50)
   }
 
   const applyCupon = () => {
@@ -383,8 +392,9 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
       {/* ── Banner opcional ─────────────────────── */}
       {config.banner_url && (
-        <div style={{ width: '100%', maxHeight: '240px', overflow: 'hidden' }}>
+        <div style={{ width: '100%', height: '380px', overflow: 'hidden', position: 'relative' }}>
           <img src={config.banner_url} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15,23,42,0.35) 100%)' }} />
         </div>
       )}
 
@@ -490,8 +500,12 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         <main style={{ flex: 1, minWidth: 0 }}>
 
           {/* Tabs de categorías (mobile + desktop) */}
-          {allCategories.length > 1 && !isSearchActive && (
+          {allCategories.length > 0 && !isSearchActive && (
             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '20px', scrollbarWidth: 'none' }}>
+              {/* Botón "Todos" */}
+              <button onClick={() => scrollToCategory(null)} style={{ flexShrink: 0, padding: '7px 16px', borderRadius: '99px', border: `1.5px solid ${activeCategory === null ? C.primary : '#e2e8f0'}`, background: activeCategory === null ? C.primary : '#fff', color: activeCategory === null ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                Todos
+              </button>
               {allCategories.map(cat => (
                 <button key={cat.id} onClick={() => scrollToCategory(cat.id)} style={{ flexShrink: 0, padding: '7px 16px', borderRadius: '99px', border: `1.5px solid ${activeCategory === cat.id ? C.primary : '#e2e8f0'}`, background: activeCategory === cat.id ? C.primary : '#fff', color: activeCategory === cat.id ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
                   {cat.nombre}
@@ -524,48 +538,165 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                 </div>
               )}
             </div>
-          ) : (
-            /* CATÁLOGO NORMAL POR CATEGORÍAS */
+          ) : activeCategory === null ? (
+            /* MODO "TODOS" — todos los productos mezclados en un grid */
             <div>
-              {groupedProducts.map(cat => (
-                <div key={cat.id} id={`category-${cat.id}`} style={{ marginBottom: '40px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '10px', borderBottom: '2px solid #f1f5f9' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                      {cat.emoji && <span style={{ marginRight: '8px' }}>{cat.emoji}</span>}
-                      {cat.nombre}
-                    </h2>
-                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>{cat.items.length} producto{cat.items.length !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="store-product-grid">
-                    {cat.items.map(p => <ProductCard key={p.id} product={p} />)}
-                  </div>
-                </div>
-              ))}
-
-              {uncategorized.length > 0 && (
-                <div id="category-uncategorized" style={{ marginBottom: '40px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '10px', borderBottom: '2px solid #f1f5f9' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                      {dict.sinCategoria || 'Otros'}
-                    </h2>
-                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>{uncategorized.length} producto{uncategorized.length !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="store-product-grid">
-                    {uncategorized.map(p => <ProductCard key={p.id} product={p} />)}
-                  </div>
-                </div>
-              )}
-
-              {groupedProducts.length === 0 && uncategorized.length === 0 && (
+              {allProducts.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '80px 20px', color: '#94a3b8' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📦</div>
                   <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>¡Vuelve pronto!</p>
                 </div>
+              ) : (
+                <div className="store-product-grid">
+                  {allProducts.map(p => <ProductCard key={p.id} product={p} />)}
+                </div>
               )}
+            </div>
+          ) : (
+            /* MODO CATEGORÍA SELECCIONADA — solo los productos de esa categoría */
+            <div>
+              {(() => {
+                const catSeleccionada = activeCategory === 'uncategorized'
+                  ? { id: 'uncategorized', nombre: dict.sinCategoria || 'Otros', items: uncategorized }
+                  : groupedProducts.find(c => c.id === activeCategory)
+                if (!catSeleccionada) return null
+                const items = catSeleccionada.items || []
+                return (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '10px', borderBottom: '2px solid #f1f5f9' }}>
+                      <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
+                        {catSeleccionada.emoji && <span style={{ marginRight: '8px' }}>{catSeleccionada.emoji}</span>}
+                        {catSeleccionada.nombre}
+                      </h2>
+                      <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>{items.length} producto{items.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    {items.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
+                        <p style={{ fontWeight: 600 }}>Sin productos en esta categoría</p>
+                      </div>
+                    ) : (
+                      <div className="store-product-grid">
+                        {items.map(p => <ProductCard key={p.id} product={p} />)}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </main>
       </div>
+
+      {/* ── FOOTER DE LA TIENDA ─────────────────── */}
+      <footer style={{ background: '#0f172a', color: '#cbd5e1', marginTop: '60px', padding: '48px 16px 32px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+
+          {/* Grid superior */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '36px', marginBottom: '40px' }}>
+
+            {/* Columna 1 — Info de la tienda */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: C.primary + '30', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
+                  {tienda.logo_url
+                    ? <img src={tienda.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+                    : (tienda.emoji || '🏪')}
+                </div>
+                <span style={{ fontWeight: 900, fontSize: '1rem', color: '#f1f5f9' }}>{tienda.nombre}</span>
+              </div>
+              {tienda.descripcion && (
+                <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#94a3b8', lineHeight: 1.6 }}>{tienda.descripcion}</p>
+              )}
+              {/* Horario */}
+              {tienda.horario && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '1rem' }}>🕐</span>
+                  <div>
+                    <p style={{ margin: '0', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Horario</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.85rem', color: '#cbd5e1', fontWeight: 600 }}>{tienda.horario}</p>
+                  </div>
+                </div>
+              )}
+              {/* Estado abierto/cerrado */}
+              {estadoTienda && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '99px', fontSize: '0.72rem', fontWeight: 800, background: estadoTienda.abierto ? '#14532d' : '#450a0a', color: estadoTienda.abierto ? '#86efac' : '#fca5a5', marginTop: '8px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: estadoTienda.abierto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                  {estadoTienda.abierto ? 'Abierto ahora' : 'Cerrado'}
+                </span>
+              )}
+            </div>
+
+            {/* Columna 2 — Contacto */}
+            <div>
+              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Contacto</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {tienda.whatsapp && (
+                  <a href={`https://wa.me/${tienda.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4ade80', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
+                    💬 WhatsApp
+                  </a>
+                )}
+                {tienda.email && (
+                  <a href={`mailto:${tienda.email}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
+                    ✉️ {tienda.email}
+                  </a>
+                )}
+                {(config.redes_sociales?.instagram) && (
+                  <a href={`https://instagram.com/${config.redes_sociales.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
+                    📸 Instagram
+                  </a>
+                )}
+                {config.envios?.retiro?.direccion && (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>
+                    <span style={{ flexShrink: 0 }}>📍</span>
+                    <span>{config.envios.retiro.direccion}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Columna 3 — Mi cuenta */}
+            <div>
+              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Mi cuenta</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a href={`/store/${tienda.subdominio}/cuenta`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  👤 Mi perfil
+                </a>
+                <a href={`/store/${tienda.subdominio}/mis-pedidos`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📦 Mis pedidos
+                </a>
+              </div>
+            </div>
+
+            {/* Columna 4 — Normas */}
+            <div>
+              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Información legal</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a href="/cookie-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>🍪 Política de Cookies</a>
+                <a href="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>🔒 Política de Privacidad</a>
+                <a href="/terminos" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>📄 Términos y Condiciones</a>
+              </div>
+              {/* Aviso datos */}
+              <div style={{ marginTop: '16px', padding: '12px', background: '#1e293b', borderRadius: '10px', border: '1px solid #334155' }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b', lineHeight: 1.6 }}>
+                  🔐 <strong style={{ color: '#94a3b8' }}>Privacidad:</strong> Al realizar un pedido compartes tus datos únicamente con {tienda.nombre} para gestionar tu pedido. No se venden a terceros. Consulta nuestra política para más detalles.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Línea divisoria */}
+          <div style={{ borderTop: '1px solid #1e293b', paddingTop: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569' }}>
+              © {new Date().getFullYear()} <strong style={{ color: '#64748b' }}>{tienda.nombre}</strong> · Todos los derechos reservados
+            </p>
+            <a href="https://tiendaonline.it" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#334155', fontWeight: 600 }}>
+                Desarrollado con <span style={{ color: C.primary }}>TIENDAONLINE</span> 🛍️
+              </p>
+            </a>
+          </div>
+        </div>
+      </footer>
 
       {/* ── CART DRAWER ─────────────────────────── */}
       {isCartOpen && (

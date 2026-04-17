@@ -140,14 +140,7 @@ export default async function StoreFrontPage({ params }) {
   return (
     <div style={{ backgroundColor: C.grayBg, minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
 
-      {/* Banner de la Tienda — solo si está configurado */}
-      {config.banner_url && (
-        <div className="w-full h-32 md:h-48 overflow-hidden">
-          <img src={config.banner_url} className="w-full h-full object-cover" alt="Banner" />
-        </div>
-      )}
-
-      {/* El navbar con logo, búsqueda y carrito está dentro de StoreClient */}
+      {/* El navbar, banner y todo el layout están dentro de StoreClient */}
       <StoreClient
         tienda={tienda}
         groupedProducts={groupedProducts}
