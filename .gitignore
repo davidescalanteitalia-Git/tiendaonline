@@ -34,3 +34,4 @@ scratch/
 
 # MCP config (contiene tokens de acceso)
 .mcp.json
+"stripe_backup_code.txt" 
