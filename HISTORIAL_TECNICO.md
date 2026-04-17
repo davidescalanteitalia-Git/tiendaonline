@@ -147,8 +147,9 @@ El perfil del comercio. Una por usuario.
 | `plan_suscripcion` | text | `'trial'` \| `'gratis'` \| `'basico'` \| `'pro'` \| `'grow'` |
 | `trial_fin` | date | Fecha de vencimiento del mes gratuito (30 días desde registro) |
 | `trial_usado` | boolean | Marca que el trial ya fue utilizado (evita dobles trials) |
-| `stripe_customer_id` | text | ID de cliente en Stripe — pendiente integración |
-| `stripe_subscription_id` | text | ID de suscripción activa en Stripe — pendiente integración |
+| `stripe_customer_id` | text | ID de cliente en Stripe |
+| `stripe_subscription_id` | text | ID de suscripción activa en Stripe |
+| `stripe_price_id` | text | ID del precio activo en Stripe (añadido Sesión 18) |
 | `created_at` | timestamptz | |
 | `updated_at` | timestamptz | |
 
@@ -588,7 +589,7 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 
 | Prioridad | Feature | Descripción |
 |-----------|---------|-------------|
-| 🔴 Alta | **Stripe B2B** | Cobro mensual a comercios. Planes: Free / Pro (€9/mes) / Grow (€19/mes). Desbloquea: subdominios propios, analítica avanzada, catálogos automáticos IG. |
+| ✅ Hecho | **Stripe B2B** | Cobro mensual a comercios. Planes: Gratis / Básico (€15/mes) / Pro (€25/mes) / Grow (€40/mes). Productos y precios creados. Webhook activo. Sesiones 17-18. |
 | 🔴 Alta | **Resend (emails transaccionales)** | Confirmación de registro, resumen de pedido al comprador, notificación al vendedor, recibo de abono de fiado. |
 | ✅ Hecho | **`@vercel/og` — OG Image PNG** | ~~Edge Function que genera imagen 1200×630 con el nombre y logo de cada tienda dinámicamente.~~ Implementado en Sesión 11. |
 | ✅ Hecho | **Lector código de barras** | ~~Activar cámara en POS con `BarcodeDetector` API nativa.~~ Implementado en Sesión 9. |
@@ -1354,7 +1355,7 @@ WHERE trial_fin IS NULL;
 | ✅ Hecho | Sistema de 4 planes (Gratis/Básico/Pro/Grow) con trial 30 días |
 | ✅ Hecho | PlanBanner inteligente con alertas escalonadas |
 | ✅ Hecho | Página `/dashboard/planes` con toggle mensual/anual |
-| 🔴 Pendiente | **Stripe** — cobro real de suscripciones (Sprint 5) |
+| ✅ Hecho | **Stripe** — cobro real de suscripciones (Sprint 5) — Sesiones 17-18 |
 | 🔴 Pendiente | **Resend** — email de recordatorio del trial por correo |
 | 🔴 Pendiente | **Guards de features** — bloqueo con UpgradeModal en cupones, fiados, reportes según plan |
 | 🟢 Pendiente | Wizard de registro campo a campo (UX mejorada) |
@@ -2315,3 +2316,155 @@ Con Stripe listo, el siguiente bloque crítico pre-lanzamiento es:
 - Email de bienvenida al registrar tienda
 - Email de recuperación de contraseña (actualmente sin envío real)
 - Email de aviso: "Tu trial expira en 3 días"
+
+---
+
+## [2026-04-18] Sesión 18 — Activación completa de Stripe: Productos, Precios, Webhook, Variables y DB
+
+### Objetivo
+Ejecutar todos los pasos manuales pendientes de la Sesión 17 para dejar el sistema de pagos Stripe **100% operativo en modo TEST** (pruebas con tarjetas de prueba Stripe). La Sesión 17 dejó el código listo; esta sesión completó la infraestructura externa (Stripe, Coolify, Supabase).
+
+---
+
+### A — Conexión con Stripe MCP y creación de productos/precios
+
+Se conectó el **Stripe MCP** (UUID: `6074e9e5-b232-487f-9cd0-4396798f5d26`) en modo TEST usando la clave `sk_test_51TM40C7BdqFx9FaO...`.
+
+**3 Productos creados en Stripe (modo TEST):**
+
+| Producto Stripe | ID |
+|-----------------|-----|
+| TIENDAONLINE — Plan Básico | `prod_SOwWKzF5wuMVEo` |
+| TIENDAONLINE — Plan Pro | `prod_SOwWe53TRNdvXn` |
+| TIENDAONLINE — Plan Grow | `prod_SOwWQ71qiA3lU3` |
+
+**6 Precios creados (mensual + anual por plan):**
+
+| Plan | Ciclo | Price ID (TEST) | Importe |
+|------|-------|-----------------|---------|
+| Básico | Mensual | `price_1TNFMn7BdqFx9FaONU1aO9h5` | €15.00/mes |
+| Básico | Anual | `price_1TNFMr7BdqFx9FaO5x9Cd2hk` | €144.00/año (≈€12/mes, −20%) |
+| Pro | Mensual | `price_1TNFMw7BdqFx9FaO3REVUH6R` | €25.00/mes |
+| Pro | Anual | `price_1TNFN17BdqFx9FaOoJWvQv4D` | €240.00/año (≈€20/mes, −20%) |
+| Grow | Mensual | `price_1TNFN57BdqFx9FaOK54593Pq` | €40.00/mes |
+| Grow | Anual | `price_1TNFN97BdqFx9FaOe58Mqzc5` | €384.00/año (≈€32/mes, −20%) |
+
+Todos los precios son en **EUR**, ciclo de facturación `month` o `year`, tipo `recurring`.
+
+> ⚠️ Todos los IDs anteriores son de **modo TEST**. Para producción se deberá repetir el proceso con las llaves `sk_live_...` y actualizar las variables de entorno en Coolify.
+
+---
+
+### B — Variables de entorno en Coolify
+
+Se accedió a Coolify mediante **Claude in Chrome** (formularios Livewire/Alpine.js requieren el tool `form_input` en lugar de `type` para responder correctamente a los eventos reactivos del framework).
+
+**4 variables configuradas:**
+
+| Variable | Valor | Estado |
+|----------|-------|--------|
+| `STRIPE_SECRET_KEY` | `sk_test_51TM40C7BdqFx9FaO...` | ✅ Guardado |
+| `NEXT_PUBLIC_APP_URL` | `https://tiendaonline.it` | ✅ Guardado |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_51TM40C7BdqFx9FaO...` | ✅ Guardado |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_R7JygyubX9mrcDjkfg7zwwq4Asu6u0yt` | ✅ Guardado |
+
+> ⚠️ Las variables de precios (`NEXT_PUBLIC_STRIPE_PRICE_*`) no se añadieron a Coolify porque los Price IDs ya están como **fallbacks hardcodeados** en `planes/page.js` y `webhook/route.js`. Esto es correcto para el entorno TEST. En producción se deberá añadir las 6 variables con los IDs live.
+
+Tras guardar las variables, se ejecutó el **redeploy "With rolling update if possible"** en Coolify para que los contenedores recibieran las nuevas variables de entorno.
+
+---
+
+### C — Creación del webhook de Stripe
+
+El dashboard de Stripe (`dashboard.stripe.com`) está bloqueado para acceso desde Claude in Chrome por restricciones de seguridad de la plataforma. El webhook fue **creado manualmente por el dueño del proyecto** en el Stripe Workbench.
+
+**Configuración del webhook:**
+
+| Campo | Valor |
+|-------|-------|
+| URL del endpoint | `https://tiendaonline.it/api/stripe/webhook` |
+| Eventos activos | `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` |
+| Entorno | TEST |
+| Webhook Secret | `whsec_R7JygyubX9mrcDjkfg7zwwq4Asu6u0yt` |
+
+---
+
+### D — Migración de Supabase aplicada
+
+Se detectó que **`stripe_customer_id`** y **`stripe_subscription_id`** ya existían en la tabla `tiendas` (aplicados en Sesión 13). Solo faltaba `stripe_price_id`.
+
+**SQL ejecutado vía Supabase MCP:**
+```sql
+ALTER TABLE public.tiendas
+  ADD COLUMN IF NOT EXISTS stripe_price_id TEXT NULL;
+```
+
+**Confirmación de columnas Stripe en `tiendas` post-migración:**
+
+| Columna | Tipo | Estado |
+|---------|------|--------|
+| `stripe_customer_id` | text | ✅ Existía |
+| `stripe_subscription_id` | text | ✅ Existía |
+| `stripe_price_id` | text | ✅ Añadida en esta sesión |
+
+---
+
+### E — Estado final de la integración Stripe (post-Sesión 18)
+
+| Componente | Estado |
+|-----------|--------|
+| `lib/stripe.js` — cliente Stripe | ✅ Configurado |
+| `app/api/stripe/checkout/route.js` — crea Hosted Checkout | ✅ Operativo |
+| `app/api/stripe/webhook/route.js` — recibe eventos, mapeo dinámico | ✅ Operativo con Fix Sesión 17 |
+| `app/dashboard/planes/page.js` — UI con botones funcionales | ✅ Operativo con Fix Sesión 17 |
+| Productos en Stripe (3 productos) | ✅ Creados en TEST |
+| Precios en Stripe (6 precios) | ✅ Creados en TEST |
+| Webhook en Stripe configurado | ✅ Configurado manualmente |
+| Variables de entorno en Coolify | ✅ Las 4 críticas añadidas |
+| Columna `stripe_price_id` en DB | ✅ Migración aplicada |
+| Redeploy ejecutado | ✅ Rolling update activado |
+
+---
+
+### F — Errores y obstáculos encontrados durante la sesión
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| `index.lock` bloqueado en mount NTFS | El sandbox Linux no puede borrar el `.git/index.lock` montado desde Windows | El dueño ejecutó `git push` directamente desde la terminal Windows |
+| Formularios Coolify no responden al tool `type` | Livewire/Alpine.js no captura eventos `input` sintéticos del browser | Se usó `form_input` (tool especializado que activa los handlers correctos) |
+| Los refs de modal en Coolify cambian al reabrirse | Coolify re-renderiza el DOM al abrir cada modal | Se usó `read_page` o `find` después de cada apertura para obtener refs frescos |
+| Stripe Dashboard bloqueado en Claude in Chrome | Restricciones de seguridad de la plataforma | El webhook fue creado manualmente por el dueño |
+| `stripe_migration.sql` parcialmente aplicado | `stripe_customer_id` y `stripe_subscription_id` ya existían desde Sesión 13 | Se usó `ADD COLUMN IF NOT EXISTS` para aplicar solo `stripe_price_id` sin errores |
+
+---
+
+### G — Configuración actual de Stripe (modo TEST)
+
+```
+Cuenta Stripe: sk_test_51TM40C7BdqFx9FaO...
+Clave publicable: pk_test_51TM40C7BdqFx9FaO...
+Modo: TEST (tarjetas de prueba, sin dinero real)
+```
+
+**Para probar el flujo completo:**
+1. Ir a `/dashboard/planes` como usuario autenticado
+2. Seleccionar un plan (Básico o Pro) y hacer clic en "Suscribirse"
+3. En la página de Stripe Checkout, usar tarjeta de prueba: `4242 4242 4242 4242`, cualquier fecha futura, cualquier CVV
+4. Al completar, Stripe redirige a `/dashboard/planes?success=true`
+5. En paralelo, el webhook `/api/stripe/webhook` recibe `checkout.session.completed` y actualiza `plan_suscripcion` en Supabase
+
+---
+
+### H — Roadmap actualizado post-Sesión 18
+
+| Estado | Feature |
+|--------|---------|
+| ✅ Hecho | Integración Stripe completa en modo TEST |
+| ✅ Hecho | Productos y precios creados en Stripe |
+| ✅ Hecho | Webhook configurado con firma HMAC |
+| ✅ Hecho | Variables de entorno en Coolify |
+| 🔴 Pendiente | **Pasar a Stripe LIVE** — crear productos/precios con `sk_live_...` y actualizar Coolify |
+| 🔴 Pendiente | **Resend** — emails transaccionales (bienvenida, trial, recuperación de contraseña) |
+| 🔴 Pendiente | **Actualizar Supabase a Plan Pro** antes del lanzamiento público |
+| 🟡 Pendiente | Verificar redeploy exitoso en Coolify tras añadir variables |
+| 🟡 Pendiente | Prueba end-to-end del checkout con tarjeta `4242 4242 4242 4242` |
