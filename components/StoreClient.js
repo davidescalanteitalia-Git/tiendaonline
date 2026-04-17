@@ -18,7 +18,7 @@ function saveCartToStorage(domain, cart) {
 }
 
 export default function StoreClient({ tienda, groupedProducts, uncategorized, C, config = {} }) {
-  const { lang } = useLang()
+  const { lang, changeLang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['es']
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -326,77 +326,132 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         </div>
       )}
 
-      {/* ── NAVBAR TOP ──────────────────────────── */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 16px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px', height: '64px' }}>
+      {/* ══════════════════════════════════════════════════════
+           HEADER — Fila 1: Logo + Idioma + Mi cuenta
+           FILA 2: Banner (ancho total)
+           FILA 3 (sticky): Buscador + Carrito + Categorías
+      ═══════════════════════════════════════════════════════ */}
+      <header style={{ background: '#fff' }}>
 
-          {/* Logo + Nombre */}
-          <a href={`/store/${tienda.subdominio}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: C.primary + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', border: `1.5px solid ${C.primary}25`, flexShrink: 0 }}>
-              {tienda.logo_url
-                ? <img src={tienda.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : (tienda.emoji || '🏪')}
-            </div>
-            <span style={{ fontWeight: 900, fontSize: '1rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>
-              {tienda.nombre}
-            </span>
-          </a>
+        {/* ── Fila 1: Logo · Selector idioma · Mi cuenta ── */}
+        <div style={{ borderBottom: '1px solid #e2e8f0', padding: '0 16px' }}>
+          <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px', height: '60px' }}>
 
-          {/* Barra de búsqueda */}
-          <div style={{ flex: 1, position: 'relative', maxWidth: '560px', margin: '0 auto' }}>
-            <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '1rem', pointerEvents: 'none' }}>🔍</span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={`Buscar en ${tienda.nombre}...`}
-              style={{
-                width: '100%', padding: '10px 14px 10px 40px', borderRadius: '12px',
-                border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem',
-                color: '#0f172a', outline: 'none', boxSizing: 'border-box',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={e => e.target.style.borderColor = C.primary}
-              onBlur={e => e.target.style.borderColor = '#e2e8f0'}
-            />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1rem' }}>✕</button>
-            )}
-          </div>
-
-          {/* Acciones derecha */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', flexShrink: 0 }}>
-            {/* Mi cuenta */}
-            <a href={`/store/${tienda.subdominio}/cuenta`} style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none', color: '#475569', fontWeight: 700, fontSize: '0.8rem', padding: '8px 12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#fff', whiteSpace: 'nowrap' }}>
-              👤 <span className="hide-xs">Mi cuenta</span>
+            {/* Logo + Nombre */}
+            <a href={`/store/${tienda.subdominio}`} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '9px', overflow: 'hidden', background: C.primary + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', border: `1.5px solid ${C.primary}25`, flexShrink: 0 }}>
+                {tienda.logo_url
+                  ? <img src={tienda.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (tienda.emoji || '🏪')}
+              </div>
+              <span style={{ fontWeight: 900, fontSize: '1rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '160px' }}>
+                {tienda.nombre}
+              </span>
             </a>
 
-            {/* Carrito */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: totalItems > 0 ? C.primary : '#f1f5f9', color: totalItems > 0 ? '#fff' : '#64748b', border: 'none', borderRadius: '10px', padding: '8px 14px', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', position: 'relative', transition: 'all 0.2s' }}
-            >
-              🛒
-              {totalItems > 0 && (
-                <>
-                  <span>{totalItems}</span>
-                  <span style={{ opacity: 0.8 }}>·</span>
-                  <span>€{total.toFixed(2)}</span>
-                </>
-              )}
-              {totalItems === 0 && <span className="hide-xs">Carrito</span>}
-            </button>
+            {/* Spacer */}
+            <div style={{ flex: 1 }} />
+
+            {/* Selector de idioma */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f8fafc', borderRadius: '10px', padding: '4px', border: '1px solid #e2e8f0' }}>
+              {[
+                { code: 'es', flag: '🇪🇸' },
+                { code: 'it', flag: '🇮🇹' },
+                { code: 'en', flag: '🇬🇧' },
+              ].map(({ code, flag }) => (
+                <button
+                  key={code}
+                  onClick={() => changeLang(code)}
+                  title={code.toUpperCase()}
+                  style={{
+                    background: lang === code ? '#fff' : 'transparent',
+                    border: lang === code ? `1px solid ${C.primary}30` : '1px solid transparent',
+                    borderRadius: '7px', padding: '4px 7px', cursor: 'pointer',
+                    fontSize: '1rem', lineHeight: 1,
+                    boxShadow: lang === code ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {flag}
+                </button>
+              ))}
+            </div>
+
+            {/* Mi cuenta */}
+            <a href={`/store/${tienda.subdominio}/cuenta`} style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none', color: '#475569', fontWeight: 700, fontSize: '0.8rem', padding: '7px 12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#fff', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              👤 <span className="hide-xs">Mi cuenta</span>
+            </a>
           </div>
         </div>
-      </nav>
 
-      {/* ── Banner opcional ─────────────────────── */}
-      {config.banner_url && (
-        <div style={{ width: '100%', height: '380px', overflow: 'hidden', position: 'relative' }}>
-          <img src={config.banner_url} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 50%, rgba(15,23,42,0.35) 100%)' }} />
+        {/* ── Fila 2: Banner (ancho completo) ── */}
+        {config.banner_url && (
+          <div style={{ width: '100%', height: '360px', overflow: 'hidden', position: 'relative' }}>
+            <img src={config.banner_url} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 55%, rgba(15,23,42,0.4) 100%)' }} />
+          </div>
+        )}
+
+        {/* ── Fila 3 (sticky): Buscador + Carrito + Tabs de categorías ── */}
+        <div style={{ position: 'sticky', top: 0, zIndex: 50, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 16px' }}>
+          <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+
+            {/* Barra buscador + carrito */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', height: '56px' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.95rem', pointerEvents: 'none', color: '#94a3b8' }}>🔍</span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder={`Buscar en ${tienda.nombre}...`}
+                  style={{
+                    width: '100%', padding: '9px 36px 9px 38px', borderRadius: '12px',
+                    border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem',
+                    color: '#0f172a', outline: 'none', boxSizing: 'border-box',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={e => e.target.style.borderColor = C.primary}
+                  onBlur={e => e.target.style.borderColor = '#e2e8f0'}
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '0.9rem' }}>✕</button>
+                )}
+              </div>
+
+              {/* Carrito */}
+              <button
+                onClick={() => setIsCartOpen(true)}
+                style={{ display: 'flex', alignItems: 'center', gap: '7px', background: totalItems > 0 ? C.primary : '#f1f5f9', color: totalItems > 0 ? '#fff' : '#64748b', border: 'none', borderRadius: '10px', padding: '9px 14px', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', flexShrink: 0 }}
+              >
+                🛒
+                {totalItems > 0 && (
+                  <>
+                    <span>{totalItems}</span>
+                    <span style={{ opacity: 0.7 }}>·</span>
+                    <span>€{total.toFixed(2)}</span>
+                  </>
+                )}
+                {totalItems === 0 && <span className="hide-xs">Carrito</span>}
+              </button>
+            </div>
+
+            {/* Tabs de categorías deslizantes */}
+            {allCategories.length > 0 && !isSearchActive && (
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none' }}>
+                <button onClick={() => scrollToCategory(null)} style={{ flexShrink: 0, padding: '6px 14px', borderRadius: '99px', border: `1.5px solid ${activeCategory === null ? C.primary : '#e2e8f0'}`, background: activeCategory === null ? C.primary : '#fff', color: activeCategory === null ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                  Todos
+                </button>
+                {allCategories.map(cat => (
+                  <button key={cat.id} onClick={() => scrollToCategory(cat.id)} style={{ flexShrink: 0, padding: '6px 14px', borderRadius: '99px', border: `1.5px solid ${activeCategory === cat.id ? C.primary : '#e2e8f0'}`, background: activeCategory === cat.id ? C.primary : '#fff', color: activeCategory === cat.id ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                    {cat.nombre}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </header>
 
       {/* ── No acepta pedidos banner ──────────── */}
       {!aceptarPedidos && (
@@ -464,55 +519,10 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             </label>
           </div>
 
-          {/* Contacto */}
-          {(tienda.whatsapp || tienda.email) && (
-            <div style={{ padding: '16px 20px' }}>
-              <p style={{ margin: '0 0 10px', fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Contacto</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {tienda.whatsapp && (
-                  <a href={`https://wa.me/${tienda.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#16a34a', fontWeight: 600, textDecoration: 'none' }}>
-                    💬 WhatsApp
-                  </a>
-                )}
-                {tienda.email && (
-                  <a href={`mailto:${tienda.email}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#475569', fontWeight: 600, textDecoration: 'none' }}>
-                    ✉️ {tienda.email}
-                  </a>
-                )}
-                {configEnvios.retiro?.direccion && (
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569', display: 'flex', gap: '8px' }}>📍 {configEnvios.retiro.direccion}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Powered by */}
-          <div style={{ padding: '16px 20px', marginTop: 'auto', borderTop: '1px solid #f1f5f9' }}>
-            <a href="https://tiendaonline.it" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>
-              <p style={{ margin: 0, fontSize: '0.7rem', color: '#cbd5e1', fontWeight: 500 }}>
-                Desarrollado con <span style={{ color: C.primary, fontWeight: 800 }}>TIENDAONLINE</span> 🛍️
-              </p>
-            </a>
-          </div>
         </aside>
 
         {/* ══ CONTENIDO PRINCIPAL ════════════════ */}
         <main style={{ flex: 1, minWidth: 0 }}>
-
-          {/* Tabs de categorías (mobile + desktop) */}
-          {allCategories.length > 0 && !isSearchActive && (
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '20px', scrollbarWidth: 'none' }}>
-              {/* Botón "Todos" */}
-              <button onClick={() => scrollToCategory(null)} style={{ flexShrink: 0, padding: '7px 16px', borderRadius: '99px', border: `1.5px solid ${activeCategory === null ? C.primary : '#e2e8f0'}`, background: activeCategory === null ? C.primary : '#fff', color: activeCategory === null ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
-                Todos
-              </button>
-              {allCategories.map(cat => (
-                <button key={cat.id} onClick={() => scrollToCategory(cat.id)} style={{ flexShrink: 0, padding: '7px 16px', borderRadius: '99px', border: `1.5px solid ${activeCategory === cat.id ? C.primary : '#e2e8f0'}`, background: activeCategory === cat.id ? C.primary : '#fff', color: activeCategory === cat.id ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
-                  {cat.nombre}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* RESULTADOS DE BÚSQUEDA / FILTROS */}
           {isSearchActive ? (
@@ -690,8 +700,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               © {new Date().getFullYear()} <strong style={{ color: '#64748b' }}>{tienda.nombre}</strong> · Todos los derechos reservados
             </p>
             <a href="https://tiendaonline.it" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: '#334155', fontWeight: 600 }}>
-                Desarrollado con <span style={{ color: C.primary }}>TIENDAONLINE</span> 🛍️
+              <p style={{ margin: 0, fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600 }}>
+                Desarrollado con <span style={{ color: '#60a5fa', fontWeight: 900 }}>TIENDAONLINE</span> 🛍️
               </p>
             </a>
           </div>
