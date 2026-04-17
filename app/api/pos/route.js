@@ -30,7 +30,7 @@ export async function POST(req) {
     if (!tienda) throw new Error('No store found')
     tiendaId = tienda.id
 
-    const { clienteNombre, items, total, estado, subtotal, descuento, fiado } = await req.json()
+    const { clienteNombre, items, total, estado, subtotal, descuento, fiado, metodoPago } = await req.json()
 
     // 2. Reduce Stock
     const cartItems = items.filter(i => i.id !== 'ORDER_META')
@@ -60,6 +60,10 @@ export async function POST(req) {
     const orderNumber = (count || 0) + 101
     const codigo = `#POS-${orderNumber}`
 
+    // Extraer metodo_pago del ORDER_META si no viene como campo directo
+    const metaItem = items.find(i => i.id === 'ORDER_META')
+    const metaPago = metodoPago || metaItem?.metodo_pago || 'efectivo'
+
     // 4. Save as Order
     const { data: newOrder, error } = await supabaseAdmin
       .from('pedidos')
@@ -69,7 +73,10 @@ export async function POST(req) {
         cliente_nombre: clienteNombre || 'Caja Local',
         items: items,
         total,
-        estado: estado || 'confirmado'
+        estado: estado || 'confirmado',
+        metodo_pago: metaPago,
+        metodo_envio: 'retiro',
+        tipo_venta: 'POS'
       })
       .select()
       .single()

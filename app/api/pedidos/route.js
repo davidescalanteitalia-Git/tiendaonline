@@ -67,7 +67,7 @@ export async function POST(req) {
       .eq('tienda_id', tienda_id)
 
     const orderNumber = (count || 0) + 101
-    const codigo = `#C-${orderNumber}`
+    const codigo = `#WEB-${orderNumber}`
 
     // Include metadata in items or as a special structure if preferred
     // For now, we'll store metadata as a special item in the array to avoid schema errors
@@ -84,16 +84,20 @@ export async function POST(req) {
       }
     ]
 
-    // 2. Insert order
+    // 2. Insert order (guardamos también columnas de estado para facilitar queries SQL)
     const { data: newOrder, error } = await supabaseAdmin
       .from('pedidos')
       .insert({
         tienda_id,
         codigo,
         cliente_nombre,
+        cliente_telefono: whatsapp || null,
         items: enrichedItems,
         total,
-        estado: 'pendiente'
+        estado: 'pendiente',
+        metodo_pago: metodo_pago || 'efectivo',
+        metodo_envio: metodo_envio || 'retiro',
+        tipo_venta: 'Online'
       })
       .select()
       .single()

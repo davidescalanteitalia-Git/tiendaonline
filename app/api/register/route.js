@@ -6,6 +6,25 @@ export const dynamic = 'force-dynamic'
 export async function POST(req) {
   try {
     const { nombre, subdominio, whatsapp, email, password, sector, tipo_vendedor } = await req.json()
+
+    // Validaciones de entrada (FASE 2 de auditoría de seguridad)
+    if (!nombre || !subdominio || !email || !password) {
+      return NextResponse.json({ error: 'missing_fields' }, { status: 400 })
+    }
+    if (!/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/.test(subdominio)) {
+      return NextResponse.json({ error: 'invalid_subdomain' }, { status: 400 })
+    }
+    const RESERVED = ['www', 'api', 'admin', 'dashboard', 'login', 'register', 'store', 'app', 'administrador', 'cuenta', 'planes']
+    if (RESERVED.includes(subdominio)) {
+      return NextResponse.json({ error: 'subdomain_reserved' }, { status: 400 })
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'invalid_email' }, { status: 400 })
+    }
+    if (password.length < 8) {
+      return NextResponse.json({ error: 'password_too_short' }, { status: 400 })
+    }
+
     const supabaseAdmin = getSupabaseAdmin()
 
     // 1. Verificar que el subdominio no esté en uso
@@ -83,11 +102,12 @@ export async function POST(req) {
     }
 
     // PostHog: registrar evento de nueva tienda (fire-and-forget)
-    fetch('https://eu.i.posthog.com/capture/', {
+    const phKey = process.env.NEXT_PUBLIC_POSTHOG_KEY
+    if (phKey) fetch('https://eu.i.posthog.com/capture/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        api_key: 'phc_BiKU9NPq9aQjxs9EZoVM7DLb6EWuFLwxeZhmU6UNniLF',
+        api_key: phKey,
         event: 'tienda_registrada',
         distinct_id: userData.user.id,
         properties: {

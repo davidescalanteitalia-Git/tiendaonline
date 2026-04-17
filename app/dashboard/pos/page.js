@@ -228,7 +228,8 @@ export default function PosPage() {
           subtotal: subtotal,
           descuento: parseFloat(descuento || 0),
           estado: 'confirmado', // Venta de caja se asume cobrada y confirmada
-          fiado: metodoPago === 'fiado'
+          fiado: metodoPago === 'fiado',
+          metodoPago: metodoPago
         })
       })
 

@@ -19,7 +19,7 @@ export default function middleware(req) {
     req.headers.get('x-forwarded-host') ||
     req.headers.get('host') ||
     'tiendaonline.it';
-  
+
   hostname = hostname.split(':')[0].toLowerCase();
 
   const rootDomains = [
@@ -43,21 +43,12 @@ export default function middleware(req) {
     }
   }
 
-  // Debug headers para ver en el navegador
-  const headers = new Headers(req.headers);
-  headers.set('x-debug-hostname-detected', hostname);
-  headers.set('x-debug-is-subdomain', isSubdomain.toString());
-  headers.set('x-debug-current-host', currentHost || 'none');
-
   // Redirige subdominios → /store/[subdominio]
   if (currentHost && currentHost !== 'www' && currentHost !== 'localhost') {
     // Evitamos bucles infinitos si la URL ya empieza por /store
     if (!url.pathname.startsWith('/store')) {
       const rewriteUrl = new URL(`/store/${currentHost}${url.pathname}`, req.url);
-      console.log(`Middleware Rewrite: ${hostname} -> ${rewriteUrl.pathname}`);
-      const response = NextResponse.rewrite(rewriteUrl);
-      response.headers.set('x-debug-final-path', rewriteUrl.pathname);
-      return response;
+      return NextResponse.rewrite(rewriteUrl);
     }
   }
 

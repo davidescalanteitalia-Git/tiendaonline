@@ -56,15 +56,22 @@ export async function POST(req) {
 
     if (id && abono !== undefined) {
       // Registrar abono a cuenta corriente
-      const { data: cliente } = await supabaseAdmin.from('clientes').select('*').eq('id', id).single()
-      if (!cliente) throw new Error('Cliente no encontrado')
+      // Verificamos tienda_id para evitar que un dueño modifique clientes de otra tienda
+      const { data: cliente } = await supabaseAdmin
+        .from('clientes')
+        .select('*')
+        .eq('id', id)
+        .eq('tienda_id', tienda.id)
+        .single()
+      if (!cliente) throw new Error('Cliente no encontrado o no pertenece a esta tienda')
 
       const nuevaDeuda = Math.max(0, cliente.deuda_actual - parseFloat(abono))
-      
+
       const { data: actualizado, error } = await supabaseAdmin
         .from('clientes')
         .update({ deuda_actual: nuevaDeuda })
         .eq('id', id)
+        .eq('tienda_id', tienda.id)
         .select()
         .single()
         

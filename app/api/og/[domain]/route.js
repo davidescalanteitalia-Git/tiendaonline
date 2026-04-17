@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
+import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'edge'
 
@@ -7,7 +7,12 @@ export async function GET(request, { params }) {
   const { domain } = params
 
   try {
-    const supabase = getSupabaseAdmin()
+    // En Edge Runtime usamos el cliente anon (datos de tiendas son públicos via RLS)
+    // No usamos getSupabaseAdmin (singleton Node.js) porque no es compatible con Edge Runtime
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
     const { data: tienda } = await supabase
       .from('tiendas')
       .select('nombre, descripcion, emoji, logo_url, whatsapp, config_diseno')

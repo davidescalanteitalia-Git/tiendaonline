@@ -13,14 +13,34 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
+  // Security Headers — FASE 3 de la auditoría de seguridad (Sesión 14)
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()'
+          },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+        ],
+      },
+    ]
+  },
 }
 
 // Solo aplicamos Sentry si hay auth token disponible (evita fallos de build en Coolify)
 const hasSentryToken = !!process.env.SENTRY_AUTH_TOKEN
+const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN ||
+  'https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984'
 
 export default hasSentryToken
   ? withSentryConfig(nextConfig, {
-      dsn: 'https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984',
+      dsn: sentryDsn,
       org: 'deibys-david-escalante-rodrigu',
       project: 'tiendaonline',
       sourcemaps: {

@@ -35,7 +35,8 @@ export default function LoginPage() {
       return
     }
 
-    if (data.user?.email === 'davidescalanteitalia@gmail.com') {
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'davidescalanteitalia@gmail.com'
+    if (data.user?.email === adminEmail) {
       router.push('/administrador')
     } else {
       router.push('/dashboard')

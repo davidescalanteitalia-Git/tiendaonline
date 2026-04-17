@@ -78,12 +78,12 @@ export default function MisPedidosPage() {
         telefono: cli.telefono || '',
         fecha_nacimiento: cli.fecha_nacimiento || ''
       })
-      fetchPedidos(cli.tienda_id, cli.email || sess.user.email)
+      fetchPedidos(cli.tienda_id, cli.email || sess.user.email, cli.telefono || '')
     }
   }
 
-  async function fetchPedidos(tiendaId, email) {
-    if (!tiendaId || !email) return
+  async function fetchPedidos(tiendaId, email, telefono) {
+    if (!tiendaId) return
     const { data } = await supabase
       .from('pedidos')
       .select('*')
@@ -91,16 +91,26 @@ export default function MisPedidosPage() {
       .order('created_at', { ascending: false })
       .limit(50)
 
-    // Filtrar pedidos que coincidan con el email del cliente
+    // Filtrar pedidos que coincidan con email, teléfono o nombre del cliente
+    const normalPhone = (telefono || '').replace(/\D/g, '')
     const misPedidos = (data || []).filter(p => {
       const meta = (p.items || []).find(i => i.id === 'ORDER_META') || {}
-      return meta.email === email || p.cliente_nombre === (cliente?.nombre || '')
+      const metaPhone = (meta.whatsapp || '').replace(/\D/g, '')
+      const colPhone = (p.cliente_telefono || '').replace(/\D/g, '')
+      const matchEmail = email && meta.email === email
+      // Comparar con teléfono en ORDER_META (legacy) o en columna cliente_telefono (nuevo)
+      const matchPhone = normalPhone && (
+        (metaPhone && metaPhone === normalPhone) ||
+        (colPhone && colPhone === normalPhone)
+      )
+      const matchNombre = cliente?.nombre && p.cliente_nombre === cliente.nombre
+      return matchEmail || matchPhone || matchNombre
     })
     setPedidos(misPedidos)
 
     // Suscripción realtime
     supabase
-      .channel(`mis-pedidos-${tiendaId}-${email}`)
+      .channel(`mis-pedidos-${tiendaId}-${email || telefono}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',

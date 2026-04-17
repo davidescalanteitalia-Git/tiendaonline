@@ -14,7 +14,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 
-const ADMIN_EMAIL = 'davidescalanteitalia@gmail.com'
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'davidescalanteitalia@gmail.com'
 
 export default function AdminLayout({ children }) {
   const router = useRouter()

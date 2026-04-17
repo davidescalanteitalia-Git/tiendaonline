@@ -1592,3 +1592,163 @@ curl -X POST https://tiendaonline.it/api/register \
 > **Nota para la Sesión 15:** Comenzar SIEMPRE por la FASE 1 (Coolify → vars de entorno → git push).
 > Las FASES 2-4 pueden hacerse en cualquier orden después.
 > Tiempo total estimado: **~6 horas** (puede dividirse en dos sesiones de 3h).
+
+---
+
+## [2026-04-17] Sesión 15 — Correcciones de bugs críticos + Aplicación del Plan de Seguridad
+
+### Objetivo
+Revisar el historial técnico completo, diagnosticar bugs acumulados y aplicar las correcciones de seguridad planificadas en la Sesión 14.
+
+---
+
+### Parte A — Bugs corregidos en código
+
+#### Bug 1: Código de pedido online `#C-` → `#WEB-`
+- **Archivo:** `app/api/pedidos/route.js`
+- **Síntoma:** Los pedidos online generaban código `#C-102` en lugar de `#WEB-102` como documenta la arquitectura.
+- **Fix:** Cambiado `#C-${orderNumber}` → `#WEB-${orderNumber}`.
+
+#### Bug 2: `/api/pos` no guardaba `metodo_pago`, `metodo_envio` ni `tipo_venta` en columnas de la tabla
+- **Archivos:** `app/api/pos/route.js`, `app/dashboard/pos/page.js`
+- **Síntoma:** El INSERT en `pedidos` desde el POS solo incluía `codigo`, `cliente_nombre`, `items`, `total`, `estado`. Las columnas de tipo de pago y venta quedaban NULL.
+- **Fix:** La API ahora extrae `metodoPago` del body (nuevo campo) o del `ORDER_META` del `items` JSONB. El INSERT incluye `metodo_pago`, `metodo_envio: 'retiro'`, `tipo_venta: 'POS'`.
+- **Fix frontend:** `pos/page.js` ahora envía `metodoPago` como campo explícito en el body del fetch.
+
+#### Bug 3: `/api/pedidos` (checkout online) no guardaba `metodo_pago`, `metodo_envio`, `tipo_venta` ni `cliente_telefono`
+- **Archivo:** `app/api/pedidos/route.js`
+- **Fix:** El INSERT ahora incluye `metodo_pago`, `metodo_envio`, `tipo_venta: 'Online'`, `cliente_telefono: whatsapp || null`.
+
+#### Bug 4: `/api/og/[domain]` usaba `getSupabaseAdmin` (singleton Node.js) en Edge Runtime
+- **Archivo:** `app/api/og/[domain]/route.js`
+- **Síntoma:** El Edge Runtime no es compatible con el módulo singleton de Node.js. Podía causar errores silenciosos o imágenes OG vacías en producción.
+- **Fix:** Reemplazado `getSupabaseAdmin()` por `createClient(SUPABASE_URL, SUPABASE_ANON_KEY)` inline. Los datos de tiendas son públicos (RLS permite SELECT a anon), por lo que usar la anon key es correcto y seguro.
+
+#### Bug 5: Portal `mis-pedidos` filtraba por `meta.email` que nunca se guardaba
+- **Archivo:** `app/store/[domain]/mis-pedidos/page.js`
+- **Síntoma:** El ORDER_META de los pedidos nunca incluía el campo `email` del comprador (el checkout público no pide email). El filtro `meta.email === email` siempre era false.
+- **Fix:** El filtro ahora incluye 3 criterios combinados en OR:
+  1. `meta.email === email` (legacy, si algún día se añade el campo)
+  2. Comparación de teléfono: `meta.whatsapp` (ORDER_META legacy) O `p.cliente_telefono` (columna nueva) con el teléfono del cliente registrado
+  3. `p.cliente_nombre === cliente.nombre` (fallback por nombre)
+- También se pasa `telefono` del perfil del cliente a `fetchPedidos`.
+
+#### Bug 6 (seguridad): `/api/clientes` — el abono no verificaba `tienda_id`
+- **Archivo:** `app/api/clientes/route.js`
+- **Síntoma:** El UPDATE de `deuda_actual` buscaba el cliente solo por `id`, sin verificar que pertenezca a la tienda del usuario autenticado. Un atacante con IDs conocidos podría modificar deudas de clientes de otras tiendas.
+- **Fix:** El SELECT y el UPDATE ahora incluyen `.eq('tienda_id', tienda.id)`.
+
+---
+
+### Parte B — Migración de base de datos aplicada
+
+```sql
+-- Columnas nuevas en pedidos (faltaban — el código las usaba pero no existían en DB)
+ALTER TABLE public.pedidos
+  ADD COLUMN IF NOT EXISTS metodo_pago    TEXT,
+  ADD COLUMN IF NOT EXISTS metodo_envio   TEXT,
+  ADD COLUMN IF NOT EXISTS tipo_venta     TEXT,
+  ADD COLUMN IF NOT EXISTS cliente_telefono TEXT;
+
+-- Migrar datos existentes desde columnas inglés → español
+UPDATE public.pedidos
+SET
+  metodo_pago  = COALESCE(payment_method, metodo_pago),
+  tipo_venta   = COALESCE(order_type, tipo_venta)
+WHERE metodo_pago IS NULL OR tipo_venta IS NULL;
+
+-- Índices nuevos
+CREATE INDEX IF NOT EXISTS idx_pedidos_tipo_venta ON public.pedidos(tipo_venta);
+CREATE INDEX IF NOT EXISTS idx_pedidos_cliente_telefono ON public.pedidos(cliente_telefono);
+```
+
+#### Políticas RLS añadidas
+
+| Tabla | Política | Descripción |
+|-------|----------|-------------|
+| `clientes` | `Cliente puede leer su perfil` | `FOR SELECT TO authenticated WHERE user_id = auth.uid()` |
+| `clientes` | `Cliente puede actualizar su perfil` | `FOR UPDATE TO authenticated WHERE user_id = auth.uid()` |
+| `pedidos` | `Cliente puede leer pedidos de su tienda` | `FOR SELECT TO authenticated WHERE tienda_id IN (SELECT tienda_id FROM clientes WHERE user_id = auth.uid())` |
+
+> ⚠️ Sin estas políticas, el Portal del Cliente no podía leer sus propios datos desde el navegador (el query directo con supabase client fallaba en silencio por RLS).
+
+#### Trigger añadido
+
+```sql
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN NEW.updated_at = NOW(); RETURN NEW; END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_clientes_updated_at
+  BEFORE UPDATE ON public.clientes
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+```
+
+> El código de `api/auth/cliente` (PUT) seteaba `updated_at` manualmente en el UPDATE. Con el trigger ya no es necesario, pero dejarlo no causa daño (el trigger sobreescribe el valor de todas formas).
+
+---
+
+### Parte C — Correcciones de seguridad (Plan de Sesión 14 aplicado)
+
+#### FASE 1 — Variables de entorno (deshardecodear secrets)
+
+| Archivo | Cambio |
+|---------|--------|
+| `components/PostHogProvider.js` | `POSTHOG_KEY` literal → `process.env.NEXT_PUBLIC_POSTHOG_KEY` |
+| `app/api/register/route.js` | `api_key` hardcodeado → `process.env.NEXT_PUBLIC_POSTHOG_KEY` (solo captura si var existe) |
+| `lib/supabase-admin.js` | email admin literal → `process.env.ADMIN_EMAIL \|\| fallback` |
+| `app/administrador/layout.js` | `ADMIN_EMAIL` literal → `process.env.NEXT_PUBLIC_ADMIN_EMAIL \|\| fallback` |
+| `app/login/page.js` | email admin literal → `process.env.NEXT_PUBLIC_ADMIN_EMAIL \|\| fallback` |
+| `next.config.mjs` | DSN Sentry literal → `process.env.NEXT_PUBLIC_SENTRY_DSN \|\| fallback` |
+| `sentry.client.config.js` | DSN literal → `process.env.NEXT_PUBLIC_SENTRY_DSN \|\| fallback` |
+| `sentry.server.config.js` | DSN literal → `process.env.NEXT_PUBLIC_SENTRY_DSN \|\| fallback` |
+| `sentry.edge.config.js` | DSN literal → `process.env.NEXT_PUBLIC_SENTRY_DSN \|\| fallback` |
+
+> ⚠️ **ACCIÓN REQUERIDA:** Añadir en Coolify → Variables de entorno:
+> - `NEXT_PUBLIC_POSTHOG_KEY` = `phc_BiKU9NPq9aQjxs9EZoVM7DLb6EWuFLwxeZhmU6UNniLF`
+> - `NEXT_PUBLIC_POSTHOG_HOST` = `https://eu.i.posthog.com`
+> - `ADMIN_EMAIL` = `davidescalanteitalia@gmail.com`
+> - `NEXT_PUBLIC_ADMIN_EMAIL` = `davidescalanteitalia@gmail.com`
+> - `NEXT_PUBLIC_SENTRY_DSN` = `https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984`
+
+#### FASE 2 — Validaciones de entrada en APIs
+
+**`app/api/register/route.js`** — añadidas validaciones antes de tocar la DB:
+- Campos requeridos: `nombre`, `subdominio`, `email`, `password`
+- Regex subdominio: `/^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/`
+- Lista de subdominios reservados: `www`, `api`, `admin`, `dashboard`, `login`, `register`, `store`, `app`, `administrador`, `cuenta`, `planes`
+- Regex email básico
+- Contraseña mínimo 8 caracteres
+
+**`app/api/auth/cliente/route.js`** — añadida validación de dominio al inicio del POST:
+- Regex dominio: `/^[a-z0-9-]{1,30}$/` — previene path traversal e inyección
+
+#### FASE 3 — Security Headers HTTP
+
+**`next.config.mjs`** — añadido bloque `headers()` con:
+- `X-Frame-Options: SAMEORIGIN`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- `X-DNS-Prefetch-Control: on`
+
+**`middleware.js`** — eliminados debug headers expuestos en producción (`x-debug-*`). También eliminado el `console.log` del rewrite de subdominios.
+
+---
+
+### Resumen del estado de seguridad post-Sesión 15
+
+| Issue | Estado |
+|-------|--------|
+| SEC-01: PostHog key hardcodeada | ✅ Movida a env var |
+| SEC-02: Email admin hardcodeado | ✅ Movido a env var (con fallback) |
+| SEC-03: DSN Sentry en código fuente | ✅ Movido a env var (con fallback) |
+| SEC-05: Sin validaciones en API register | ✅ Añadidas validaciones regex + campos requeridos |
+| SEC-06: Sin Security Headers | ✅ Añadidos 5 headers en next.config.mjs |
+| SEC-08/09: Debug headers expuestos | ✅ Eliminados del middleware |
+| Bug abono sin tienda_id | ✅ Corregido |
+| RLS Portal del Cliente | ✅ Añadidas 3 políticas |
+
+> ⚠️ SEC-04 (Rate Limiting) sigue pendiente — requiere integración con Upstash Redis o middleware de terceros.
+

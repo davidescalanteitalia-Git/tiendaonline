@@ -4,8 +4,8 @@ import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
 // ── PostHog config ─────────────────────────────────────────────────────────────
-const POSTHOG_KEY = 'phc_BiKU9NPq9aQjxs9EZoVM7DLb6EWuFLwxeZhmU6UNniLF'
-const POSTHOG_HOST = 'https://eu.i.posthog.com'
+const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY || ''
+const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://eu.i.posthog.com'
 
 let _ph = null
 

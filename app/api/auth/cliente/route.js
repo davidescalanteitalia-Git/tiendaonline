@@ -8,6 +8,11 @@ export async function POST(request) {
     const body = await request.json()
     const { email, password, nombre, telefono, fecha_nacimiento, domain } = body
 
+    // Validar dominio — evitar path traversal e inyección
+    if (!domain || !/^[a-z0-9-]{1,30}$/.test(domain)) {
+      return NextResponse.json({ error: 'Dominio inválido' }, { status: 400 })
+    }
+
     // Email y contraseña son los únicos requisitos mínimos
     if (!email || !password) {
       return NextResponse.json({ error: 'Email y contraseña son requeridos' }, { status: 400 })
