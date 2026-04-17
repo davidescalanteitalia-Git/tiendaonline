@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
 // ── PostHog config ─────────────────────────────────────────────────────────────
@@ -42,8 +42,8 @@ async function initPostHog() {
   }
 }
 
-// ── Provider principal ─────────────────────────────────────────────────────────
-export default function PostHogProvider({ children }) {
+// ── Tracker interno que usa useSearchParams (debe estar dentro de <Suspense>) ──
+function PostHogPageTracker() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
@@ -60,7 +60,19 @@ export default function PostHogProvider({ children }) {
     })
   }, [pathname, searchParams])
 
-  return children
+  return null
+}
+
+// ── Provider principal ─────────────────────────────────────────────────────────
+export default function PostHogProvider({ children }) {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <PostHogPageTracker />
+      </Suspense>
+      {children}
+    </>
+  )
 }
 
 // ── Funciones de tracking exportadas (usar en cualquier componente) ─────────────
