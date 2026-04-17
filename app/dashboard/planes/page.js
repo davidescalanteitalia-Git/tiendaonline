@@ -9,14 +9,14 @@ const PLANES_ORDEN = ['gratis', 'basico', 'pro', 'grow']
 
 const STRIPE_PRICE_IDS = {
   mensual: {
-    basico: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_MO || 'price_mock_basico_mo',
-    pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MO || 'price_mock_pro_mo',
-    grow: process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_MO || 'price_mock_grow_mo',
+    basico: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_MO || 'price_1TNFMn7BdqFx9FaONU1aO9h5',
+    pro:    process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MO    || 'price_1TNFMw7BdqFx9FaO3REVUH6R',
+    grow:   process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_MO   || 'price_1TNFN57BdqFx9FaOK54593Pq',
   },
   anual: {
-    basico: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_YR || 'price_mock_basico_yr',
-    pro: process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YR || 'price_mock_pro_yr',
-    grow: process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_YR || 'price_mock_grow_yr',
+    basico: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_YR || 'price_1TNFMr7BdqFx9FaO5x9Cd2hk',
+    pro:    process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YR    || 'price_1TNFN17BdqFx9FaOoJWvQv4D',
+    grow:   process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_YR   || 'price_1TNFN97BdqFx9FaOe58Mqzc5',
   }
 }
 
@@ -94,6 +94,18 @@ export default function PlanesPage() {
   const [tienda, setTienda] = useState(null)
   const [loading, setLoading] = useState(true)
   const [anualizacion, setAnualizacion] = useState(false)
+  const [procesando, setProcesando] = useState(null) // key del plan que está procesando
+
+  useEffect(() => {
+    // Detectar redirect post-checkout de Stripe
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('success') === 'true') {
+      alert('✅ ¡Suscripción activada! Tu plan se actualizará en unos segundos.')
+    }
+    if (params.get('canceled') === 'true') {
+      alert('Pago cancelado. Puedes intentarlo de nuevo cuando quieras.')
+    }
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -106,10 +118,10 @@ export default function PlanesPage() {
 
         const headers = { Authorization: `Bearer ${session.access_token}` }
         const r = await fetch('/api/me', { headers })
-        
+
         if (r.ok) {
-           const d = await r.json()
-           setTienda(d.tienda || null)
+          const d = await r.json()
+          setTienda(d.tienda || null)
         }
       } catch (err) {
         console.error(err)
@@ -121,6 +133,71 @@ export default function PlanesPage() {
   }, [])
 
   const info = tienda ? getPlan(tienda) : null
+
+  async function handleSuscribir(planKey) {
+    if (planKey === 'gratis') {
+      if (confirm('¿Confirmas que quieres pasar al plan Gratis? Si tenías datos pro se ocultarán.')) {
+        alert('El downgrade debe hacerse cancelando desde el portal en Stripe (Próximamente).')
+      }
+      return
+    }
+
+    if (planKey === 'grow') {
+      window.location.href = 'mailto:hola@tiendaonline.it?subject=Consulta Plan Grow'
+      return
+    }
+
+    // Planes básico y pro → checkout Stripe
+    const ciclo = anualizacion ? 'anual' : 'mensual'
+    const priceId = STRIPE_PRICE_IDS[ciclo][planKey]
+
+    if (!priceId || priceId.startsWith('price_mock')) {
+      alert('El sistema de pagos aún no está configurado. Contacta soporte en hola@tiendaonline.it')
+      return
+    }
+
+    if (!tienda?.id) {
+      alert('Error: no se pudo identificar tu tienda. Recarga la página e intenta de nuevo.')
+      return
+    }
+
+    setProcesando(planKey)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Sesión expirada')
+
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ priceId, tiendaId: tienda.id }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Error desconocido')
+      }
+
+      const { url } = await res.json()
+      if (url) {
+        registrarEvento(EVENTOS.PLAN_CLICK_UPGRADE, {
+          plan_seleccionado: planKey,
+          plan_actual: info?.planKey,
+          ciclo,
+          price_id: priceId,
+        })
+        window.location.href = url
+      }
+    } catch (err) {
+      console.error('Error iniciando checkout:', err)
+      alert(`No se pudo iniciar el pago: ${err.message}`)
+    } finally {
+      setProcesando(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -200,6 +277,7 @@ export default function PlanesPage() {
           const precio = anualizacion && plan.precio > 0
             ? Math.round(plan.precio * 0.8)
             : plan.precio
+          const estaProcesando = procesando === key
 
           return (
             <div
@@ -278,82 +356,48 @@ export default function PlanesPage() {
 
               {/* Botón */}
               <button
-                disabled={esActual && !info?.esTrial}
+                disabled={(esActual && !info?.esTrial) || estaProcesando}
+                onClick={() => handleSuscribir(key)}
                 style={{
                   marginTop: 4,
                   padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: esActual && !info?.esTrial ? '#f1f5f9' : cfg.color,
-                  color: esActual && !info?.esTrial ? '#94a3b8' : '#fff',
+                  background: (esActual && !info?.esTrial) || estaProcesando ? '#f1f5f9' : cfg.color,
+                  color: (esActual && !info?.esTrial) || estaProcesando ? '#94a3b8' : '#fff',
                   fontWeight: 700, fontSize: '0.9rem',
-                  cursor: esActual && !info?.esTrial ? 'default' : 'pointer',
+                  cursor: (esActual && !info?.esTrial) || estaProcesando ? 'default' : 'pointer',
                   width: '100%',
-                }}
-                onClick={async () => {
-                  registrarEvento(EVENTOS.PLAN_CLICK_UPGRADE, {
-                    plan_seleccionado: key,
-                    plan_actual: info?.planKey,
-                    es_trial: info?.esTrial,
-                    dias_trial: info?.diasRestantesTrial,
-                  })
-                  if (key === 'gratis') {
-                    if (confirm('¿Confirmas que quieres pasar al plan Gratis? Si tenías datos pro se ocultarán.')) {
-                      alert('El downgrade debe hacerse cancelando desde el portal en Stripe (Próximamente).')
-                    }
-                    return
-                  }
-                  if (key === 'grow') {
-                    window.location.href = 'mailto:hola@tiendaonline.it?subject=Consulta Plan Grow'
-                    return
-                  }
-                  
-                  const priceId = anualizacion ? STRIPE_PRICE_IDS.anual[key] : STRIPE_PRICE_IDS.mensual[key]
-                  
-                  try {
-                    const { data: { session } } = await supabase.auth.getSession()
-                    const token = session?.access_token
-                    
-                    const res = await fetch('/api/stripe/checkout', {
-                        method: 'POST',
-                        headers: {
-                           'Content-Type': 'application/json',
-                           'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ priceId, tiendaId: tienda.id })
-                    })
-                    const data = await res.json()
-                    
-                    if (data.url) {
-                        // Redirige al Hosted Checkout seguro de Stripe
-                        window.location.href = data.url
-                    } else {
-                        alert(data.error || 'Error conectando con la pasarela')
-                    }
-                  } catch (e) {
-                    alert('Oops, hubo un error de conexión intentando abrir el cajero.')
-                  }
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'opacity 0.15s',
                 }}
               >
-                {esActual && !info?.esTrial
-                  ? 'Plan actual'
-                  : key === 'gratis'
-                    ? 'Usar plan Gratis'
-                    : key === 'grow'
-                      ? 'Contactar →'
-                      : 'Empezar ahora →'
-                }
+                {estaProcesando ? (
+                  <>
+                    <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #cbd5e1', borderTopColor: '#64748b', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                    Procesando…
+                  </>
+                ) : esActual && !info?.esTrial ? (
+                  'Plan actual'
+                ) : key === 'gratis' ? (
+                  'Cambiar a Gratis'
+                ) : key === 'grow' ? (
+                  'Contactar ventas'
+                ) : (
+                  `Suscribirse — €${precio}/mes`
+                )}
               </button>
             </div>
           )
         })}
       </div>
 
-      {/* Nota */}
-      <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.78rem', color: '#94a3b8' }}>
-        0% de comisión por venta en todos los planes · Alta gratis · Cancela cuando quieras<br />
-        ¿Tienes dudas? Escríbenos a <a href="mailto:hola@tiendaonline.it" style={{ color: '#64748b' }}>hola@tiendaonline.it</a>
+      {/* Nota legal */}
+      <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#94a3b8', marginTop: 32 }}>
+        El pago se procesa de forma segura a través de Stripe. Puedes cancelar en cualquier momento desde tu perfil.
+        Los precios incluyen IVA según la legislación aplicable.
       </p>
 
       <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
         @media (max-width: 600px) {
           .planes-grid { grid-template-columns: 1fr !important; }
         }

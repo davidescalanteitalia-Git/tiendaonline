@@ -2161,4 +2161,157 @@ GET  /api/fiscale/stato/[id]    → consulta estado del documento en el SDI
 ### Fuentes y documentación oficial
 
 - [Agenzia delle Entrate — Fatturazione Elettronica](https://www.agenziaentrate.gov.it/portale/aree-tematiche/fatturazione-elettronica)
-- [Agenzia delle Entrate — Corrispett
+- [Agenzia delle Entrate — Corrispettivi Elettronici](https://www.agenziaentrate.gov.it/portale/aree-tematiche/corrispettivi-elettronici)
+- [Invoicetronic API Docs](https://docs.invoicetronic.it)
+- [A-Cube API Docs](https://docs.a-cube.io)
+
+---
+
+## [2026-04-17] Sesión 17 — Finalización Integración Stripe (Checkout + Webhook)
+
+### Objetivo
+Completar la integración de Stripe para activar suscripciones de pago reales en TIENDAONLINE. El código de backend ya existía desde sesiones anteriores pero el frontend estaba incompleto y el webhook tenía lógica hardcodeada.
+
+---
+
+### Cambios aplicados
+
+#### A — `app/dashboard/planes/page.js` — Componente reescrito completamente
+
+El archivo estaba **truncado en la línea 305** (cortado a mitad del handler del botón), lo que hacía el componente inválido sintácticamente. Se reescribió completo con las siguientes mejoras:
+
+**Nuevo estado `procesando`:**
+```js
+const [procesando, setProcesando] = useState(null) // key del plan en proceso
+```
+Muestra spinner y deshabilita el botón durante el checkout, evitando doble clic.
+
+**Detección de redirect post-checkout:**
+```js
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('success') === 'true') {
+    alert('✅ ¡Suscripción activada! Tu plan se actualizará en unos segundos.')
+  }
+  if (params.get('canceled') === 'true') {
+    alert('Pago cancelado. Puedes intentarlo de nuevo cuando quieras.')
+  }
+}, [])
+```
+Stripe redirige a `/dashboard/planes?success=true` o `?canceled=true` — ahora se muestran mensajes al usuario.
+
+**Función `handleSuscribir(planKey)` — llamada real a la API:**
+```js
+async function handleSuscribir(planKey) {
+  // Validación de price_id (detecta si aún son mocks)
+  if (!priceId || priceId.startsWith('price_mock')) {
+    alert('El sistema de pagos aún no está configurado. Contacta soporte.')
+    return
+  }
+  // Llamada autenticada a /api/stripe/checkout
+  const res = await fetch('/api/stripe/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ priceId, tiendaId: tienda.id }),
+  })
+  const { url } = await res.json()
+  window.location.href = url  // redirige a Stripe Hosted Checkout
+}
+```
+
+**Textos dinámicos en botones:**
+- Plan actual → "Plan actual" (deshabilitado)
+- Plan gratis → "Cambiar a Gratis"
+- Plan grow → "Contactar ventas" (mailto:)
+- Planes básico/pro → "Suscribirse — €XX/mes"
+- Procesando → spinner + "Procesando…"
+
+**Responsive mobile:**
+```css
+@media (max-width: 600px) { .planes-grid { grid-template-columns: 1fr !important; } }
+```
+
+---
+
+#### B — `app/api/stripe/webhook/route.js` — Fix mapeo priceId → plan
+
+**Problema:** La línea `const newPlan = 'pro'` hardcodeaba el mismo plan para cualquier suscripción, sin importar qué precio había comprado el usuario.
+
+**Solución — Mapeo dinámico via env vars:**
+```js
+const PRICE_TO_PLAN = {
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_MO]: 'basico',
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_BASICO_YR]: 'basico',
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_MO]:    'pro',
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_PRO_YR]:    'pro',
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_MO]:   'grow',
+  [process.env.NEXT_PUBLIC_STRIPE_PRICE_GROW_YR]:   'grow',
+}
+const newPlan = PRICE_TO_PLAN[priceId] || 'basico'
+```
+
+Aplicado en **dos eventos**:
+- `checkout.session.completed` — al confirmar pago inicial
+- `customer.subscription.updated` — al reactivar una suscripción vencida/recuperada
+
+---
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/dashboard/planes/page.js` | Reescrito completo — botones funcionales con Stripe checkout real, spinner, detección redirect |
+| `app/api/stripe/webhook/route.js` | Mapeo dinámico priceId → plan en eventos `checkout.session.completed` y `customer.subscription.updated` |
+
+---
+
+### Estado de la integración Stripe post-Sesión 17
+
+| Componente | Estado |
+|-----------|--------|
+| `lib/stripe.js` | ✅ Cliente Stripe configurado |
+| `app/api/stripe/checkout/route.js` | ✅ Crea sesión Stripe Hosted Checkout |
+| `app/api/stripe/webhook/route.js` | ✅ Mapeo dinámico priceId → plan (fix aplicado) |
+| `stripe_migration.sql` | ✅ Listo para ejecutar en Supabase |
+| `app/dashboard/planes/page.js` | ✅ Botones funcionales con checkout real |
+
+---
+
+### Pasos manuales restantes para activar pagos reales
+
+**Estos pasos los realiza el dueño del proyecto (David) en los dashboards externos:**
+
+1. **Stripe Dashboard → Products:** Crear 6 precios:
+   - Básico mensual (€15/mes), Básico anual (€144/año = €12/mes)
+   - Pro mensual (€25/mes), Pro anual (€240/año = €20/mes)
+   - Grow mensual (€40/mes), Grow anual (€384/año = €32/mes)
+
+2. **Coolify → Variables de entorno** (agregar):
+   ```
+   STRIPE_SECRET_KEY=sk_live_...
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   NEXT_PUBLIC_STRIPE_PRICE_BASICO_MO=price_...
+   NEXT_PUBLIC_STRIPE_PRICE_BASICO_YR=price_...
+   NEXT_PUBLIC_STRIPE_PRICE_PRO_MO=price_...
+   NEXT_PUBLIC_STRIPE_PRICE_PRO_YR=price_...
+   NEXT_PUBLIC_STRIPE_PRICE_GROW_MO=price_...
+   NEXT_PUBLIC_STRIPE_PRICE_GROW_YR=price_...
+   NEXT_PUBLIC_APP_URL=https://tiendaonline.it
+   ```
+
+3. **Supabase → SQL Editor:** Ejecutar `stripe_migration.sql` (añade columnas `stripe_customer_id`, `stripe_subscription_id`, `stripe_price_id` a tabla `tiendas`)
+
+4. **Stripe Dashboard → Webhooks:** Configurar endpoint `https://tiendaonline.it/api/stripe/webhook` con eventos:
+   - `checkout.session.completed`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   Copiar el `whsec_...` resultante a Coolify como `STRIPE_WEBHOOK_SECRET`
+
+---
+
+### Próxima prioridad: Resend (emails transaccionales)
+
+Con Stripe listo, el siguiente bloque crítico pre-lanzamiento es:
+- Email de bienvenida al registrar tienda
+- Email de recuperación de contraseña (actualmente sin envío real)
+- Email de aviso: "Tu trial expira en 3 días"
