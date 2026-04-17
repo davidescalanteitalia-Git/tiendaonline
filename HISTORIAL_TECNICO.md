@@ -2486,5 +2486,101 @@ Modo: TEST (tarjetas de prueba, sin dinero real)
 | 🔴 Pendiente | **Pasar a Stripe LIVE** — crear productos/precios con `sk_live_...` y actualizar Coolify |
 | 🔴 Pendiente | **Resend** — emails transaccionales (bienvenida, trial, recuperación de contraseña) |
 | 🔴 Pendiente | **Actualizar Supabase a Plan Pro** antes del lanzamiento público |
-| 🟡 Pendiente | Verificar redeploy exitoso en Coolify tras añadir variables |
+| ✅ Hecho | Incident de seguridad resuelto — webhook secret rotado y Coolify actualizado |
+| ✅ Hecho | Fix crítico layout.js truncado — build de Coolify restaurado |
+| ✅ Hecho | GitHub MCP configurado en `.mcp.json` |
 | 🟡 Pendiente | Prueba end-to-end del checkout con tarjeta `4242 4242 4242 4242` |
+| 🔴 Pendiente | **Pasar a Stripe LIVE** — crear productos/precios con `sk_live_...` y actualizar Coolify |
+| 🔴 Pendiente | **Resend** — emails transaccionales (bienvenida, trial, recuperación de contraseña) |
+| 🔴 Pendiente | **Actualizar Supabase a Plan Pro** antes del lanzamiento público |
+
+---
+
+## SESIÓN 19 — Incidente de Seguridad + Fix Build + GitHub MCP
+**Fecha:** 2026-04-18
+
+### Resumen
+Sesión de mantenimiento y seguridad. Se resolvió un incidente de exposición de secreto en GitHub, se reparó un build roto en Coolify, y se configuró el MCP de GitHub para futuras sesiones.
+
+---
+
+### A — Incidente de Seguridad: Stripe Webhook Secret Expuesto
+
+**Qué pasó:**
+- Al documentar la Sesión 18 en `HISTORIAL_TECNICO.md`, el valor literal del Stripe webhook secret (`whsec_R7JygyubX9mrcDjkfg7zwwq4Asu6u0yt`) fue escrito en el documento y empujado al repositorio público en el commit `b3b528d`.
+- GitHub Secret Scanning detectó la exposición automáticamente y envió un email de alerta.
+- GitGuardian (servicio de terceros) también detectó el mismo secreto.
+
+**Acciones tomadas:**
+1. **Rotación en Stripe** — En el Dashboard de Stripe (`Desarrolladores → Workbench → Webhooks → charming-harmony`), se hizo vencer el secreto anterior y se generó uno nuevo.
+2. **Actualización en Coolify** — La variable de entorno `STRIPE_WEBHOOK_SECRET` fue actualizada con el nuevo valor en el panel de Coolify.
+3. **Limpieza del historial** — El valor expuesto en `HISTORIAL_TECNICO.md` fue reemplazado por el placeholder `whsec_[ROTADO — ver Stripe Dashboard]`.
+4. **Alerta de GitHub cerrada** — La security alert fue marcada como "Fixed" en GitHub Security → Secret scanning.
+5. **GitGuardian** — El email de GitGuardian era sobre el mismo secreto ya rotado; no requirió acción adicional.
+
+**Nota sobre el nuevo secreto:** El nuevo valor no se documenta aquí. Está en: Stripe Dashboard → Desarrolladores → Workbench → Webhooks → charming-harmony → Clave de firma.
+
+---
+
+### B — Fix Crítico: layout.js Truncado
+
+**Problema:** El archivo `app/dashboard/layout.js` estaba truncado en la línea 421 con `<div cl` incompleto. Esto causó un error de build en Coolify: `Unexpected eof` (fin de archivo inesperado en el parser de JSX).
+
+**Causa:** En una sesión anterior, el archivo fue escrito pero el proceso fue interrumpido antes de completarlo.
+
+**Solución:** Se agregó el bloque de cierre faltante al final del archivo:
+```jsx
+{/* Content */}
+<div className="flex-1 flex flex-col">
+  <PlanBanner tienda={tienda} />
+  {children}
+</div>
+<UniversalFooter />
+</main>
+</div>
+)
+}
+```
+Se eliminó también el fragmento `<div cl` suelto que quedaba antes del cierre. El fix fue commiteado en `d169b23` y el build de Coolify fue restaurado.
+
+---
+
+### C — GitHub MCP Configurado
+
+**Objetivo:** Permitir que Claude interactúe directamente con el repositorio GitHub de TIENDAONLINE desde futuras sesiones (ver commits, issues, PRs, branches, etc.).
+
+**Pasos:**
+1. Generado Personal Access Token (Classic) en `github.com/settings/tokens` con nombre `TIENDAONLINE - Claude MCP`.
+   - Scopes: `repo` (completo), `read:org`, `read:user`
+   - Expiración: Sin expiración
+2. Instalado MCP server: `@modelcontextprotocol/server-github` vía npx.
+3. Configurado en `TIENDAONLINE/.mcp.json`:
+```json
+{
+  "mcpServers": {
+    "sentry": {
+      "command": "npx",
+      "args": ["-y", "@sentry/mcp-server"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_[ver .mcp.json local]"
+      }
+    }
+  }
+}
+```
+
+**IMPORTANTE:** El archivo `.mcp.json` está en `.gitignore` para evitar exponer el token al repositorio público.
+
+---
+
+### D — Cambios en archivos de configuración
+
+| Archivo | Cambio |
+|---------|--------|
+| `HISTORIAL_TECNICO.md` | Webhook secret reemplazado por placeholder; sesiones 18 y 19 documentadas |
+| `app/dashboard/layout.js` | Bloque de cierre JSX restaurado (líneas ~421–430) |
+| `.mcp.json` | Añadida entrada `github` con PAT y scopes `repo`, `read:org`, `read:user` |
