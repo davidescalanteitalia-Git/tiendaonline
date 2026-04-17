@@ -19,7 +19,7 @@ TIENDAONLINE es una plataforma **SaaS multi-inquilino** de e-commerce + punto de
 - **Estilos:** Tailwind CSS 3 + glassmorphism + `animate-in` de Tailwind
 - **Íconos:** Lucide React
 - **Internacionalización:** 3 idiomas manuales vía `lib/dictionaries.js` (ES / IT / EN)
-- **Deploy:** Vercel (subdominios wildcard `*.tiendaonline.it`)
+- **Deploy:** Coolify (VPS propio) + Cloudflare Worker para subdominios wildcard `*.tiendaonline.it`
 
 ---
 
@@ -27,11 +27,29 @@ TIENDAONLINE es una plataforma **SaaS multi-inquilino** de e-commerce + punto de
 
 ### Variables de entorno requeridas
 ```
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://bripfrfkwahsxtegmils.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]        # usada en el cliente (lib/supabase.js)
-SUPABASE_SERVICE_KEY=[service-role-key]           # usada solo en server/API (lib/supabase-admin.js)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]              # usada en el cliente (lib/supabase.js)
+SUPABASE_SERVICE_KEY=[service-role-key]               # usada solo en server/API (lib/supabase-admin.js)
+
+# Stripe (modo TEST activo — cambiar a live cuando se lance)
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_R7JygyubX9mrcDjkfg7zwwq4Asu6u0yt
+
+# App
+NEXT_PUBLIC_APP_URL=https://tiendaonline.it
+
+# Monitoreo
+NEXT_PUBLIC_POSTHOG_KEY=phc_BiKU9NPq9aQjxs9EZoVM7DLb6EWuFLwxeZhmU6UNniLF
+NEXT_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com
+NEXT_PUBLIC_SENTRY_DSN=https://eb22599194471c7a060a4735a16123fa@o4511186117328896.ingest.de.sentry.io/4511208114683984
+
+# Admin
+ADMIN_EMAIL=davidescalanteitalia@gmail.com
+NEXT_PUBLIC_ADMIN_EMAIL=davidescalanteitalia@gmail.com
 ```
-> ⚠️ El `.env.local` está vacío. Las vars están configuradas en Vercel directamente.
+> ⚠️ Las variables están configuradas en **Coolify** (no Vercel). El `.env.local` solo se usa para desarrollo local.
 
 ### Proyecto Supabase
 - **ID:** `bripfrfkwahsxtegmils`
@@ -562,7 +580,7 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 | `getSupabaseAdmin()` singleton lazy | Una sola instancia por proceso, evita memory leaks en serverless | Nueva instancia por request |
 | `(select auth.uid())` en RLS | Optimización: evaluado una vez por query, no por fila | `auth.uid()` directo (más lento a escala) |
 | Checkout sin pago online (WhatsApp) | Elimina barrera de adopción en micronegocios. Acepta pedido → pago se coordina humanamente | Integración Stripe en checkout público |
-| Hardcode email admin | Simplicidad — un solo superadmin | Tabla `admins` en DB con roles |
+| Hardcode email admin | Simplicidad — un solo superadmin. ✅ Movido a `process.env.ADMIN_EMAIL` en Sesión 15 | Tabla `admins` en DB con roles |
 
 ---
 
@@ -570,7 +588,7 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 
 | Riesgo | Impacto | Mitigación actual |
 |--------|---------|-------------------|
-| Email admin hardcodeado | Si cambia propietario → rompe acceso admin | Documentado arriba. Cambiar en 3 archivos. |
+| Email admin hardcodeado | ~~Si cambia propietario → rompe acceso admin~~ | ✅ Resuelto en Sesión 15 — movido a `process.env.ADMIN_EMAIL` |
 | OG image en SVG | ~~No renderiza en Facebook/LinkedIn~~ | ✅ Resuelto en Sesión 11 — migrado a `@vercel/og` Edge Function |
 | Horario detectado en TZ del cliente | El dueño en Madrid, cliente en NY → estado incorrecto | Pendiente campo TZ en ajustes |
 | Sin filtro de fechas en reportes | ~~No puedes ver ventas de esta semana vs. el mes~~ | ✅ Resuelto en Sesión 11 — selector de 5 rangos |
@@ -578,7 +596,7 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 | Columnas huérfanas en inglés | Confunden el esquema DB | Mantener para retrocompatibilidad |
 | Sin emails transaccionales | Ningún email sale del sistema | Pendiente Resend integration |
 | Sin lector de barras activo | ~~`codigo_barras` existe en DB pero cámara no se activa~~ | ✅ Resuelto en Sesión 9 — BarcodeDetector API nativa |
-| Stripe no integrado | Sin modelo de negocio activo | Pendiente Sprint 5 |
+| Stripe no integrado | ~~Sin modelo de negocio activo~~ | ✅ Resuelto en Sesiones 17-18 — checkout + webhook + productos/precios activos en TEST |
 | Bug Rollup (Windows) | Servidor local no carga | Borrar node_modules y re-instalar |
 | Portal del cliente sin email de bienvenida | Al registrarse no recibe ningún email | Pendiente cuando se integre Resend |
 | `fecha_nacimiento` sin uso activo | Columna existe en clientes pero no hay lógica de descuento por cumpleaños | Pendiente — feature futuro |
@@ -606,7 +624,7 @@ Acceso solo para `davidescalanteitalia@gmail.com` (verificado via JWT + email co
 
 ---
 
-## 17. MONITOREO DE ERRORES — SENTRY
+## 16B. MONITOREO DE ERRORES — SENTRY
 
 ### Proyecto Sentry
 - **Organización:** `deibys-david-escalante-rodrigu`
@@ -663,9 +681,11 @@ capturarAviso('mensaje', { modulo: 'Checkout', tiendaId, extra: { ... } })
 - Sentry sube source maps automáticamente al hacer `npm run build` en Vercel
 - `deleteSourcemapsAfterUpload: true` — Los source maps no quedan expuestos en producción
 - Esto permite ver el stack trace con código real (no minificado) en el dashboard de Sentry
+> ⚠️ El DSN **ya NO está hardcodeado** desde Sesión 15. Usar `process.env.NEXT_PUBLIC_SENTRY_DSN` configurado en Coolify.
 
 ### Comportamiento por entorno
-- `enabled: process.env.NODE_ENV === 'production'` — Sentry NO captura errores en desarrollo local, solo en producción (Vercel)
+- `enabled: process.env.NODE_ENV === 'production'` — Sentry NO captura errores en desarrollo local, solo en producción (Coolify)
+- DSN movido a `process.env.NEXT_PUBLIC_SENTRY_DSN` en Sesión 15 (ya no hardcodeado)
 
 ---
 
@@ -2366,7 +2386,7 @@ Se accedió a Coolify mediante **Claude in Chrome** (formularios Livewire/Alpine
 | `STRIPE_SECRET_KEY` | `sk_test_51TM40C7BdqFx9FaO...` | ✅ Guardado |
 | `NEXT_PUBLIC_APP_URL` | `https://tiendaonline.it` | ✅ Guardado |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_test_51TM40C7BdqFx9FaO...` | ✅ Guardado |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_R7JygyubX9mrcDjkfg7zwwq4Asu6u0yt` | ✅ Guardado |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_[ROTADO — ver Stripe Dashboard]` | ✅ Guardado |
 
 > ⚠️ Las variables de precios (`NEXT_PUBLIC_STRIPE_PRICE_*`) no se añadieron a Coolify porque los Price IDs ya están como **fallbacks hardcodeados** en `planes/page.js` y `webhook/route.js`. Esto es correcto para el entorno TEST. En producción se deberá añadir las 6 variables con los IDs live.
 
@@ -2385,7 +2405,7 @@ El dashboard de Stripe (`dashboard.stripe.com`) está bloqueado para acceso desd
 | URL del endpoint | `https://tiendaonline.it/api/stripe/webhook` |
 | Eventos activos | `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` |
 | Entorno | TEST |
-| Webhook Secret | `whsec_R7JygyubX9mrcDjkfg7zwwq4Asu6u0yt` |
+| Webhook Secret | `whsec_[ROTADO — ver Stripe Dashboard]` |
 
 ---
 
