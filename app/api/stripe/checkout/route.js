@@ -3,6 +3,15 @@ import { getSupabaseAdmin } from '../../../../lib/supabase-admin'
 import { stripe } from '../../../../lib/stripe'
 
 export async function POST(request) {
+  // Verificación temprana: asegurarse de que Stripe esté configurado
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error('[checkout] STRIPE_SECRET_KEY no está definida')
+    return NextResponse.json(
+      { error: 'Stripe no está configurado en el servidor. Contacta a soporte: hola@tiendaonline.it' },
+      { status: 503 }
+    )
+  }
+
   try {
     const supabaseAdmin = getSupabaseAdmin()
     const authHeader = request.headers.get('authorization')
@@ -76,6 +85,8 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Error creando checkout session:', error)
-    return NextResponse.json({ error: 'Error interno conectando con pasarela' }, { status: 500 })
+    // Devolver el mensaje real del error para facilitar el diagnóstico
+    const msg = error?.message || 'Error interno conectando con pasarela'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
