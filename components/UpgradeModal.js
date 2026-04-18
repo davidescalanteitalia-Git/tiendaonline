@@ -8,7 +8,7 @@ const FEATURE_NOMBRES = {
   portal_cliente: 'Portal del cliente',
   catalogo_social: 'Catálogo Instagram / Facebook',
   reportes_avanzados: 'Reportes financieros avanzados',
-  pagos_stripe: 'Pagos con Stripe / PayPal',
+  pagos_stripe: 'Pagos online con Stripe',
   exportar_csv: 'Exportación CSV / PDF',
   carritos_abandonados: 'Recuperación de carritos',
   programa_puntos: 'Programa de puntos y afiliados',

@@ -140,7 +140,7 @@ export default function Home() {
       highlights: [
         lang === 'it' ? '500 prodotti' : '500 productos',
         lang === 'it' ? 'Sottodominio personalizzato' : 'Subdominio personalizado',
-        lang === 'it' ? 'Pagamenti Stripe / PayPal' : 'Pagos Stripe / PayPal',
+        lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe',
         lang === 'it' ? 'Esportazione CSV' : 'Exportación CSV',
         '1 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         lang === 'it' ? 'Supporto via email' : 'Soporte por email',
@@ -191,7 +191,7 @@ export default function Home() {
     { label: 'Checkout WhatsApp',                                                        vals: [true, true, true, true] },
     { label: lang === 'it' ? 'Spazio disco' : 'Almacenamiento',                         vals: ['100 MB', '1 GB', '5 GB', '20 GB'] },
     { label: lang === 'it' ? 'Subdominio personalizzato' : 'Subdominio personalizado',   vals: [true, true, true, true] },
-    { label: lang === 'it' ? 'Pagamenti Stripe / PayPal' : 'Pagos Stripe / PayPal',     vals: [false, true, true, true] },
+    { label: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe',  vals: [false, true, true, true] },
     { label: lang === 'it' ? 'Esportazione CSV / PDF' : 'Exportación CSV / PDF',        vals: [false, true, true, true] },
     { label: lang === 'it' ? 'Reporti finanziari' : 'Reportes financieros',             vals: [false, lang === 'it' ? 'Base' : 'Básicos', lang === 'it' ? 'Avanzati' : 'Avanzados', 'Premium'] },
     { label: lang === 'it' ? 'Catalogo Instagram/FB' : 'Catálogo Instagram/FB',         vals: [false, false, true, true] },

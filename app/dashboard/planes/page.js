@@ -46,7 +46,7 @@ const PLAN_CONFIG = {
     features: [
       '500 productos',
       'Subdominio personalizado',
-      'Pagos Stripe / PayPal',
+      'Pagos online con Stripe',
       'Exportación CSV / PDF',
       '1 GB almacenamiento',
       'Soporte por email',
