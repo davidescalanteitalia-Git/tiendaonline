@@ -142,12 +142,7 @@ export default function PlanesPage() {
       return
     }
 
-    if (planKey === 'grow') {
-      window.location.href = 'mailto:hola@tiendaonline.it?subject=Consulta Plan Grow'
-      return
-    }
-
-    // Planes básico y pro → checkout Stripe
+    // Todos los planes de pago → checkout Stripe
     const ciclo = anualizacion ? 'anual' : 'mensual'
     const priceId = STRIPE_PRICE_IDS[ciclo][planKey]
 
@@ -379,8 +374,6 @@ export default function PlanesPage() {
                   'Plan actual'
                 ) : key === 'gratis' ? (
                   'Cambiar a Gratis'
-                ) : key === 'grow' ? (
-                  'Contactar ventas'
                 ) : (
                   `Suscribirse — €${precio}/mes`
                 )}

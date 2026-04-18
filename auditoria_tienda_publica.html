@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Auditoría UX — Catálogo Público TIENDAONLINE</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: #f1f5f9; color: #0f172a; min-height: 100vh; }
+
+  .app-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    color: #fff; padding: 28px 32px; display: flex; align-items: center; gap: 16px;
+  }
+  .app-header h1 { font-size: 1.4rem; font-weight: 900; }
+  .app-header p { font-size: 0.82rem; color: #94a3b8; margin-top: 4px; }
+  .badge-producto { background: #3b82f6; color: #fff; padding: 3px 10px; border-radius: 99px; font-size: 0.72rem; font-weight: 800; }
+
+  .nav-tabs { background: #fff; border-bottom: 2px solid #e2e8f0; display: flex; overflow-x: auto; padding: 0 24px; scrollbar-width: none; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { padding: 14px 18px; border: none; background: none; font-size: 0.8rem; font-weight: 700; color: #64748b; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+  .tab-btn:hover:not(.active) { color: #0f172a; background: #f8fafc; }
+
+  .content { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .section-title { font-size: 1.2rem; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+  .section-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 24px; line-height: 1.6; }
+
+  .card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 20px 24px; margin-bottom: 16px; }
+  .card-title { font-size: 0.78rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px; }
+  .card-body { font-size: 0.88rem; color: #334155; line-height: 1.7; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; margin-right: 6px; }
+  .badge-red { background: #fee2e2; color: #dc2626; }
+  .badge-yellow { background: #fef3c7; color: #d97706; }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-blue { background: #dbeafe; color: #2563eb; }
+  .badge-purple { background: #ede9fe; color: #7c3aed; }
+
+  /* Score bar */
+  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .score-label { font-size: 0.82rem; font-weight: 700; color: #334155; width: 200px; flex-shrink: 0; }
+  .score-bar-wrap { flex: 1; background: #f1f5f9; border-radius: 99px; height: 10px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 99px; transition: width 0.6s; }
+  .score-num { font-size: 0.82rem; font-weight: 900; width: 36px; text-align: right; }
+
+  /* Problem list */
+  .problem-item { display: flex; gap: 12px; padding: 14px; border-radius: 12px; margin-bottom: 10px; align-items: flex-start; }
+  .problem-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+  .problem-title { font-size: 0.88rem; font-weight: 800; color: #0f172a; margin-bottom: 3px; }
+  .problem-desc { font-size: 0.8rem; color: #64748b; line-height: 1.5; }
+
+  .problem-critico { background: #fff5f5; border: 1px solid #fecaca; }
+  .problem-importante { background: #fffbeb; border: 1px solid #fde68a; }
+  .problem-ux { background: #f0f9ff; border: 1px solid #bae6fd; }
+
+  /* Checklist */
+  .check-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+  .check-item:last-child { border-bottom: none; }
+  .check-ok { color: #16a34a; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .check-no { color: #dc2626; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .check-warn { color: #d97706; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* Grid 2 col */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Before/After */
+  .ba-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 640px) { .ba-wrap { grid-template-columns: 1fr; } }
+  .ba-block { padding: 14px; border-radius: 12px; font-size: 0.83rem; line-height: 1.6; }
+  .ba-before { background: #fff5f5; border: 1px solid #fecaca; color: #7f1d1d; }
+  .ba-after { background: #f0fdf4; border: 1px solid #bbf7d0; color: #14532d; }
+  .ba-label { font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; opacity: 0.7; }
+
+  /* Visual comparison */
+  .vs-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 10px 14px; background: #f8fafc; border-radius: 10px; }
+  .vs-label { font-size: 0.82rem; font-weight: 700; color: #334155; flex: 1; }
+  .vs-tienda { font-size: 0.82rem; font-weight: 800; }
+  .vs-pro { font-size: 0.82rem; color: #64748b; font-weight: 600; }
+
+  /* Wireframe */
+  .wireframe { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .wf-block { background: #e2e8f0; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.78rem; font-weight: 700; color: #475569; display: flex; align-items: center; justify-content: space-between; }
+  .wf-block.wf-ok { background: #dcfce7; color: #14532d; }
+  .wf-block.wf-new { background: #dbeafe; color: #1d4ed8; border: 1.5px dashed #93c5fd; }
+  .wf-block.wf-move { background: #fef3c7; color: #92400e; }
+  .wf-block.wf-remove { background: #fee2e2; color: #991b1b; text-decoration: line-through; opacity: 0.7; }
+
+  /* Priority list */
+  .priority-item { border-left: 4px solid; padding: 12px 16px; border-radius: 0 10px 10px 0; margin-bottom: 10px; }
+  .priority-alta { border-color: #dc2626; background: #fff5f5; }
+  .priority-media { border-color: #d97706; background: #fffbeb; }
+  .priority-baja { border-color: #64748b; background: #f8fafc; }
+  .priority-tag { font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .priority-title { font-size: 0.88rem; font-weight: 800; color: #0f172a; margin-bottom: 3px; }
+  .priority-desc { font-size: 0.78rem; color: #64748b; line-height: 1.5; }
+
+  /* VC section */
+  .vc-meter { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; background: #f8fafc; border-radius: 12px; padding: 12px 16px; }
+  .vc-label { font-size: 0.85rem; font-weight: 700; flex: 1; }
+  .vc-dots { display: flex; gap: 4px; }
+  .vc-dot { width: 12px; height: 12px; border-radius: 50%; background: #e2e8f0; }
+  .vc-dot.filled { background: #3b82f6; }
+
+  /* Notification */
+  .info-box { padding: 14px 18px; border-radius: 12px; font-size: 0.83rem; line-height: 1.6; margin-bottom: 16px; display: flex; gap: 10px; }
+  .info-box-blue { background: #dbeafe; border: 1px solid #93c5fd; color: #1e40af; }
+  .info-box-green { background: #dcfce7; border: 1px solid #86efac; color: #14532d; }
+  .info-box-orange { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <h1>🔍 Auditoría UX — Catálogo Público</h1>
+      <span class="badge-producto">TIENDAONLINE</span>
+    </div>
+    <p>Análisis completo del StoreClient — 10 dimensiones · Basado en código fuente real · Abril 2026</p>
+  </div>
+</div>
+
+<nav class="nav-tabs" id="tabs">
+  <button class="tab-btn active" onclick="switchTab(0)">📋 Contenido</button>
+  <button class="tab-btn" onclick="switchTab(1)">🗺️ Estructura</button>
+  <button class="tab-btn" onclick="switchTab(2)">🧹 Limpieza</button>
+  <button class="tab-btn" onclick="switchTab(3)">🏗️ Rediseño</button>
+  <button class="tab-btn" onclick="switchTab(4)">✍️ Copy</button>
+  <button class="tab-btn" onclick="switchTab(5)">🚨 Errores</button>
+  <button class="tab-btn" onclick="switchTab(6)">📊 Comparativa</button>
+  <button class="tab-btn" onclick="switchTab(7)">🎯 Prioridades</button>
+  <button class="tab-btn" onclick="switchTab(8)">💰 VC Check</button>
+  <button class="tab-btn" onclick="switchTab(9)">✅ Plan Final</button>
+</nav>
+
+<div class="content">
+
+  <!-- TAB 1: CONTENIDO -->
+  <div class="tab-panel active" id="panel-0">
+    <p class="section-title">📋 Extracción completa de contenido</p>
+    <p class="section-desc">Todo el contenido real visible en la tienda pública, extraído directamente del código fuente de <code>StoreClient.js</code>.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🏪 Elementos del Header</div>
+        <div class="card-body">
+          <b>Fila 1:</b><br/>
+          • Logo / emoji de la tienda<br/>
+          • Nombre de la tienda<br/>
+          • Selector de idioma: <code>ES / IT / EN</code><br/>
+          • Botón "Mi cuenta" → nombre del cliente si logueado<br/><br/>
+          <b>Fila 2 (opcional):</b><br/>
+          • Banner de imagen (height fija: 360px)<br/>
+          • Overlay de degradado inferior oscuro<br/><br/>
+          <b>Fila 3 (sticky):</b><br/>
+          • Buscador: "Buscar en [nombre]..."<br/>
+          • Botón carrito con contador y total<br/>
+          • Pills de categorías deslizantes horizontalmente
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🛒 Flujo de Compra</div>
+        <div class="card-body">
+          <b>Grid de productos:</b><br/>
+          • 2 col (mobile) → 3 col (tablet) → 4 col (desktop)<br/>
+          • Imagen cuadrada 1:1<br/>
+          • Categoría label, nombre, descripción, precio<br/>
+          • Botón "+ Agregar" / contador ±<br/><br/>
+          <b>Carrito (drawer lateral):</b><br/>
+          • Lista items con imagen, qty, precio<br/>
+          • Total + botón "Finalizar pedido →"<br/><br/>
+          <b>Checkout (modal 2 pasos):</b><br/>
+          Paso 1: Nombre, WhatsApp, Retiro/Envío<br/>
+          Paso 2: Zona de envío, Dirección, Pago, Cupón, Resumen → "Finalizar"
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📱 Sidebar Filtros (desktop only)</div>
+        <div class="card-body">
+          • Descripción de la tienda<br/>
+          • Indicador Abierto/Cerrado con horario<br/>
+          • Lista de categorías (click para scroll)<br/>
+          • Filtro por precio: &lt;€10 / €10–€50 / &gt;€50<br/>
+          • Checkbox "Solo con stock disponible"<br/><br/>
+          <span class="badge badge-yellow">⚠️ Oculto en mobile</span> — el sidebar no aparece en pantallas &lt;768px
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🦶 Footer</div>
+        <div class="card-body">
+          <b>4 columnas:</b><br/>
+          1. Info tienda: logo, descripción, horario, estado<br/>
+          2. Contacto: WhatsApp, email, Instagram, dirección<br/>
+          3. Mi cuenta: "Mi perfil", "Mis pedidos"<br/>
+          4. Legal: Cookies, Privacidad, Términos<br/><br/>
+          • Copyright + "Desarrollado con TIENDAONLINE 🛍️"<br/><br/>
+          <span class="badge badge-green">✅ Completo y bien estructurado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💬 Textos y CTAs presentes en la UI</div>
+      <div class="card-body">
+        <b>CTAs principales:</b> "Buscar en [tienda]..." · "Carrito" · "+ Agregar" · "Finalizar pedido →" · "Continuar →" · "Finalizar Pedido ✓" · "Crear mi cuenta gratis →"<br/><br/>
+        <b>Mensajes de estado:</b> "No estamos aceptando pedidos en este momento." · "El carrito está vacío" · "No encontramos resultados" · "¡Vuelve pronto!" · "¡Pedido enviado!"<br/><br/>
+        <b>Microcopy de checkout:</b> "Completa tu información para el pedido." · "¿Cómo quieres recibirlo?" · "Tus datos" · "Detalles finales"<br/><br/>
+        <b>Oferta post-pedido:</b> "¿Quieres seguir tu pedido? Crea tu cuenta gratis y consulta el estado en tiempo real."
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: ESTRUCTURA -->
+  <div class="tab-panel" id="panel-1">
+    <p class="section-title">🗺️ Estructura actual de la tienda</p>
+    <p class="section-desc">Orden real de secciones tal como aparecen en el código y en la pantalla del usuario.</p>
+
+    <div class="wireframe">
+      <div class="wf-block wf-ok">① HEADER Fila 1 — Logo · ES/IT/EN · Mi cuenta &nbsp; <span class="badge badge-green">✅ Existe</span></div>
+      <div class="wf-block wf-ok">② BANNER — Imagen ancho completo (360px de alto) &nbsp; <span class="badge badge-yellow">⚠️ Muy grande</span></div>
+      <div class="wf-block wf-ok">③ STICKY BAR — Buscador + Carrito + Pills categorías &nbsp; <span class="badge badge-green">✅ Existe</span></div>
+      <div class="wf-block wf-ok">④ CONTENIDO — Sidebar filtros (desktop) + Grid productos &nbsp; <span class="badge badge-green">✅ Existe</span></div>
+      <div class="wf-block wf-ok">⑤ FOOTER — 4 columnas + copyright &nbsp; <span class="badge badge-green">✅ Existe</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚫 Secciones AUSENTES</div>
+      <div class="card-body">
+        <div class="check-item"><span class="check-no">✗</span><span><b>Hero/Tagline de la tienda</b> — No hay ningún mensaje de bienvenida ni propuesta de valor visible sobre el grid de productos. El usuario aterriza directo en productos sin contexto.</span></div>
+        <div class="check-item"><span class="check-no">✗</span><span><b>Sección "¿Cómo comprar?"</b> — Los pasos del proceso (ver productos → agregar → pedir por WhatsApp) no se explican en ningún lugar. Los clientes nuevos pueden perderse.</span></div>
+        <div class="check-item"><span class="check-no">✗</span><span><b>Banner/aviso de oferta o novedad</b> — No existe la posibilidad de mostrar un anuncio destacado o banner de promoción sobre el grid.</span></div>
+        <div class="check-item"><span class="check-no">✗</span><span><b>Filtros en mobile</b> — El sidebar es invisible en celulares. No hay botón "Filtrar" ni panel de filtros adaptado para mobile.</span></div>
+        <div class="check-item"><span class="check-no">✗</span><span><b>Indicador de tienda abierta/cerrada en el header</b> — Solo aparece en el sidebar (invisible en mobile) y el footer. El estado crítico "CERRADO" no es visible al entrar.</span></div>
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Social proof</b> — No hay reseñas de clientes, número de pedidos realizados, ni ningún elemento de confianza visible en el catálogo.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Jerarquía visual — qué ve el usuario primero</div>
+      <div class="card-body">
+        1. Header (logo + idioma + cuenta) — altura: 60px<br/>
+        2. <b style="color:#dc2626">BANNER GIGANTE — 360px de pura imagen sin texto</b><br/>
+        3. Barra buscador + carrito + categorías<br/>
+        4. Grid de productos (el contenido real)<br/><br/>
+        El banner consume el 40–60% de la pantalla inicial en mobile sin aportar información ni CTA. El usuario debe hacer scroll para ver los productos.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: LIMPIEZA -->
+  <div class="tab-panel" id="panel-2">
+    <p class="section-title">🧹 Limpieza y organización</p>
+    <p class="section-desc">Problemas de duplicación, contradicción y ruido visual detectados en el código fuente.</p>
+
+    <div class="card">
+      <div class="card-title">🔁 Duplicaciones detectadas</div>
+      <div class="card-body">
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Estado abierto/cerrado aparece 3 veces:</b> en el sidebar (desktop), en el footer columna 1, y en el footer badge. Solo debería aparecer 1 vez: prominentemente en el header o bajo el banner.</span></div>
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Nombre de la tienda aparece 4 veces:</b> header logo, header texto, footer logo, footer copyright. En mobile algunas pueden colapsar pero el código las renderiza todas.</span></div>
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Descripción de la tienda aparece 2 veces:</b> sidebar info panel + footer columna 1. En desktop ambas son visibles simultáneamente.</span></div>
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Link "Mi perfil" duplicado:</b> header "Mi cuenta" → <code>/mis-pedidos</code> y footer "Mi perfil" → <code>/cuenta</code>. Destinos distintos, confuso para el usuario.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Ruido visual y elementos que quitar</div>
+      <div class="card-body">
+        <div class="check-item"><span class="check-no">✗</span><span><b>Banner de 360px de alto sin texto:</b> Es ruido puro en mobile. Consume pantalla sin convertir. Reducir a 180–220px con overlay de texto o eliminar completamente en mobile.</span></div>
+        <div class="check-item"><span class="check-no">✗</span><span><b>Sidebar completamente oculto en mobile (&lt;768px):</b> El código lo renderiza pero CSS lo esconde. Esos filtros de precio y stock simplemente no existen para el 70%+ de los usuarios. Necesita alternativa mobile.</span></div>
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Placeholder "articulosde comida"</b> visible en la captura — indica que los productos no tienen categoría correctamente asignada. UX problem de contenido, no de código.</span></div>
+        <div class="check-item"><span class="check-warn">⚠</span><span><b>Emoji 👤 en el botón de cuenta:</b> En mobile con nombre corto se ve bien, pero si el nombre es largo se trunca sin mostrar el ícono correctamente.</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Lo que está bien y NO tocar</div>
+      <div class="card-body">
+        <div class="check-item"><span class="check-ok">✓</span><span><b>Sticky bar de búsqueda:</b> Perfecta para e-commerce. No mover, no cambiar altura.</span></div>
+        <div class="check-item"><span class="check-ok">✓</span><span><b>Carrito dinámico:</b> Se activa con color del plan cuando tiene items. Muy bien ejecutado.</span></div>
+        <div class="check-item"><span class="check-ok">✓</span><span><b>Checkout en 2 pasos:</b> Flujo limpio y mínimo. No añadir más pasos.</span></div>
+        <div class="check-item"><span class="check-ok">✓</span><span><b>Modal post-pedido con upsell de cuenta:</b> Conversión inteligente. Mantener.</span></div>
+        <div class="check-item"><span class="check-ok">✓</span><span><b>ProductCard con imagen 1:1 y hover:</b> Diseño sólido de e-commerce. Solo ajustar tamaños.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: REDISEÑO -->
+  <div class="tab-panel" id="panel-3">
+    <p class="section-title">🏗️ Reestructuración propuesta</p>
+    <p class="section-desc">Nuevo orden de elementos para maximizar conversión y claridad. Cambios concretos basados en el código actual.</p>
+
+    <div class="info-box info-box-blue">
+      <span>💡</span>
+      <span><b>Principio guía:</b> El usuario llega para <b>ver productos y pedir</b>. Cada elemento debe facilitar ese objetivo. El banner gigante lo retrasa — los filtros mobile ausentes lo frustran.</span>
+    </div>
+
+    <p style="font-size:0.85rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Estructura propuesta</p>
+    <div class="wireframe">
+      <div class="wf-block wf-ok">① HEADER compacto — Logo · Estado Abierto/Cerrado · ES/IT/EN · Mi cuenta <span class="badge badge-blue">Agregar estado aquí</span></div>
+      <div class="wf-block wf-move">② BANNER reducido — max 180px · Con overlay de texto: nombre + slogan <span class="badge badge-yellow">Reducir altura</span></div>
+      <div class="wf-block wf-new">③ STRIP de información — WhatsApp · Horario · Instagram (solo si tienda tiene estos datos) <span class="badge badge-blue">Nuevo</span></div>
+      <div class="wf-block wf-ok">④ STICKY SEARCH BAR — Buscador + Filtros mobile (nuevo botón) + Carrito <span class="badge badge-green">Mantener</span></div>
+      <div class="wf-block wf-ok">⑤ PILLS de categorías — horizontal scroll <span class="badge badge-green">Mantener</span></div>
+      <div class="wf-block wf-move">⑥ GRID DE PRODUCTOS — Con sidebar integrado (desktop) / Filtros en sheet mobile <span class="badge badge-yellow">Mejorar mobile</span></div>
+      <div class="wf-block wf-ok">⑦ FOOTER completo — Ya está bien <span class="badge badge-green">Mantener</span></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title">📐 Cambios en el banner</div>
+        <div class="card-body">
+          <b>Actual:</b> height fija de 360px, imagen a full, overlay sin texto.<br/><br/>
+          <b>Propuesto:</b><br/>
+          • Mobile: <code>height: 140px</code><br/>
+          • Tablet: <code>height: 200px</code><br/>
+          • Desktop: <code>height: 260px</code><br/><br/>
+          Añadir sobre el overlay:<br/>
+          <code style="font-size:0.78rem">position: absolute; bottom: 16px; left: 20px;</code><br/>
+          Con: nombre de tienda en blanco (bold) + descripción corta (opacity 0.8)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📱 Filtros en mobile</div>
+        <div class="card-body">
+          <b>Actual:</b> sidebar invisible en &lt;768px. Los filtros no existen para usuarios mobile.<br/><br/>
+          <b>Propuesto:</b><br/>
+          • Botón "⚙ Filtrar" junto al buscador en mobile<br/>
+          • Al pulsarlo: bottom sheet deslizante (desde abajo)<br/>
+          • Contenido: mismos filtros del sidebar<br/>
+          • Badge en el botón cuando hay filtros activos<br/><br/>
+          <span class="badge badge-red">Alta prioridad</span> — afecta al 70%+ de usuarios
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎨 Ajustes visuales al grid de productos</div>
+      <div class="card-body">
+        <b>Problema actual:</b> Las tarjetas en mobile (2 columnas) son pequeñas, el nombre se corta en 2 líneas y el botón "+ Agregar" queda al fondo sin suficiente contraste.<br/><br/>
+        <b>Mejoras propuestas:</b><br/>
+        • Aumentar tamaño de fuente del precio: <code>1.1rem → 1.2rem</code> en mobile<br/>
+        • Botón "+ Agregar": añadir <code>font-size: 0.9rem</code> y <code>padding: 11px</code> para mejor toque táctil<br/>
+        • Sombra sutil más pronunciada en hover: <code>0 12px 32px rgba(0,0,0,0.12)</code><br/>
+        • Tarjeta mínima: <code>min-height: 280px</code> para que todas sean iguales en altura
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: COPY -->
+  <div class="tab-panel" id="panel-4">
+    <p class="section-title">✍️ Mejora de copywriting</p>
+    <p class="section-desc">Comparativa antes/después de los textos clave de la tienda pública.</p>
+
+    <p style="font-size:0.82rem;font-weight:700;color:#64748b;margin-bottom:16px;">Los textos actuales son funcionales pero neutros. Pequeños cambios generan más confianza y conversión.</p>
+
+    <div style="margin-bottom:6px;font-size:0.78rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Botón de carrito</div>
+    <div class="ba-wrap">
+      <div class="ba-block ba-before"><div class="ba-label">ACTUAL</div>"Carrito" (cuando vacío)</div>
+      <div class="ba-block ba-after"><div class="ba-label">MEJORADO</div>"🛒 Ver productos" o simplemente el ícono con badge en 0</div>
+    </div>
+
+    <div style="margin-bottom:6px;font-size:0.78rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Botón finalizar carrito</div>
+    <div class="ba-wrap">
+      <div class="ba-block ba-before"><div class="ba-label">ACTUAL</div>"Finalizar pedido →"</div>
+      <div class="ba-block ba-after"><div class="ba-label">MEJORADO</div>"Pedir por WhatsApp → €{total}" — incluir el total y el canal para reducir incertidumbre</div>
+    </div>
+
+    <div style="margin-bottom:6px;font-size:0.78rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Estado vacío del catálogo</div>
+    <div class="ba-wrap">
+      <div class="ba-block ba-before"><div class="ba-label">ACTUAL</div>"¡Vuelve pronto!" con emoji 📦</div>
+      <div class="ba-block ba-after"><div class="ba-label">MEJORADO</div>"Estamos preparando el catálogo. Escríbenos por WhatsApp para consultar disponibilidad 💬" + botón de WhatsApp</div>
+    </div>
+
+    <div style="margin-bottom:6px;font-size:0.78rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Sin resultados de búsqueda</div>
+    <div class="ba-wrap">
+      <div class="ba-block ba-before"><div class="ba-label">ACTUAL</div>"No encontramos resultados · Intenta con otro término o limpia los filtros"</div>
+      <div class="ba-block ba-after"><div class="ba-label">MEJORADO</div>"No encontramos '[búsqueda]' · ¿Lo buscas? Pregúntanos por WhatsApp →" con botón directo al chat</div>
+    </div>
+
+    <div style="margin-bottom:6px;font-size:0.78rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Tienda cerrada</div>
+    <div class="ba-wrap">
+      <div class="ba-block ba-before"><div class="ba-label">ACTUAL</div>"No estamos aceptando pedidos en este momento."</div>
+      <div class="ba-block ba-after"><div class="ba-label">MEJORADO</div>"🔒 Estamos cerrados · Volvemos [horario]. Puedes explorar el catálogo y hacer tu pedido cuando abramos."</div>
+    </div>
+
+    <div style="margin-bottom:6px;font-size:0.78rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">Checkout paso 1 subtítulo</div>
+    <div class="ba-wrap">
+      <div class="ba-block ba-before"><div class="ba-label">ACTUAL</div>"Completa tu información para el pedido."</div>
+      <div class="ba-block ba-after"><div class="ba-label">MEJORADO</div>"Solo te pedimos lo esencial. Tu pedido llega en segundos." — reduce fricción psicológica</div>
+    </div>
+
+    <div class="card" style="margin-top:8px;">
+      <div class="card-title">💡 Oportunidad: Copy ausente en el banner</div>
+      <div class="card-body">
+        El banner (360px de imagen pura) no dice nada. Propuesta de texto superpuesto:<br/><br/>
+        <b>Nombre de la tienda</b> en blanco, bold, 1.8rem<br/>
+        <b>Descripción corta</b> en blanco, opacity 0.85, 0.9rem — máx 1 línea<br/>
+        <b>Estado Abierto/Cerrado</b> como badge pequeño abajo a la izquierda<br/><br/>
+        Esto convierte el banner de "decoración" a "comunicación".
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: ERRORES -->
+  <div class="tab-panel" id="panel-5">
+    <p class="section-title">🚨 Errores detectados por severidad</p>
+    <p class="section-desc">Problemas reales encontrados en el código fuente y en la captura de pantalla enviada.</p>
+
+    <p style="font-size:0.78rem;font-weight:900;color:#dc2626;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">🔴 Críticos — afectan directamente la experiencia</p>
+
+    <div class="problem-item problem-critico">
+      <div class="problem-icon">📏</div>
+      <div>
+        <div class="problem-title">Banner de 360px consume toda la pantalla mobile</div>
+        <div class="problem-desc">En un iPhone 14 (altura ~844px), el header (60px) + sticky (56px) + banner (360px) = 476px consumidos antes de ver un solo producto. El usuario debe hacer scroll agresivo antes de llegar al contenido real. Tasa de rebote alta garantizada.</div>
+      </div>
+    </div>
+
+    <div class="problem-item problem-critico">
+      <div class="problem-icon">📵</div>
+      <div>
+        <div class="problem-title">Filtros de precio y stock invisibles en mobile (70%+ del tráfico)</div>
+        <div class="problem-desc">El sidebar con filtros tiene <code>display: none</code> en mobile y no hay alternativa. Los usuarios mobile no pueden filtrar por precio ni por stock. Funcionalidad completamente rota para la mayoría de visitantes.</div>
+      </div>
+    </div>
+
+    <div class="problem-item problem-critico">
+      <div class="problem-icon">🏷️</div>
+      <div>
+        <div class="problem-title">Nombre de categoría mal formateado: "articulosde comida"</div>
+        <div class="problem-desc">Visible en la captura. El slug/nombre de categoría se muestra directamente sin formateo. Parece un error de datos en Supabase, pero el frontend debería aplicar <code>capitalize</code> y reemplazar guiones/underscores por espacios como fallback.</div>
+      </div>
+    </div>
+
+    <p style="font-size:0.78rem;font-weight:900;color:#d97706;text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 10px;">🟡 Importantes — reducen confianza y conversión</p>
+
+    <div class="problem-item problem-importante">
+      <div class="problem-icon">👤</div>
+      <div>
+        <div class="problem-title">Estado Abierto/Cerrado no visible en mobile</div>
+        <div class="problem-desc">Si la tienda está cerrada, el usuario no lo sabe hasta bajar al sidebar (invisible) o llegar al footer. Puede agregar productos al carrito e intentar pedir sin saber que no se aceptan pedidos ahora.</div>
+      </div>
+    </div>
+
+    <div class="problem-item problem-importante">
+      <div class="problem-icon">🖼️</div>
+      <div>
+        <div class="problem-title">Banner sin ningún texto ni propuesta de valor</div>
+        <div class="problem-desc">Una imagen decorativa de 360px sin título, sin descripción y sin CTA. Es la primera impresión del negocio y no dice nada. El cliente no sabe si llegó al lugar correcto.</div>
+      </div>
+    </div>
+
+    <div class="problem-item problem-importante">
+      <div class="problem-icon">🔗</div>
+      <div>
+        <div class="problem-title">Dos links "Mi cuenta" con destinos distintos</div>
+        <div class="problem-desc">Header → <code>/mis-pedidos</code> (si logueado) vs Footer → <code>/cuenta</code>. Para usuarios no logueados el header lleva a <code>/cuenta</code> y el footer también a <code>/cuenta</code> — consistent ahí. Pero para logueados: header → pedidos, footer "Mi perfil" → <code>/cuenta</code>. Confuso.</div>
+      </div>
+    </div>
+
+    <p style="font-size:0.78rem;font-weight:900;color:#2563eb;text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 10px;">🔵 UX — mejoran la experiencia general</p>
+
+    <div class="problem-item problem-ux">
+      <div class="problem-icon">🃏</div>
+      <div>
+        <div class="problem-title">Tarjetas de producto sin altura mínima uniforme</div>
+        <div class="problem-desc">Si algunos productos no tienen descripción o tienen nombres muy cortos, las tarjetas tienen alturas distintas en el grid, rompiendo la alineación visual. Agregar <code>min-height: 280px</code> o usar CSS grid con <code>align-items: stretch</code> en las cards.</div>
+      </div>
+    </div>
+
+    <div class="problem-item problem-ux">
+      <div class="problem-icon">🔍</div>
+      <div>
+        <div class="problem-title">Buscador sin sugerencias ni búsqueda instantánea visible</div>
+        <div class="problem-desc">La búsqueda filtra el grid en tiempo real (bien), pero no hay indicador visual de que está filtrando mientras el usuario escribe. Un spinner o highlight leve mejoraría el feedback.</div>
+      </div>
+    </div>
+
+    <div class="problem-item problem-ux">
+      <div class="problem-icon">🛒</div>
+      <div>
+        <div class="problem-title">Botón "Carrito" dice texto en desktop, solo ícono en xs — confuso</div>
+        <div class="problem-desc">La clase <code>.hide-xs</code> oculta "Carrito" en móviles muy pequeños (&lt;480px). En esas pantallas el botón muestra solo el emoji 🛒 sin texto, lo que puede no ser evidente para usuarios nuevos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 7: COMPARATIVA -->
+  <div class="tab-panel" id="panel-6">
+    <p class="section-title">📊 Comparativa con e-commerce de referencia</p>
+    <p class="section-desc">Puntuación del catálogo público actual comparado con estándares de Shopify, WooCommerce y plataformas similares.</p>
+
+    <div class="card">
+      <div class="card-title">⭐ Puntuaciones (1–10)</div>
+      <div class="card-body">
+
+        <div class="score-row">
+          <div class="score-label">Velocidad de carga percibida</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:#16a34a;"></div></div>
+          <div class="score-num" style="color:#16a34a;">8</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Experiencia mobile</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:55%;background:#d97706;"></div></div>
+          <div class="score-num" style="color:#d97706;">5.5</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Claridad de la oferta (hero)</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:40%;background:#dc2626;"></div></div>
+          <div class="score-num" style="color:#dc2626;">4</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Descubrimiento de productos</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:72%;background:#16a34a;"></div></div>
+          <div class="score-num" style="color:#16a34a;">7.2</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Fluidez del checkout</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:85%;background:#16a34a;"></div></div>
+          <div class="score-num" style="color:#16a34a;">8.5</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Confianza y social proof</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:30%;background:#dc2626;"></div></div>
+          <div class="score-num" style="color:#dc2626;">3</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Diseño visual y consistencia</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:75%;background:#16a34a;"></div></div>
+          <div class="score-num" style="color:#16a34a;">7.5</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Información del negocio</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:65%;background:#d97706;"></div></div>
+          <div class="score-num" style="color:#d97706;">6.5</div>
+        </div>
+
+        <div class="score-row">
+          <div class="score-label">Filtros y navegación</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:50%;background:#d97706;"></div></div>
+          <div class="score-num" style="color:#d97706;">5</div>
+        </div>
+
+        <div class="score-row" style="margin-top:16px;padding-top:16px;border-top:2px solid #f1f5f9;">
+          <div class="score-label" style="font-weight:900;color:#0f172a;">PUNTUACIÓN GLOBAL</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:64%;background:#3b82f6;"></div></div>
+          <div class="score-num" style="color:#3b82f6;font-size:1rem;font-weight:900;">6.4</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">💪 Lo que TIENDAONLINE hace mejor que muchos</div>
+        <div class="card-body">
+          <div class="check-item"><span class="check-ok">✓</span><span>Checkout WhatsApp — único y efectivo para micronegocios</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span>Selector de idioma nativo (ES/IT/EN)</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span>Sticky buscador + carrito siempre visible</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span>Upsell de cuenta post-pedido muy inteligente</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span>Footer legal completo (GDPR, cookies, términos)</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span>Sistema de cupones integrado en checkout</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📉 Lo que le falta para estar al nivel Shopify</div>
+        <div class="card-body">
+          <div class="check-item"><span class="check-no">✗</span><span>Filtros funcionales en mobile</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span>Hero/presentación del negocio sobre el grid</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span>Social proof (reseñas, ratings, "X personas compraron")</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span>Indicador de estado Abierto/Cerrado visible en mobile</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span>Banner con información, no solo decoración</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span>Orden de relevancia en el grid de productos</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 8: PRIORIDADES -->
+  <div class="tab-panel" id="panel-7">
+    <p class="section-title">🎯 Mejoras concretas por prioridad</p>
+    <p class="section-desc">Lista de acciones ordenadas. Las de Alta prioridad generan el mayor impacto con el menor esfuerzo.</p>
+
+    <p style="font-size:0.78rem;font-weight:900;color:#dc2626;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">🔴 Alta prioridad — hacer primero</p>
+
+    <div class="priority-item priority-alta">
+      <div class="priority-tag" style="color:#dc2626;">Alta · 30 min de código</div>
+      <div class="priority-title">Reducir altura del banner a 180px en mobile</div>
+      <div class="priority-desc">En <code>StoreClient.js línea 443</code>, cambiar el <code>height: '360px'</code> a responsive: <code>clamp(140px, 22vw, 280px)</code>. Impacto inmediato en first contentful paint y en la visibilidad de productos.</div>
+    </div>
+
+    <div class="priority-item priority-alta">
+      <div class="priority-tag" style="color:#dc2626;">Alta · 2–3 horas de código</div>
+      <div class="priority-title">Añadir botón "Filtrar" con bottom sheet en mobile</div>
+      <div class="priority-desc">Crear un estado <code>showMobileFilters</code> y un panel deslizante desde abajo con los mismos filtros del sidebar. Afecta al 70%+ de los usuarios. Sin esto, el sidebar es código muerto para la mayoría.</div>
+    </div>
+
+    <div class="priority-item priority-alta">
+      <div class="priority-tag" style="color:#dc2626;">Alta · 15 min de código</div>
+      <div class="priority-title">Mostrar estado Abierto/Cerrado en el header (mobile)</div>
+      <div class="priority-desc">Añadir el badge de estado junto al logo en la fila 1 del header. Un pequeño punto verde/rojo con "Abierto" o "Cerrado". Copiar el componente del sidebar — ya existe el cálculo <code>getEstadoTienda()</code>.</div>
+    </div>
+
+    <div class="priority-item priority-alta">
+      <div class="priority-tag" style="color:#dc2626;">Alta · 20 min de código</div>
+      <div class="priority-title">Sanitizar nombres de categorías en el frontend</div>
+      <div class="priority-desc">Aplicar en el display de categorías: <code>cat.nombre.replace(/_|-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())</code>. "articulosde comida" → "Articulosde Comida" como mínimo. Idealmente corregir el dato en Supabase.</div>
+    </div>
+
+    <p style="font-size:0.78rem;font-weight:900;color:#d97706;text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 10px;">🟡 Media prioridad — antes de escalar</p>
+
+    <div class="priority-item priority-media">
+      <div class="priority-tag" style="color:#d97706;">Media · 1 hora de código</div>
+      <div class="priority-title">Añadir texto sobre el banner (nombre + descripción)</div>
+      <div class="priority-desc">En el bloque del banner (línea 442–447), añadir un <code>div</code> absoluto sobre el overlay con: nombre de tienda en blanco bold + descripción corta. El overlay ya existe, solo falta el texto encima.</div>
+    </div>
+
+    <div class="priority-item priority-media">
+      <div class="priority-tag" style="color:#d97706;">Media · 1–2 horas de código</div>
+      <div class="priority-title">CTA de WhatsApp en búsqueda sin resultados</div>
+      <div class="priority-desc">En el bloque "No encontramos resultados" (línea 593–598), añadir botón: "Preguntar por WhatsApp →" que abra <code>wa.me/[tienda.whatsapp]</code>. Convierte frustraciones en oportunidades de venta.</div>
+    </div>
+
+    <div class="priority-item priority-media">
+      <div class="priority-tag" style="color:#d97706;">Media · 30 min de código</div>
+      <div class="priority-title">Strip de contacto rápido bajo el banner</div>
+      <div class="priority-desc">Un div de 44px de altura con iconos de WhatsApp, Instagram y horario en línea horizontal. Solo visible si la tienda tiene esos datos configurados. Da contexto sin ocupar espacio.</div>
+    </div>
+
+    <p style="font-size:0.78rem;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin:20px 0 10px;">⚪ Baja prioridad — optimizaciones</p>
+
+    <div class="priority-item priority-baja">
+      <div class="priority-tag" style="color:#64748b;">Baja · 30 min</div>
+      <div class="priority-title">Altura mínima uniforme en tarjetas de producto</div>
+      <div class="priority-desc">Añadir <code>min-height: 280px</code> al <code>.product-card</code> y <code>flex: 1</code> al <code>.product-info</code> para que las tarjetas del grid siempre tengan la misma altura.</div>
+    </div>
+
+    <div class="priority-item priority-baja">
+      <div class="priority-tag" style="color:#64748b;">Baja · 1 hora</div>
+      <div class="priority-title">Mejoras de copy en mensajes de estado</div>
+      <div class="priority-desc">Actualizar los textos de "¡Vuelve pronto!", "Finalizar pedido →", banner de tienda cerrada según las sugerencias del Tab 5.</div>
+    </div>
+  </div>
+
+  <!-- TAB 9: VC CHECK -->
+  <div class="tab-panel" id="panel-8">
+    <p class="section-title">💰 Evaluación como inversor (VC)</p>
+    <p class="section-desc">¿Qué vería un venture capitalist al revisar el catálogo público de TIENDAONLINE?</p>
+
+    <div class="card">
+      <div class="card-title">📈 Puntuaciones de potencial</div>
+      <div class="card-body">
+        <div class="vc-meter">
+          <div class="vc-label">🚀 Potencial de mercado</div>
+          <div class="vc-dots">
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot"></div><div class="vc-dot"></div>
+          </div>
+          <b style="color:#3b82f6;font-size:0.88rem;">8/10</b>
+        </div>
+        <div class="vc-meter">
+          <div class="vc-label">🎯 Claridad del producto</div>
+          <div class="vc-dots">
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot"></div><div class="vc-dot"></div><div class="vc-dot"></div><div class="vc-dot"></div>
+          </div>
+          <b style="color:#d97706;font-size:0.88rem;">6/10</b>
+        </div>
+        <div class="vc-meter">
+          <div class="vc-label">💡 Diferenciación</div>
+          <div class="vc-dots">
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot filled"></div><div class="vc-dot"></div><div class="vc-dot"></div><div class="vc-dot"></div>
+          </div>
+          <b style="color:#16a34a;font-size:0.88rem;">7/10</b>
+        </div>
+        <div class="vc-meter">
+          <div class="vc-label">📊 Listo para invertir</div>
+          <div class="vc-dots">
+            <div class="vc-dot filled"></div><div class="vc-dot filled"></div><div class="vc-dot filled"></div>
+            <div class="vc-dot filled"></div><div class="vc-dot"></div><div class="vc-dot"></div>
+            <div class="vc-dot"></div><div class="vc-dot"></div><div class="vc-dot"></div><div class="vc-dot"></div>
+          </div>
+          <b style="color:#dc2626;font-size:0.88rem;">4/10</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color:#16a34a;">💪 Lo que convence a un VC</div>
+        <div class="card-body">
+          <div class="check-item"><span class="check-ok">✓</span><span><b>Mercado enorme y desatendido:</b> millones de micronegocios en Italia y LATAM sin presencia digital</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span><b>WhatsApp como canal de ventas:</b> brillante para el segmento. Cero fricción, mobile-first, comportamiento ya adoptado</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span><b>Checkout en 2 pasos:</b> la conversión estructurada es clara, no un formulario de 8 campos</span></div>
+          <div class="check-item"><span class="check-ok">✓</span><span><b>Multi-idioma nativo:</b> señal de ambición de escala internacional desde el principio</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color:#dc2626;">⚠️ Lo que preocupa a un VC</div>
+        <div class="card-body">
+          <div class="check-item"><span class="check-no">✗</span><span><b>Sin métricas públicas:</b> ¿cuántas tiendas? ¿cuántos pedidos? La landing page no comunica tracción</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span><b>Monetización no visible:</b> el usuario de la tienda no sabe que hay planes de pago detrás</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span><b>UX mobile con gaps importantes:</b> filtros invisibles, banner enorme. Señal de ejecución incompleta</span></div>
+          <div class="check-item"><span class="check-no">✗</span><span><b>Sin social proof en el catálogo:</b> reseñas, ratings, "X clientes" — ausencia de confianza social</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎯 Para pasar de "interesante" a "invertible"</div>
+      <div class="card-body">
+        1. <b>50+ tiendas activas</b> usando la plataforma con pedidos reales documentados<br/>
+        2. <b>MRR visible</b> de al menos €1.000/mes de suscripciones pagadas<br/>
+        3. <b>UX mobile sin bugs críticos</b> — los filtros en mobile son básicos para competir con Shopify<br/>
+        4. <b>Dashboard de métricas para el dueño</b> que muestre conversión, pedidos/semana, ingresos — eso justifica el SaaS fee
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 10: PLAN FINAL -->
+  <div class="tab-panel" id="panel-9">
+    <p class="section-title">✅ Plan de acción final</p>
+    <p class="section-desc">Estructura definitiva del catálogo, checklist de producción, y próximos pasos concretos.</p>
+
+    <div class="info-box info-box-green">
+      <span>✅</span>
+      <span><b>La base es sólida.</b> El catálogo público ya funciona correctamente. Las mejoras que siguen son refinamientos de conversión, no reconstrucciones. Ninguno requiere cambiar la arquitectura.</span>
+    </div>
+
+    <p style="font-size:0.82rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Estructura final del catálogo (orden correcto)</p>
+    <div class="wireframe">
+      <div class="wf-block wf-ok">① HEADER — Logo · Estado Abierto/Cerrado · Idioma · Mi cuenta (con nombre si logueado)</div>
+      <div class="wf-block wf-ok">② BANNER — Imagen con texto superpuesto: nombre + descripción corta + estado · max 220px</div>
+      <div class="wf-block wf-new">③ STRIP INFO — WhatsApp · Horario · Instagram en una línea (condicional si tiene datos)</div>
+      <div class="wf-block wf-ok">④ STICKY BAR — Buscador · Botón "Filtrar" (mobile) · Carrito con total</div>
+      <div class="wf-block wf-ok">⑤ PILLS CATEGORÍAS — horizontal scroll deslizable</div>
+      <div class="wf-block wf-ok">⑥ CONTENIDO — Sidebar (desktop) + Grid de productos (2→3→4 cols)</div>
+      <div class="wf-block wf-new">⑦ BOTTOM SHEET FILTROS — Solo mobile, se activa con botón Filtrar</div>
+      <div class="wf-block wf-ok">⑧ FOOTER — 4 columnas (ya correcto)</div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">✅ Checklist de producción</div>
+      <div class="card-body">
+        <div class="check-item"><span class="check-ok">✅</span><span>Header con logo, idioma, Mi cuenta — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Sistema de carrito con localStorage persistente — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Checkout en 2 pasos con WhatsApp — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Filtro por categorías con scroll horizontal — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Búsqueda en tiempo real — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Sistema de cupones en checkout — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Modal post-pedido con upsell de cuenta — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Footer legal completo (GDPR) — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Nombre de cliente en header si logueado — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-ok">✅</span><span>Soporte multi-idioma ES/IT/EN — <b>LISTO</b></span></div>
+        <div class="check-item"><span class="check-no">❌</span><span>Altura del banner responsiva (no 360px fijos) — <b>PENDIENTE</b></span></div>
+        <div class="check-item"><span class="check-no">❌</span><span>Texto superpuesto sobre el banner — <b>PENDIENTE</b></span></div>
+        <div class="check-item"><span class="check-no">❌</span><span>Filtros accesibles en mobile (bottom sheet) — <b>PENDIENTE</b></span></div>
+        <div class="check-item"><span class="check-no">❌</span><span>Estado Abierto/Cerrado visible en mobile header — <b>PENDIENTE</b></span></div>
+        <div class="check-item"><span class="check-no">❌</span><span>Sanitización de nombres de categorías — <b>PENDIENTE</b></span></div>
+        <div class="check-item"><span class="check-warn">⚠️</span><span>CTA WhatsApp en búsqueda sin resultados — <b>RECOMENDADO</b></span></div>
+        <div class="check-item"><span class="check-warn">⚠️</span><span>Strip de contacto rápido bajo el banner — <b>RECOMENDADO</b></span></div>
+      </div>
+    </div>
+
+    <div class="info-box info-box-orange" style="margin-top:8px;">
+      <span>🎯</span>
+      <span><b>Prioridad inmediata:</b> Reducir el banner + añadir filtros en mobile. Son 2 horas de trabajo que impactan al 70% de usuarios. Todo lo demás puede ir después.</span>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+function switchTab(index) {
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-panel').forEach((panel, i) => {
+    panel.classList.toggle('active', i === index);
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>

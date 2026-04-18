@@ -2672,3 +2672,268 @@ git rm --cached stripe_backup_code.txt
 | Headers de seguridad HTTP | ✅ Completos: X-Frame, nosniff, CSP, Referrer, Permissions |
 | Rutas admin protegidas | ✅ verifyAdmin() en todas |
 | Autenticación multi-tenant | ✅ user_id verificado en todas las rutas privadas |
+
+---
+
+## SESIÓN 21 — Diagnóstico Stripe + Rediseño Visual Catálogo Público
+**Fecha:** 2026-04-18
+
+### Resumen
+Sesión de diagnóstico del error de Stripe y mejora visual completa del catálogo público. Se identificó la causa raíz del error de checkout, se mejoró la capacidad de diagnóstico del servidor, y se rediseñó completamente la UX del catálogo (`StoreClient.js`) para móvil.
+
+---
+
+### A — Diagnóstico del Error de Checkout Stripe
+
+**Síntoma reportado:** Al hacer clic en "Suscribirse" en `/dashboard/planes`, el sistema respondía con el error genérico:
+```
+"Error interno conectando con pasarela"
+```
+
+**Investigación:**
+1. Se verificaron los 6 Price IDs de Stripe via Stripe MCP — **todos existen y son válidos** en modo TEST.
+2. Se verificó que la columna `stripe_customer_id` existe en la tabla `tiendas` — ✅ confirmado.
+3. Se comprobó que `lib/stripe.js` inicializa el cliente con `key || 'sk_test_missing'` cuando la variable de entorno no está definida.
+4. **Causa raíz identificada:** La variable `STRIPE_SECRET_KEY` **no estaba configurada en el entorno de producción** (Coolify self-hosted). El cliente Stripe se inicializaba con el placeholder `sk_test_missing`, causando rechazo de autenticación en la API de Stripe.
+
+> ⚠️ **Nota:** La Sesión 18 configuró `STRIPE_SECRET_KEY` en `app.coolify.io` (instancia cloud de Coolify), pero TIENDAONLINE corre en una instancia **self-hosted** de Coolify cuya URL no estaba disponible en esta sesión. La variable debe configurarse en esa instancia.
+
+**Decisión del dueño:** Las suscripciones quedan en pausa ~15 días hasta el lanzamiento formal de la plataforma. No se activan cobros reales por ahora.
+
+---
+
+### B — Mejoras de Diagnóstico en Código Stripe
+
+#### `app/api/stripe/checkout/route.js`
+
+Añadida validación temprana de la variable de entorno antes de cualquier lógica:
+
+```js
+// NUEVO — Al inicio del handler POST:
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('[checkout] STRIPE_SECRET_KEY no está definida')
+  return NextResponse.json(
+    { error: 'Stripe no está configurado en el servidor. Contacta a soporte: hola@tiendaonline.it' },
+    { status: 503 }
+  )
+}
+```
+
+Cambiado el bloque `catch` para exponer el error real de Stripe en lugar del genérico:
+
+```js
+// ANTES:
+return NextResponse.json({ error: 'Error interno conectando con pasarela' }, { status: 500 })
+
+// AHORA:
+const msg = error?.message || 'Error interno conectando con pasarela'
+return NextResponse.json({ error: msg }, { status: 500 })
+```
+
+#### `lib/stripe.js`
+
+Añadido log de advertencia explícito cuando la key no está definida:
+
+```js
+const key = process.env.STRIPE_SECRET_KEY
+if (!key) {
+  console.error('[stripe] STRIPE_SECRET_KEY no está definida en las variables de entorno.')
+}
+export const stripe = new Stripe(key || 'sk_test_missing', { apiVersion: '2023-10-16', ... })
+```
+
+---
+
+### C — Rediseño Visual del Catálogo Público (`components/StoreClient.js`)
+
+Rediseño completo de la UX del catálogo para mejorar la estética, la usabilidad en móvil y la información visible sin necesidad de scroll.
+
+#### C1 — Banner Responsivo con Overlay de Información
+
+**Antes:** Banner con `height: '360px'` fija (ocupaba 40–60% del viewport en móvil).
+
+**Ahora:** Altura responsiva via clase CSS `.store-banner`:
+
+```css
+.store-banner { height: 160px; }
+@media (min-width: 480px) { .store-banner { height: 200px; } }
+@media (min-width: 768px) { .store-banner { height: 260px; } }
+@media (min-width: 1024px) { .store-banner { height: 300px; } }
+```
+
+El banner ahora incluye un gradiente oscuro en la parte inferior y texto superpuesto:
+- **Nombre de la tienda** (blanco, negrita 900)
+- **Descripción** (si existe, blanco semitransparente)
+- **Badge Abierto/Cerrado** (verde/rojo con opacidad 92%) en la esquina inferior derecha
+
+```jsx
+<div className="store-banner" style={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
+  <img src={config.banner_url} ... />
+  <div style={{ background: 'linear-gradient(to bottom, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.65) 100%)', position: 'absolute', inset: 0 }} />
+  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 20px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+    <div>
+      <p style={{ fontWeight: 900, color: '#fff', fontSize: '1.25rem' }}>{tienda.nombre}</p>
+      {tienda.descripcion && <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '0.82rem' }}>{tienda.descripcion}</p>}
+    </div>
+    {estadoTienda && (
+      <span style={{ background: estadoTienda.abierto ? 'rgba(22,163,74,0.92)' : 'rgba(220,38,38,0.92)', color: '#fff', ... }}>
+        {estadoTienda.abierto ? 'Abierto' : 'Cerrado'}
+      </span>
+    )}
+  </div>
+</div>
+```
+
+#### C2 — Franja de Contacto
+
+Nueva sección entre el banner y la barra sticky, visible en todas las resoluciones. Muestra en línea horizontal:
+- **WhatsApp** (si existe `config.whatsapp`)
+- **Horario** (si existe `config.horario`)
+- **Instagram** (si existe `config.instagram`)
+- **Email** (si existe `config.email`)
+
+Fondo `#f8fafc`, separado con `border-bottom: 1px solid #e2e8f0`. Todos los datos son opcionales — si la tienda no tiene ninguno, la franja no se renderiza.
+
+#### C3 — Estado Abierto/Cerrado en Header (sin banner)
+
+Cuando la tienda **no tiene banner**, el badge Abierto/Cerrado ahora se muestra directamente en el header de la tienda (visible en móvil sin hacer scroll):
+
+```jsx
+{!config.banner_url && estadoTienda && (
+  <span style={{ background: estadoTienda.abierto ? '#dcfce7' : '#fee2e2', color: estadoTienda.abierto ? '#166534' : '#991b1b', ... }}>
+    {estadoTienda.abierto ? '🟢 Abierto' : '🔴 Cerrado'}
+  </span>
+)}
+```
+
+#### C4 — Botón de Filtros en Móvil (Bottom Sheet)
+
+**Problema:** Los filtros de precio y stock estaban únicamente en el sidebar lateral (`display: none` en <768px). En móvil, el usuario no tenía ninguna forma de filtrar.
+
+**Solución implementada:**
+
+1. **Botón `⚙ Filtrar`** en la barra de búsqueda, visible solo en <768px:
+```css
+.btn-filtrar-mobile { display: flex !important; }
+@media (min-width: 768px) { .btn-filtrar-mobile { display: none !important; } }
+```
+
+2. **Bottom sheet** que se desliza desde abajo con filtros completos:
+   - Precio: Todos / Menos de €10 / €10–€30 / €30–€50 / Más de €50
+   - Stock: Todos / Solo disponibles
+   - Botón "Aplicar filtros" (cierra el panel y aplica los filtros)
+   - Botón "Limpiar" (resetea a valores por defecto)
+   - Overlay semitransparente (clic fuera = cierra)
+
+```jsx
+{showMobileFilters && (
+  <>
+    <div onClick={() => setShowMobileFilters(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 99 }} />
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderRadius: '20px 20px 0 0', padding: '24px', zIndex: 100, maxHeight: '70vh', overflowY: 'auto' }}>
+      {/* contenido de filtros */}
+    </div>
+  </>
+)}
+```
+
+#### C5 — Sanitización de Nombres de Categorías
+
+**Problema:** Los nombres de categorías almacenados con guiones o underscores (`articulosde-comida`, `ropa_infantil`) se mostraban sin formatear en las pills de navegación.
+
+**Solución:**
+```js
+const formatCategoryName = (name) =>
+  name.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+```
+
+Aplicado en todas las pills de categorías (sidebar + barra horizontal + bottom sheet).
+
+#### C6 — Mejoras Visuales de Tarjetas de Producto
+
+| Propiedad | Antes | Ahora |
+|-----------|-------|-------|
+| `min-height` de tarjeta | sin definir | `280px` |
+| `border-radius` de tarjeta | `12px` | `16px` |
+| `box-shadow` hover | ninguno | `0 8px 25px rgba(0,0,0,0.12)` |
+| Placeholder sin imagen | fondo gris plano | `linear-gradient(135deg, #f1f5f9 0%, #e8eef4 100%)` |
+| Precio | `1rem` font-size | `1.1rem` font-size |
+| Botón "Agregar" | padding genérico | `padding: 11px` |
+
+---
+
+### D — Documento de Auditoría UX Creado
+
+Se creó el archivo `auditoria_tienda_publica.html` (widget interactivo de 10 pestañas) con análisis completo del catálogo público:
+
+| Pestaña | Contenido |
+|---------|-----------|
+| Contenido | Análisis del copy actual vs. copy propuesto |
+| Estructura | Layout desktop vs. móvil |
+| Limpieza | Elementos redundantes y ruido visual |
+| Rediseño | Plan de mejoras visuales |
+| Copy | Textos actuales vs. textos mejorados |
+| Errores | Bugs UX identificados |
+| Comparativa | TIENDAONLINE vs. competidores (Tiendanube, Shopify) |
+| Prioridades | Matriz urgencia/impacto |
+| VC Check | Evaluación investor-ready |
+| Plan Final | Roadmap de mejoras en 3 sprints |
+
+Archivo guardado en: `/TIENDAONLINE/auditoria_tienda_publica.html`
+
+---
+
+### E — Archivos Modificados en Sesión 21
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/api/stripe/checkout/route.js` | Validación temprana de `STRIPE_SECRET_KEY` + exposición del error real de Stripe |
+| `lib/stripe.js` | Log de advertencia cuando la key no está definida |
+| `components/StoreClient.js` | Banner responsivo + overlay texto + franja contacto + estado abierto/cerrado en header + botón filtrar móvil + bottom sheet filtros + sanitización nombres categorías + mejoras tarjetas |
+| `auditoria_tienda_publica.html` | Nuevo archivo — auditoría UX interactiva del catálogo público |
+
+---
+
+### F — Pendiente de Commit (⚠️ Requiere Acción Manual)
+
+> **El sandbox Linux no puede hacer `git commit` porque `.git/index.lock` existe en el sistema de archivos Windows (NTFS mount). El dueño debe ejecutar los siguientes comandos desde su terminal Windows:**
+
+```bash
+git add components/StoreClient.js app/api/stripe/checkout/route.js lib/stripe.js
+git commit -m "feat: mejoras visuales catálogo público + fix diagnóstico Stripe"
+git push
+```
+
+Coolify detectará el push y ejecutará el redeploy automáticamente.
+
+---
+
+### G — Decisiones Clave Tomadas en Sesión 21
+
+| Decisión | Detalle |
+|----------|---------|
+| Suscripciones Stripe en pausa | Por decisión del dueño, los cobros reales se activan en ~15 días cuando la plataforma esté lista para lanzamiento |
+| `STRIPE_SECRET_KEY` pendiente | Debe configurarse en el Coolify **self-hosted** (no en `app.coolify.io`). Obtener de: `https://dashboard.stripe.com/apikeys` |
+| Bottom sheet en lugar de modal | Elegido por mejor ergonomía en móvil (el pulgar alcanza los controles naturalmente desde abajo) |
+
+---
+
+### H — Roadmap Actualizado Post-Sesión 21
+
+| Estado | Feature |
+|--------|---------|
+| ✅ Hecho | Diagnóstico Stripe — causa raíz identificada |
+| ✅ Hecho | Mejora diagnóstico — errores reales visibles en logs y respuesta API |
+| ✅ Hecho | Banner responsivo con overlay de nombre + estado |
+| ✅ Hecho | Franja de contacto entre banner y barra sticky |
+| ✅ Hecho | Filtros en móvil (bottom sheet) |
+| ✅ Hecho | Sanitización nombres de categorías |
+| ✅ Hecho | Mejoras visuales de tarjetas de producto |
+| ✅ Hecho | Auditoría UX interactiva (`auditoria_tienda_publica.html`) |
+| 🟡 Pendiente | Commit + push de los cambios (requiere acción manual en terminal Windows) |
+| 🔴 Pendiente | Configurar `STRIPE_SECRET_KEY` en Coolify self-hosted cuando esté listo para cobrar |
+| 🔴 Pendiente | Pasar Stripe a modo LIVE (~15 días) |
+| 🔴 Pendiente | **Resend** — emails transaccionales (bienvenida, trial, recuperación de contraseña) |
+| 🔴 Pendiente | **Actualizar Supabase a Plan Pro** antes del lanzamiento público |
+| 🔴 Pendiente | Wizard de registro campo a campo (mejora UX del onboarding) |
+| 🔴 Pendiente | Correo corporativo `@tiendaonline.it` (recomendado: Zoho Mail, gratis hasta 5 usuarios) |
+| 🔴 Pendiente | Guards de features: bloquear con UpgradeModal cupones, fiados avanzados y reportes según plan |
