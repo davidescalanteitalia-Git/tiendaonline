@@ -120,17 +120,21 @@ export async function PUT(request) {
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
 
-    const { nombre, telefono, fecha_nacimiento, direccion } = await request.json()
+    const { nombre, telefono, fecha_nacimiento, direccion, avatar_url } = await request.json()
+
+    const updateData = {
+      nombre: nombre || '',
+      telefono: telefono || '',
+      fecha_nacimiento: fecha_nacimiento || null,
+      direccion: direccion || null,
+      updated_at: new Date().toISOString()
+    }
+    // Solo actualizamos avatar_url si viene en el body
+    if (avatar_url !== undefined) updateData.avatar_url = avatar_url
 
     const { error } = await supabaseAdmin
       .from('clientes')
-      .update({
-        nombre: nombre || '',
-        telefono: telefono || '',
-        fecha_nacimiento: fecha_nacimiento || null,
-        direccion: direccion || null,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('user_id', user.id)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })

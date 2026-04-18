@@ -10,6 +10,7 @@ import {
   Music2, MessageCircle, Bird, PlayCircle, Link, AtSign, Star
 } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
+import AvatarUpload from '../../../components/AvatarUpload'
 
 const REDES_CONFIG = [
   { key: 'facebook',  label: 'Facebook',  Icon: Link,            color: '#1877F2', placeholder: 'https://facebook.com/tu_tienda' },
@@ -39,6 +40,7 @@ export default function AjustesPage() {
   const [horario, setHorario] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [emoji, setEmoji] = useState('🏪')
+  const [userId, setUserId] = useState(null)
   const [linkResenaGoogle, setLinkResenaGoogle] = useState('')
 
   // Redes sociales: { facebook: {url, visible}, instagram: {url, visible}, ... }
@@ -67,6 +69,7 @@ export default function AjustesPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+      setUserId(session.user.id)
 
       const res = await fetch('/api/tienda', {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
@@ -252,40 +255,24 @@ export default function AjustesPage() {
 
             <div className="flex flex-col md:flex-row gap-8 items-start">
                {/* Logo Upload Section */}
-               <div className="relative group">
-                  <div className="w-32 h-32 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden transition-all group-hover:border-blue-400">
-                    {uploading ? (
-                      <Loader2 className="animate-spin text-blue-500" size={32} />
-                    ) : logoUrl ? (
-                      <img src={logoUrl} className="w-full h-full object-cover" alt="Logo" />
-                    ) : (
-                      <div className="flex flex-col items-center text-slate-400">
-                        <ImageIcon size={32} />
-                        <span className="text-[10px] font-bold mt-2 uppercase tracking-wider">{dict.fotoLogo || 'Logo'}</span>
-                      </div>
-                    )}
-                  </div>
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute -bottom-2 -right-2 bg-blue-500 text-white p-2.5 rounded-xl shadow-lg hover:bg-blue-600 transition-all active:scale-90"
-                  >
-                    <Camera size={18} />
-                  </button>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept="image/*" 
-                    onChange={handleLogoUpload} 
-                  />
-                  {logoUrl && (
-                    <button 
-                      onClick={() => setLogoUrl('')}
-                      className="absolute -top-2 -right-2 bg-white text-rose-500 p-1.5 rounded-lg shadow border border-slate-100 opacity-0 group-hover:opacity-100 transition-all"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
+               <div className="flex flex-col items-center gap-2">
+                 <AvatarUpload
+                   currentUrl={logoUrl}
+                   userId={userId || 'tienda'}
+                   bucket="avatars"
+                   size={112}
+                   shape="rounded"
+                   label={dict.fotoLogo || 'Logo de tienda'}
+                   onUploaded={(url) => setLogoUrl(url)}
+                 />
+                 {logoUrl && (
+                   <button
+                     onClick={() => setLogoUrl('')}
+                     className="text-xs text-rose-400 hover:text-rose-600 font-semibold transition-colors"
+                   >
+                     Eliminar logo
+                   </button>
+                 )}
                </div>
 
                <div className="flex-1 w-full space-y-6">

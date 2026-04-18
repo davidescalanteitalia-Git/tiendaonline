@@ -535,7 +535,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                emoji: '🥖',
+                avatar: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/testimonio-marco.jpg',
                 name: 'Marco R.',
                 role: lang === 'it' ? 'Panetteria · Milano' : lang === 'en' ? 'Bakery · Milan' : 'Panadería · Milán',
                 quote: lang === 'it'
@@ -546,7 +546,7 @@ export default function Home() {
                 stars: 5,
               },
               {
-                emoji: '🛍️',
+                avatar: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/testimonio-lucia.jpg',
                 name: 'Lucia F.',
                 role: lang === 'it' ? 'Boutique · Roma' : lang === 'en' ? 'Boutique · Rome' : 'Boutique · Roma',
                 quote: lang === 'it'
@@ -557,7 +557,7 @@ export default function Home() {
                 stars: 5,
               },
               {
-                emoji: '☕',
+                avatar: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/testimonio-carlos.jpg',
                 name: 'Carlos M.',
                 role: lang === 'it' ? 'Bar · Napoli' : lang === 'en' ? 'Café · Naples' : 'Café · Nápoles',
                 quote: lang === 'it'
@@ -579,9 +579,13 @@ export default function Home() {
                     {t.quote}
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-xl">
-                      {t.emoji}
-                    </div>
+                    <Image
+                      src={t.avatar}
+                      alt={t.name}
+                      width={44}
+                      height={44}
+                      className="w-11 h-11 rounded-full object-cover border-2 border-emerald-100 shadow-sm"
+                    />
                     <div>
                       <div className="font-black text-slate-900 text-sm">{t.name}</div>
                       <div className="text-slate-400 text-xs font-semibold">{t.role}</div>

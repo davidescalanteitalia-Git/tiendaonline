@@ -9,6 +9,7 @@ import {
   ChevronRight, AlertCircle, Edit3, Save, X, ExternalLink,
   ShoppingBag, CreditCard, BadgePercent, MapPin
 } from 'lucide-react'
+import AvatarUpload from '../../../../components/AvatarUpload'
 
 const ESTADO_CONFIG = {
   pendiente:   { label: 'Pendiente',     color: 'bg-amber-100 text-amber-700',  icon: Clock },
@@ -311,6 +312,35 @@ export default function MisPedidosPage() {
         {/* ══ TAB PERFIL ══ */}
         {tab === 'perfil' && (
           <div>
+            {/* Foto de perfil del cliente */}
+            {session && (
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-4 flex flex-col items-center gap-3">
+                <AvatarUpload
+                  currentUrl={cliente?.avatar_url || null}
+                  userId={session.user.id}
+                  bucket="avatars"
+                  size={80}
+                  shape="circle"
+                  label="Foto de perfil"
+                  onUploaded={async (url) => {
+                    // Guardamos avatar_url en la tabla clientes
+                    await fetch('/api/auth/cliente', {
+                      method: 'PUT',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                      },
+                      body: JSON.stringify({ avatar_url: url })
+                    })
+                    setCliente(prev => ({ ...prev, avatar_url: url }))
+                  }}
+                />
+                <p className="text-xs text-slate-400 font-medium text-center">
+                  Tu foto aparecerá en tus reseñas y pedidos
+                </p>
+              </div>
+            )}
+
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 mb-4">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-black text-slate-800">Mis datos</h3>

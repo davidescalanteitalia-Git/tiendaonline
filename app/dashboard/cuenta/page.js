@@ -7,11 +7,14 @@ import {
   CheckCircle2, AlertCircle, User, KeyRound, X, ArrowLeft
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import AvatarUpload from '../../../components/AvatarUpload'
 
 export default function CuentaPage() {
   const router = useRouter()
 
   const [userEmail, setUserEmail] = useState('')
+  const [userId, setUserId] = useState(null)
+  const [avatarUrl, setAvatarUrl] = useState(null)
   const [loading, setLoading] = useState(true)
 
   // Email change
@@ -38,6 +41,16 @@ export default function CuentaPage() {
       if (!session) { router.replace('/login'); return }
       setUserEmail(session.user.email || '')
       setNuevoEmail(session.user.email || '')
+      setUserId(session.user.id)
+      // Cargar avatar si existe
+      const { data: avatarData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(`${session.user.id}/avatar.jpg`)
+      // Verificar si existe realmente (hacemos HEAD request)
+      try {
+        const check = await fetch(avatarData.publicUrl, { method: 'HEAD' })
+        if (check.ok) setAvatarUrl(avatarData.publicUrl)
+      } catch {}
       setLoading(false)
     }
     load()
@@ -142,11 +155,23 @@ export default function CuentaPage() {
         >
           <ArrowLeft size={20} />
         </button>
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <ShieldCheck className="text-blue-500" size={28} /> Mi Cuenta
-          </h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">Administra tu email y contraseña de acceso.</p>
+        <div className="flex items-center gap-5 flex-1">
+          {userId && (
+            <AvatarUpload
+              currentUrl={avatarUrl}
+              userId={userId}
+              bucket="avatars"
+              size={68}
+              shape="circle"
+              onUploaded={(url) => setAvatarUrl(url)}
+            />
+          )}
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+              <ShieldCheck className="text-blue-500" size={28} /> Mi Cuenta
+            </h1>
+            <p className="text-slate-500 text-sm font-medium mt-1">Administra tu email y contraseña de acceso.</p>
+          </div>
         </div>
       </div>
 
