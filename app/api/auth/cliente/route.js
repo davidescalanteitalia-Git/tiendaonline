@@ -168,4 +168,12 @@ export async function DELETE(request) {
       .eq('user_id', user.id)
 
     // Eliminar usuario de Supabase Auth
-    aw
+    await supabaseAdmin.auth.admin.deleteUser(user.id)
+
+    return NextResponse.json({ success: true, message: 'Cuenta eliminada correctamente.' })
+
+  } catch (err) {
+    console.error('Error eliminando cuenta:', err)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
+  }
+}
