@@ -31,10 +31,10 @@ const DEMO_TABS = [
     labelKey: 'tabPanetteria',
     store: 'Panetteria Rossi',
     products: [
-      { name: 'Pane casereccio',    price: '2.50',  img: 'https://loremflickr.com/300/300/bread,rustic?lock=1'     },
-      { name: 'Cornetti freschi',   price: '1.20',  img: 'https://loremflickr.com/300/300/croissant,pastry?lock=2' },
-      { name: 'Torta della nonna',  price: '14.00', img: 'https://loremflickr.com/300/300/cake,italian?lock=3'     },
-      { name: 'Focaccia rosmarino', price: '3.50',  img: 'https://loremflickr.com/300/300/focaccia,bread?lock=4'   },
+      { name: 'Pane casereccio',    price: '2.50',  img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/panetteria-pane.jpg'     },
+      { name: 'Cornetti freschi',   price: '1.20',  img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/panetteria-cornetti.jpg' },
+      { name: 'Torta della nonna',  price: '14.00', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/panetteria-torta.jpg'    },
+      { name: 'Focaccia rosmarino', price: '3.50',  img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/panetteria-focaccia.jpg' },
     ],
   },
   {
@@ -42,10 +42,10 @@ const DEMO_TABS = [
     labelKey: 'tabFruttivendolo',
     store: "Frutta e Verdura da Mario",
     products: [
-      { name: 'Fragole biologiche', price: '3.90', img: 'https://loremflickr.com/300/300/strawberry,fresh?lock=5'  },
-      { name: 'Arance di Sicilia',  price: '2.00', img: 'https://loremflickr.com/300/300/orange,citrus?lock=6'     },
-      { name: 'Insalata mista',     price: '1.50', img: 'https://loremflickr.com/300/300/salad,vegetables?lock=7'  },
-      { name: 'Pomodori datterini', price: '2.80', img: 'https://loremflickr.com/300/300/tomato,cherry?lock=8'     },
+      { name: 'Fragole biologiche', price: '3.90', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/frutta-fragole.jpg'   },
+      { name: 'Arance di Sicilia',  price: '2.00', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/frutta-arance.jpg'    },
+      { name: 'Insalata mista',     price: '1.50', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/frutta-insalata.jpg'  },
+      { name: 'Pomodori datterini', price: '2.80', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/frutta-pomodori.jpg'  },
     ],
   },
   {
@@ -53,10 +53,10 @@ const DEMO_TABS = [
     labelKey: 'tabBar',
     store: 'Bar Centrale',
     products: [
-      { name: 'Caffè espresso',    price: '1.20', img: 'https://loremflickr.com/300/300/espresso,coffee?lock=9'  },
-      { name: 'Cappuccino',        price: '1.50', img: 'https://loremflickr.com/300/300/cappuccino,coffee?lock=10'},
-      { name: 'Tramezzino misto',  price: '2.50', img: 'https://loremflickr.com/300/300/sandwich,italian?lock=11' },
-      { name: 'Succo di frutta',   price: '2.00', img: 'https://loremflickr.com/300/300/juice,fruit?lock=12'     },
+      { name: 'Caffè espresso',    price: '1.20', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/bar-espresso.jpg'    },
+      { name: 'Cappuccino',        price: '1.50', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/bar-cappuccino.jpg'  },
+      { name: 'Tramezzino misto',  price: '2.50', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/bar-tramezzino.jpg'  },
+      { name: 'Succo di frutta',   price: '2.00', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/bar-succo.jpg'       },
     ],
   },
   {
@@ -64,10 +64,10 @@ const DEMO_TABS = [
     labelKey: 'tabNegozioLocale',
     store: 'Alimentari da Lucia',
     products: [
-      { name: 'Olio extravergine',  price: '8.50', img: 'https://loremflickr.com/300/300/olive,oil?lock=13'      },
-      { name: 'Pasta artigianale',  price: '2.20', img: 'https://loremflickr.com/300/300/pasta,italian?lock=14'  },
-      { name: 'Marmellata artig.',  price: '4.90', img: 'https://loremflickr.com/300/300/jam,jar?lock=15'        },
-      { name: 'Conserve (pack 3)',  price: '6.00', img: 'https://loremflickr.com/300/300/grocery,food?lock=16'   },
+      { name: 'Olio extravergine',  price: '8.50', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/alimentari-olio.jpg'       },
+      { name: 'Pasta artigianale',  price: '2.20', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/alimentari-pasta.jpg'      },
+      { name: 'Marmellata artig.',  price: '4.90', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/alimentari-marmellata.jpg' },
+      { name: 'Conserve (pack 3)',  price: '6.00', img: 'https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/alimentari-conserve.jpg'   },
     ],
   },
 ]
@@ -130,7 +130,7 @@ export default function Home() {
     },
     {
       key: 'starter',
-      name: lang === 'it' ? 'Starter' : 'Básico',
+      name: lang === 'it' ? 'Base' : lang === 'en' ? 'Basic' : 'Básico',
       desc: lang === 'it' ? 'Il tuo negozio base per iniziare a vendere' : 'Tu tienda básica para empezar a vender',
       monthly: 15,
       annual: 12,   // ≈ 20% ahorro → €144/año  (vs €180)
@@ -337,6 +337,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── TRUST BAR ──────────────────────────────────────────────────────── */}
+      <section className="py-5 px-6 bg-white border-b border-slate-100">
+        <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-6 md:gap-12">
+          {[
+            { icon: '🔒', label: 'SSL · HTTPS' },
+            { icon: '✅', label: 'GDPR Compliant' },
+            { icon: '💳', label: 'Stripe Verified' },
+            { icon: '🏪', label: `${storeCount} ${lang === 'it' ? 'negozi attivi' : lang === 'en' ? 'active stores' : 'tiendas activas'}` },
+            { icon: '🇮🇹', label: lang === 'it' ? 'Supporto in italiano' : lang === 'en' ? 'Italian support' : 'Soporte en italiano' },
+            { icon: '⚡', label: lang === 'it' ? 'Attivo in 5 minuti' : lang === 'en' ? 'Live in 5 minutes' : 'Activo en 5 minutos' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-2 text-slate-500 text-xs font-bold whitespace-nowrap">
+              <span className="text-base">{item.icon}</span>
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ─── EL PROBLEMA ────────────────────────────────────────────────────── */}
       <section className="py-24 px-6 bg-white overflow-hidden relative">
         <div className="max-w-7xl mx-auto">
@@ -495,6 +514,80 @@ export default function Home() {
                 <div className="mb-8 p-4 bg-slate-900 rounded-2xl inline-block group-hover:rotate-6 transition-transform">{feat.icon}</div>
                 <h3 className="text-2xl font-bold mb-4 tracking-tight">{feat.title}</h3>
                 <p className="text-slate-400 leading-relaxed font-medium">{feat.desc}</p>
+              </AnimatedSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIOS ─────────────────────────────────────────────────────── */}
+      <section className="py-24 px-6 bg-emerald-50 overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <AnimatedSection className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">
+              {lang === 'it' ? 'Chi usa TIENDAONLINE?' : lang === 'en' ? 'Who uses TIENDAONLINE?' : '¿Quién usa TIENDAONLINE?'}
+            </h2>
+            <p className="text-slate-500 font-medium text-lg">
+              {lang === 'it' ? 'Negozi reali, risultati reali.' : lang === 'en' ? 'Real stores, real results.' : 'Tiendas reales, resultados reales.'}
+            </p>
+          </AnimatedSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                emoji: '🥖',
+                name: 'Marco R.',
+                role: lang === 'it' ? 'Panetteria · Milano' : lang === 'en' ? 'Bakery · Milan' : 'Panadería · Milán',
+                quote: lang === 'it'
+                  ? '"Prima perdevo ordini su WhatsApp. Adesso il catalogo online fa tutto da solo e i clienti ordinano anche la notte."'
+                  : lang === 'en'
+                  ? '"I used to lose orders on WhatsApp. Now the online catalog does everything automatically and customers order even at night."'
+                  : '"Antes perdía pedidos en WhatsApp. Ahora el catálogo online lo hace todo solo y los clientes piden hasta de noche."',
+                stars: 5,
+              },
+              {
+                emoji: '🛍️',
+                name: 'Lucia F.',
+                role: lang === 'it' ? 'Boutique · Roma' : lang === 'en' ? 'Boutique · Rome' : 'Boutique · Roma',
+                quote: lang === 'it'
+                  ? '"Il POS sul telefono è comodissimo. Niente cassa tradizionale, niente code. Vendo dal banco con un tocco."'
+                  : lang === 'en'
+                  ? '"The POS on the phone is super convenient. No traditional cash register, no queues. I sell from the counter with one tap."'
+                  : '"El POS en el celular es comodísimo. Sin caja registradora, sin filas. Vendo desde el mostrador con un toque."',
+                stars: 5,
+              },
+              {
+                emoji: '☕',
+                name: 'Carlos M.',
+                role: lang === 'it' ? 'Bar · Napoli' : lang === 'en' ? 'Café · Naples' : 'Café · Nápoles',
+                quote: lang === 'it'
+                  ? '"I miei clienti abituali ordinano via WhatsApp il mattino e ritirano all\'ora di pranzo. Zero chiamate, zero errori."'
+                  : lang === 'en'
+                  ? '"My regular customers order via WhatsApp in the morning and pick up at lunch. Zero calls, zero mistakes."'
+                  : '"Mis clientes habituales piden por WhatsApp en la mañana y recogen al mediodía. Cero llamadas, cero errores."',
+                stars: 5,
+              },
+            ].map((t, i) => (
+              <AnimatedSection key={i} delay={i * 0.1}>
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-emerald-100 h-full flex flex-col">
+                  <div className="flex gap-1 mb-6">
+                    {[...Array(t.stars)].map((_, s) => (
+                      <span key={s} className="text-yellow-400 text-lg">★</span>
+                    ))}
+                  </div>
+                  <p className="text-slate-700 font-medium leading-relaxed flex-1 mb-8 text-sm italic">
+                    {t.quote}
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-xl">
+                      {t.emoji}
+                    </div>
+                    <div>
+                      <div className="font-black text-slate-900 text-sm">{t.name}</div>
+                      <div className="text-slate-400 text-xs font-semibold">{t.role}</div>
+                    </div>
+                  </div>
+                </div>
               </AnimatedSection>
             ))}
           </div>
