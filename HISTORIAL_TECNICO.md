@@ -3168,7 +3168,7 @@ Tras análisis legal y de negocio, se definió el modelo definitivo de pagos:
 | Plan | Modelo de pago |
 |------|---------------|
 | Gratis | Solo coordinación por WhatsApp. Sin pagos online. |
-| Básico, Pro, Grow | Cada vendedor conecta su propia cuenta Stripe. El dinero va directo a su banco. TIENDAONLINE no actúa como intermediario financiero (evita requisitos PSP/PSD2). |
+| Básico, Pro, Grow | Cada vendedor conecta su propia cuenta Stripe. El dinero va directo a su banco sin pasar por TIENDAONLINE. La plataforma no cobra ningún porcentaje ni tarifa por transacción. Solo aplican las tarifas estándar de Stripe entre Stripe y el vendedor. |
 
 TIENDAONLINE guía al vendedor en el onboarding de su cuenta Stripe (una sola vez). No cobra €0,25 por transacción — modelo 100% por suscripción.
 

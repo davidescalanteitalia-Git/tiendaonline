@@ -73,7 +73,7 @@ const PLAN_CONFIG = {
       {
         categoria: '🛍️ Ventas',
         items: [
-          { label: 'Pagos online con Stripe', desc: 'Tus clientes pagan con tarjeta directamente en tu tienda. El dinero llega a tu cuenta bancaria. TIENDAONLINE cobra €0,25 por transacción exitosa, además de las tarifas estándar de Stripe.' },
+          { label: 'Pagos online con Stripe', desc: 'Tus clientes pagan con tarjeta directamente en tu tienda. El dinero va directo a tu cuenta bancaria — TIENDAONLINE no toca ni cobra nada del cobro. Solo pagas las tarifas estándar de Stripe a ellos directamente.' },
           { label: 'Checkout por WhatsApp', desc: 'Sigue disponible como opción alternativa.' },
           { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
         ]
@@ -112,7 +112,7 @@ const PLAN_CONFIG = {
       {
         categoria: '🛍️ Ventas',
         items: [
-          { label: 'Pagos online con Stripe', desc: 'Igual que el plan Básico. TIENDAONLINE cobra €0,25 por transacción exitosa además de las tarifas estándar de Stripe.' },
+          { label: 'Pagos online con Stripe', desc: 'Igual que el plan Básico. Tu cuenta Stripe conectada directamente, el dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
           { label: 'Cupones de descuento ilimitados', desc: 'Crea códigos de descuento por porcentaje o valor fijo para tus campañas.' },
           { label: 'Catálogo Instagram / Facebook', desc: 'Conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
           { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
@@ -158,7 +158,7 @@ const PLAN_CONFIG = {
       {
         categoria: '🛍️ Ventas',
         items: [
-          { label: 'Stripe propio — sin intermediarios', desc: 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene ni cobra €0,25 por transacción. Te guiamos paso a paso para activarlo.' },
+          { label: 'Stripe propio — sin intermediarios', desc: 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene en ningún momento. Te guiamos paso a paso para activarlo la primera vez.' },
           { label: 'Recuperación de carritos abandonados', desc: 'Aviso automático a clientes que no completaron su compra.' },
           { label: 'Programa de puntos y afiliados', desc: 'Fideliza a tus clientes con puntos canjeables y recompensas.' },
           { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
