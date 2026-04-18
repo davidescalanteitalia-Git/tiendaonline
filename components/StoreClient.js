@@ -388,6 +388,14 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             {/* Spacer */}
             <div style={{ flex: 1 }} />
 
+            {/* Estado abierto/cerrado en header — solo cuando NO hay banner */}
+            {!config.banner_url && estadoTienda && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, fontSize: '0.7rem', fontWeight: 800, background: estadoTienda.abierto ? '#dcfce7' : '#fee2e2', color: estadoTienda.abierto ? '#15803d' : '#dc2626', flexShrink: 0 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: estadoTienda.abierto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+                {estadoTienda.abierto ? 'Abierto' : 'Cerrado'}
+              </span>
+            )}
+
             {/* Selector de idioma */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#f1f5f9', borderRadius: '10px', padding: '3px', border: '1px solid #e2e8f0' }}>
               {[
@@ -438,11 +446,63 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           </div>
         </div>
 
-        {/* ── Fila 2: Banner (ancho completo) ── */}
+        {/* ── Fila 2: Banner responsive con texto superpuesto ── */}
         {config.banner_url && (
-          <div style={{ width: '100%', height: '360px', overflow: 'hidden', position: 'relative' }}>
+          <div className="store-banner" style={{ position: 'relative', overflow: 'hidden', width: '100%' }}>
             <img src={config.banner_url} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 55%, rgba(15,23,42,0.4) 100%)' }} />
+            {/* Overlay degradado más pronunciado para que el texto sea legible */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.65) 100%)' }} />
+            {/* Texto superpuesto: nombre + descripción + estado */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 20px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: '0 0 3px', fontSize: '1.25rem', fontWeight: 900, color: '#fff', lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {tienda.nombre}
+                </p>
+                {tienda.descripcion && (
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'rgba(255,255,255,0.88)', fontWeight: 500, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '320px', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                    {tienda.descripcion}
+                  </p>
+                )}
+              </div>
+              {/* Badge estado abierto/cerrado sobre el banner */}
+              {estadoTienda && (
+                <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 99, fontSize: '0.72rem', fontWeight: 800, background: estadoTienda.abierto ? 'rgba(22,163,74,0.92)' : 'rgba(220,38,38,0.92)', color: '#fff', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', opacity: 0.9, flexShrink: 0 }} />
+                  {estadoTienda.abierto ? 'Abierto' : 'Cerrado'}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Strip de contacto rápido (condicional) ── */}
+        {(tienda.whatsapp || tienda.horario || config.redes_sociales?.instagram) && (
+          <div style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '0 16px' }}>
+            <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '20px', height: '40px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+              {tienda.whatsapp && (
+                <a href={`https://wa.me/${tienda.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: '#16a34a', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  💬 WhatsApp
+                </a>
+              )}
+              {tienda.horario && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#64748b', fontSize: '0.78rem', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  🕐 {tienda.horario}
+                </span>
+              )}
+              {config.redes_sociales?.instagram && (
+                <a href={`https://instagram.com/${config.redes_sociales.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: '#7c3aed', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  📸 {config.redes_sociales.instagram}
+                </a>
+              )}
+              {tienda.email && (
+                <a href={`mailto:${tienda.email}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: '#64748b', fontSize: '0.78rem', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  ✉️ {tienda.email}
+                </a>
+              )}
+            </div>
           </div>
         )}
 
@@ -450,8 +510,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         <div style={{ position: 'sticky', top: 0, zIndex: 50, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 16px' }}>
           <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
-            {/* Barra buscador + carrito */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', height: '56px' }}>
+            {/* Barra buscador + filtrar (mobile) + carrito */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '56px' }}>
               <div style={{ flex: 1, position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '13px', top: '50%', transform: 'translateY(-50%)', fontSize: '0.95rem', pointerEvents: 'none', color: '#94a3b8' }}>🔍</span>
                 <input
@@ -472,6 +532,22 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                   <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '0.9rem' }}>✕</button>
                 )}
               </div>
+
+              {/* Botón Filtrar — solo mobile */}
+              <button
+                onClick={() => setActiveMobileFilters(true)}
+                className="btn-filtrar-mobile"
+                style={{
+                  display: 'none', alignItems: 'center', gap: 5,
+                  background: (selectedPriceRange || showOnlyInStock) ? C.primary : '#f1f5f9',
+                  color: (selectedPriceRange || showOnlyInStock) ? '#fff' : '#64748b',
+                  border: 'none', borderRadius: '10px', padding: '9px 12px',
+                  fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ⚙ {(selectedPriceRange || showOnlyInStock) ? 'Filtros ✓' : 'Filtrar'}
+              </button>
 
               {/* Carrito */}
               <button
@@ -498,7 +574,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                 </button>
                 {allCategories.map(cat => (
                   <button key={cat.id} onClick={() => scrollToCategory(cat.id)} style={{ flexShrink: 0, padding: '6px 14px', borderRadius: '99px', border: `1.5px solid ${activeCategory === cat.id ? C.primary : '#e2e8f0'}`, background: activeCategory === cat.id ? C.primary : '#fff', color: activeCategory === cat.id ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
-                    {cat.nombre}
+                    {cat.nombre.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                   </button>
                 ))}
               </div>
@@ -948,6 +1024,62 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         </div>
       )}
 
+      {/* ── BOTTOM SHEET FILTROS MOBILE ─────────── */}
+      {activeMobileFilters && (
+        <div onClick={() => setActiveMobileFilters(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 400, display: 'flex', alignItems: 'flex-end' }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ width: '100%', background: '#fff', borderRadius: '20px 20px 0 0', padding: '0 0 32px', boxShadow: '0 -8px 40px rgba(0,0,0,0.15)', maxHeight: '80vh', overflowY: 'auto' }}>
+            {/* Handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px' }}>
+              <div style={{ width: 40, height: 4, borderRadius: 99, background: '#e2e8f0' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 20px 16px' }}>
+              <p style={{ margin: 0, fontWeight: 900, fontSize: '1rem', color: '#0f172a' }}>Filtros</p>
+              <button onClick={() => { setSelectedPriceRange(null); setShowOnlyInStock(false) }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: '#64748b', fontWeight: 700 }}>
+                Limpiar todo
+              </button>
+            </div>
+
+            {/* Filtro precio */}
+            <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f1f5f9' }}>
+              <p style={{ margin: '0 0 12px', fontSize: '0.72rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Precio</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                {[
+                  { key: null, label: 'Todos' },
+                  { key: 'low', label: 'Menos de €10' },
+                  { key: 'mid', label: '€10 – €50' },
+                  { key: 'high', label: 'Más de €50' },
+                ].map(opt => (
+                  <button key={String(opt.key)} onClick={() => setSelectedPriceRange(opt.key)}
+                    style={{ padding: '12px', borderRadius: 12, border: `2px solid ${selectedPriceRange === opt.key ? C.primary : '#e2e8f0'}`, background: selectedPriceRange === opt.key ? C.primary + '10' : '#fff', color: selectedPriceRange === opt.key ? C.primary : '#475569', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Filtro stock */}
+            <div style={{ padding: '16px 20px 8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>
+                <input type="checkbox" checked={showOnlyInStock} onChange={e => setShowOnlyInStock(e.target.checked)}
+                  style={{ accentColor: C.primary, width: 18, height: 18 }} />
+                Solo productos con stock disponible
+              </label>
+            </div>
+
+            {/* Botón aplicar */}
+            <div style={{ padding: '16px 20px 0' }}>
+              <button onClick={() => setActiveMobileFilters(false)}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, border: 'none', background: C.primary, color: '#fff', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}>
+                Ver productos →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── ESTILOS ─────────────────────────────── */}
       <style jsx global>{`
         .hide-xs { display: none; }
@@ -955,6 +1087,16 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
         .store-sidebar { display: none; }
         @media (min-width: 768px) { .store-sidebar { display: flex !important; } }
+
+        /* Banner responsive */
+        .store-banner { height: 160px; }
+        @media (min-width: 480px) { .store-banner { height: 200px; } }
+        @media (min-width: 768px) { .store-banner { height: 260px; } }
+        @media (min-width: 1024px) { .store-banner { height: 300px; } }
+
+        /* Botón filtrar visible solo en mobile */
+        .btn-filtrar-mobile { display: flex !important; }
+        @media (min-width: 768px) { .btn-filtrar-mobile { display: none !important; } }
 
         .store-product-grid {
           display: grid;
@@ -973,16 +1115,18 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
         .product-card {
           background: #fff;
-          border-radius: 14px;
-          border: 1px solid #e2e8f0;
+          border-radius: 16px;
+          border: 1px solid #e8eef4;
           overflow: hidden;
           display: flex;
           flex-direction: column;
-          transition: box-shadow 0.2s, transform 0.2s;
+          min-height: 280px;
+          transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s;
         }
         .product-card:hover {
-          box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-          transform: translateY(-2px);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.11);
+          transform: translateY(-3px);
+          border-color: #d1dce8;
         }
 
         .product-img-wrap {
@@ -1007,8 +1151,9 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 2.5rem;
-          color: #cbd5e1;
+          font-size: 2.8rem;
+          background: linear-gradient(135deg, #f1f5f9 0%, #e8eef4 100%);
+          color: #94a3b8;
         }
 
         .product-badge {
@@ -1062,24 +1207,26 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           overflow: hidden;
         }
         .product-price {
-          margin: 4px 0 8px;
-          font-size: 1.05rem;
+          margin: 6px 0 10px;
+          font-size: 1.1rem;
           font-weight: 900;
         }
 
         .btn-add {
           width: 100%;
-          padding: 9px 0;
-          border-radius: 10px;
+          padding: 11px 0;
+          border-radius: 12px;
           border: none;
           color: #fff;
           font-weight: 800;
-          font-size: 0.85rem;
+          font-size: 0.88rem;
           cursor: pointer;
           transition: opacity 0.15s, transform 0.15s;
           margin-top: auto;
+          letter-spacing: 0.01em;
         }
-        .btn-add:active { transform: scale(0.97); opacity: 0.9; }
+        .btn-add:hover { opacity: 0.9; }
+        .btn-add:active { transform: scale(0.97); opacity: 0.85; }
 
         .qty-control {
           display: flex;
