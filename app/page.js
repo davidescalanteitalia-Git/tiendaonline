@@ -229,7 +229,7 @@ export default function Home() {
             </span>
           </a>
 
-          <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border transition-colors ${isScrolled ? 'bg-slate-100/50 border-slate-200' : 'bg-white/10 border-white/20'}`}>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border transition-colors ${isScrolled ? 'bg-slate-100/50 border-slate-200' : 'bg-white/10 border-white/20'}`}>
             {['it', 'es', 'en'].map((l) => (
               <button
                 key={l}
@@ -574,7 +574,7 @@ export default function Home() {
                         ) : (
                           <>
                             <span className={`text-5xl font-black tracking-tighter ${isPro ? 'text-white' : 'text-slate-900'}`}>€{price}</span>
-                            <span className={`text-sm font-bold ${isPro ? 'text-emerald-100' : 'text-slate-400'}`}>/mes</span>
+                            <span className={`text-sm font-bold ${isPro ? 'text-emerald-100' : 'text-slate-400'}`}>{lang === 'it' ? '/mese' : lang === 'en' ? '/mo' : '/mes'}</span>
                           </>
                         )}
                       </div>
@@ -589,14 +589,14 @@ export default function Home() {
                         <div className={`mt-2 text-[11px] font-black ${
                           isPro ? 'text-emerald-200' : 'text-emerald-600'
                         }`}>
-                          €{annualTotal}/año · {lang === 'it' ? 'Risparmi' : 'Ahorras'} €{savings}
+                          €{annualTotal}{lang === 'it' ? '/anno' : lang === 'en' ? '/yr' : '/año'} · {lang === 'it' ? 'Risparmi' : lang === 'en' ? 'Save' : 'Ahorras'} €{savings}
                         </div>
                       )}
                       {billing === 'monthly' && price > 0 && (
                         <div className={`mt-2 text-[11px] font-semibold ${
                           isPro ? 'text-emerald-200' : 'text-slate-400'
                         }`}>
-                          {lang === 'it' ? 'Alta gratuita' : 'Alta gratis'}
+                          {lang === 'it' ? 'Alta gratuita' : lang === 'en' ? 'Free signup' : 'Alta gratis'}
                         </div>
                       )}
                     </div>
@@ -806,7 +806,7 @@ export default function Home() {
                     </a>
 
                     <p className="text-center text-slate-600 text-[11px] font-semibold mt-4">
-                      {lang === 'it' ? 'Sin compromiso · Risposta in 24h' : 'Sin compromiso · Respuesta en 24h'}
+                      {lang === 'it' ? 'Senza impegno · Risposta in 24h' : lang === 'en' ? 'No commitment · Reply in 24h' : 'Sin compromiso · Respuesta en 24h'}
                     </p>
                   </div>
                 </div>
@@ -901,7 +901,7 @@ export default function Home() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 sm:gap-24">
               <div className="space-y-4">
-                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Plataforma</h4>
+                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">{lang === 'it' ? 'Piattaforma' : lang === 'en' ? 'Platform' : 'Plataforma'}</h4>
                 <a href="/login" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('accedi')}</a>
                 <a href="/register" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('ctaHeader')}</a>
               </div>
@@ -911,7 +911,7 @@ export default function Home() {
                 <a href="/terms" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('footerTerms')}</a>
               </div>
               <div className="space-y-4">
-                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Soporte</h4>
+                <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">{lang === 'it' ? 'Supporto' : lang === 'en' ? 'Support' : 'Soporte'}</h4>
                 <a href="/contatti" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('footerContact')}</a>
               </div>
             </div>

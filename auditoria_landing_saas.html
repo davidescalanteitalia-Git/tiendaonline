@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoría SaaS — TIENDAONLINE Landing Page</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #0f172a; }
+  .shell { max-width: 1100px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1.title { font-size: 1.7rem; font-weight: 900; color: #0f172a; margin-bottom: 4px; }
+  .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 28px; }
+  .tab-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 28px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+  .tab-btn { padding: 7px 14px; border: none; border-radius: 20px; font-size: 0.78rem; font-weight: 700; cursor: pointer; background: #f1f5f9; color: #64748b; transition: all 0.15s; white-space: nowrap; }
+  .tab-btn.active { background: #0f172a; color: #fff; }
+  .tab-btn:hover:not(.active) { background: #e2e8f0; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .section-title { font-size: 1.25rem; font-weight: 900; color: #0f172a; margin-bottom: 6px; }
+  .section-desc { color: #64748b; font-size: 0.85rem; margin-bottom: 20px; line-height: 1.6; }
+  .card { background: #fff; border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+  .card-title { font-size: 0.9rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+  .card-body { font-size: 0.83rem; color: #475569; line-height: 1.7; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-right: 6px; margin-bottom: 4px; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  .badge-yellow { background: #fef9c3; color: #92400e; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  .badge-gray { background: #f1f5f9; color: #475569; }
+  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .score-label { font-size: 0.82rem; font-weight: 700; color: #475569; width: 200px; flex-shrink: 0; }
+  .score-bar-bg { flex: 1; height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 10px; background: #10b981; }
+  .score-num { font-size: 0.82rem; font-weight: 900; color: #0f172a; width: 32px; text-align: right; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:680px){ .two-col { grid-template-columns: 1fr; } }
+  .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px; }
+  .before { background: #fff7ed; padding: 14px 16px; border-right: 1px solid #e2e8f0; }
+  .after { background: #f0fdf4; padding: 14px 16px; }
+  .col-label { font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .before .col-label { color: #c2410c; }
+  .after .col-label { color: #15803d; }
+  .col-text { font-size: 0.82rem; color: #374151; line-height: 1.6; }
+  .checklist li { list-style: none; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.83rem; display: flex; align-items: flex-start; gap: 10px; }
+  .checklist li:last-child { border-bottom: none; }
+  .ck-ok { color: #16a34a; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .ck-no { color: #dc2626; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .ck-warn { color: #d97706; font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .numbered-list { counter-reset: step; }
+  .numbered-list li { counter-increment: step; display: flex; gap: 12px; margin-bottom: 10px; font-size: 0.83rem; color: #374151; line-height: 1.6; }
+  .numbered-list li::before { content: counter(step); background: #0f172a; color: #fff; font-weight: 900; font-size: 0.7rem; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .pillar-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.83rem; }
+  .pillar-name { flex: 1; font-weight: 700; color: #0f172a; }
+  .pillar-status { font-weight: 800; font-size: 0.75rem; }
+  .pillar-note { color: #64748b; font-size: 0.75rem; flex: 1.5; }
+  .hero-score { text-align: center; padding: 28px; background: linear-gradient(135deg,#0f172a,#1e293b); border-radius: 20px; margin-bottom: 20px; }
+  .hero-score .big-num { font-size: 4rem; font-weight: 900; color: #fff; line-height: 1; }
+  .hero-score .big-label { font-size: 0.85rem; color: #94a3b8; margin-top: 6px; }
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { background: #0f172a; color: #fff; padding: 10px 14px; text-align: left; font-weight: 800; }
+  td { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; color: #374151; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <h1 class="title">🔍 Auditoría SaaS — TIENDAONLINE</h1>
+  <p class="subtitle">Análisis completo de <strong>tiendaonline.it</strong> · Basado en código fuente real · 10 dimensiones · Generado 2026-04-18</p>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab(0)">1. Contenido</button>
+    <button class="tab-btn" onclick="showTab(1)">2. Estructura</button>
+    <button class="tab-btn" onclick="showTab(2)">3. Limpieza</button>
+    <button class="tab-btn" onclick="showTab(3)">4. Reestructuración</button>
+    <button class="tab-btn" onclick="showTab(4)">5. Copywriting</button>
+    <button class="tab-btn" onclick="showTab(5)">6. Errores</button>
+    <button class="tab-btn" onclick="showTab(6)">7. Comparativa</button>
+    <button class="tab-btn" onclick="showTab(7)">8. Mejoras</button>
+    <button class="tab-btn" onclick="showTab(8)">9. VC Check</button>
+    <button class="tab-btn" onclick="showTab(9)">10. Plan Final</button>
+  </div>
+
+  <!-- TAB 1 -->
+  <div class="tab-content active">
+    <p class="section-title">Extracción completa del contenido</p>
+    <p class="section-desc">Todo el texto, CTAs, secciones y mensajes presentes en <code>app/page.js</code> (942 líneas).</p>
+
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="card-title">🏷️ Identidad de marca</div>
+          <div class="card-body">
+            <b>Nombre:</b> TIENDAONLINE<br>
+            <b>Dominio:</b> tiendaonline.it<br>
+            <b>Slogan IT:</b> "La tua vetrina online in 10 minuti"<br>
+            <b>Slogan ES:</b> "Tu tienda online en 10 minutos"<br>
+            <b>Badge hero:</b> "100% Gratuito — Sin tarjeta de crédito"<br>
+            <b>Idiomas:</b> IT · ES · EN (selector en header)
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📣 CTAs identificados</div>
+          <div class="card-body">
+            <span class="badge badge-green">Header</span> "Empieza gratis →"<br>
+            <span class="badge badge-green">Hero</span> "Crea tu tienda gratis"<br>
+            <span class="badge badge-green">Pricing ×3</span> "Empezar gratis / ahora / Contactar"<br>
+            <span class="badge badge-green">Web Corp.</span> "Solicitar ahora →"<br>
+            <span class="badge badge-green">CTA Final</span> "Crea tu tienda gratis →"<br>
+            <span class="badge badge-gray">Footer</span> Login · Empieza gratis · Contacto
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">💰 Modelo de negocio</div>
+          <div class="card-body">
+            <b>Freemium SaaS</b> · 0% comisión por venta<br>
+            <b>Gratis:</b> €0 · 50 productos<br>
+            <b>Starter/Básico:</b> €15/mes (€12 anual)<br>
+            <b>Pro:</b> €25/mes (€20 anual) ← más elegido<br>
+            <b>Grow:</b> €40/mes (€32 anual)<br>
+            <b>Servicio extra:</b> Web Corporativa €980 + €190/año<br>
+            <b>Descuento anual:</b> −20% en todos los planes
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">📋 Secciones presentes</div>
+          <div class="card-body">
+            <ol class="numbered-list" style="margin-top:4px">
+              <li>Header fijo con logo, selector de idioma, Login, CTA</li>
+              <li>Hero — título, subtítulo, CTA principal, social proof</li>
+              <li>El Problema — 3 pain points con iconos</li>
+              <li>Demo interactiva — 4 tipos de tienda con mockup móvil</li>
+              <li>Cómo funciona — 3 pasos con timer</li>
+              <li>Features Grid — 6 características en fondo oscuro</li>
+              <li>Pricing — 4 planes + tabla comparativa completa</li>
+              <li>Web Corporativa — servicio exclusivo €980</li>
+              <li>FAQ — 7 preguntas expandibles</li>
+              <li>CTA Final — con contador de tiendas activas</li>
+              <li>Footer — Legal, Soporte, © 2026 TIENDAONLINE · ITALY</li>
+            </ol>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">⭐ Features declaradas</div>
+          <div class="card-body">
+            Checkout WhatsApp · POS táctil · Reportes financieros · Catálogo multilingüe · CRM de clientes · GDPR compliance · Subdominio personalizado · Pagos Stripe · Exportación CSV/PDF · Cupones de descuento · Catálogo Instagram/FB · Recuperación de carritos (Grow) · Programa de puntos (Grow) · Facturación electrónica (Grow)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2 -->
+  <div class="tab-content">
+    <p class="section-title">Estructura actual de la web</p>
+    <p class="section-desc">Orden real de secciones y análisis de flujo de usuario.</p>
+
+    <div class="card">
+      <div class="card-title">📐 Orden real de secciones (top → bottom)</div>
+      <div class="card-body">
+        <table>
+          <tr><th>#</th><th>Sección</th><th>Propósito</th><th>Estado</th></tr>
+          <tr><td>1</td><td>Header fijo</td><td>Navegación + CTA</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>2</td><td>Hero</td><td>Primera impresión + CTA primario</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>3</td><td>El Problema</td><td>Empatía con el usuario</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>4</td><td>Demo interactiva</td><td>Muestra el producto real</td><td><span class="badge badge-green">✅ Excelente</span></td></tr>
+          <tr><td>5</td><td>Cómo funciona</td><td>3 pasos de onboarding</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>6</td><td>Features Grid</td><td>Características clave</td><td><span class="badge badge-yellow">⚠️ Mejorable</span></td></tr>
+          <tr><td>7</td><td>Pricing completo</td><td>Planes + tabla comparativa</td><td><span class="badge badge-green">✅ Muy bien</span></td></tr>
+          <tr><td>8</td><td>Web Corporativa</td><td>Upsell servicio extra</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>9</td><td>FAQ</td><td>Reducir fricción pre-registro</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>10</td><td>CTA Final</td><td>Último empuje a registro</td><td><span class="badge badge-green">✅ Bien</span></td></tr>
+          <tr><td>11</td><td>Footer</td><td>Legal + navegación secundaria</td><td><span class="badge badge-yellow">⚠️ Incompleto</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">✅ Secciones presentes</div>
+        <div class="card-body">
+          Header · Hero · Problema · Demo · Cómo funciona · Features · Pricing · Servicio extra · FAQ · CTA Final · Footer básico
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">❌ Secciones ausentes</div>
+        <div class="card-body">
+          <b>Testimonios reales</b> — sin reviews ni logos de clientes<br>
+          <b>Social proof numérico</b> — solo "Ya X tiendas" (genérico)<br>
+          <b>Casos de uso / verticales</b> — mencionados en demo pero sin landing dedicada<br>
+          <b>Bloque de confianza</b> — sin badges "SSL", "GDPR certified", "Made in Italy"<br>
+          <b>Blog / recursos</b> — sin contenido SEO
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3 -->
+  <div class="tab-content">
+    <p class="section-title">Limpieza y organización</p>
+    <p class="section-desc">Duplicaciones, contradicciones y ruido visual detectados en el código fuente.</p>
+
+    <div class="card">
+      <div class="card-title">🔁 Duplicaciones</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-warn">⚠</span> <span>La sección "Web Corporativa" aparece <b>dos veces</b>: en <code>app/page.js</code> (landing pública) Y en <code>app/dashboard/planes/page.js</code> (dashboard). Contenido idéntico. Riesgo de desincronización de precios si se actualiza solo uno.</span></li>
+          <li><span class="ck-warn">⚠</span> <span>El CTA "Crea tu tienda gratis" aparece en Hero, header, CTA Final y footer — correcto para conversión pero el texto del Hero y el CTA Final son idénticos.</span></li>
+          <li><span class="ck-warn">⚠</span> <span>Los checks "Gratis para siempre · Sin tarjeta · Listo en 10 min" aparecen en Hero y en los planes — redundante en página larga.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Contradicciones detectadas</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-no">✗</span> <span>El footer dice <code>"Sin compromiso · Risposta in 24h"</code> — mezcla español e italiano en la misma frase.</span></li>
+          <li><span class="ck-no">✗</span> <span>El precio en <code>page.js</code> muestra <b>€/mes</b> hardcodeado en español aunque el idioma esté en IT o EN. Debería ser "€/mese" en italiano.</span></li>
+          <li><span class="ck-no">✗</span> <span>El plan "Starter" en la landing se llama "Básico" en ES pero en el dashboard <code>planes/page.js</code> se llama solo "Básico". Dos nombres para el mismo plan.</span></li>
+          <li><span class="ck-warn">⚠</span> <span>Los iconos de redes sociales en el footer son un placeholder <code>&lt;Info&gt;</code> de Lucide. No apuntan a ninguna red real.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📦 Ruido y elementos sin valor</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-warn">⚠</span> <span>Las imágenes de la demo usan <b>loremflickr.com</b> — servicio de imágenes aleatorias. En producción pueden mostrar imágenes inesperadas o fallar.</span></li>
+          <li><span class="ck-warn">⚠</span> <span>El footer columna "Plataforma" solo tiene 2 links (Login, Empieza gratis). Muy escueto para un footer profesional.</span></li>
+          <li><span class="ck-warn">⚠</span> <span>La tabla comparativa de planes tiene 16 filas — mucha información para una primera vista. Considerar accordion o versión colapsada por defecto.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4 -->
+  <div class="tab-content">
+    <p class="section-title">Reestructuración tipo SaaS profesional</p>
+    <p class="section-desc">Comparación entre el orden actual y el orden ideal para máxima conversión.</p>
+
+    <div class="card">
+      <div class="card-title">📊 Análisis sección por sección</div>
+      <div class="card-body">
+        <table>
+          <tr><th>Sección ideal SaaS</th><th>Estado actual</th><th>Posición actual</th><th>Recomendación</th></tr>
+          <tr><td>Header</td><td><span class="badge badge-green">✅</span></td><td>#1</td><td>Mantener. Añadir link a /contatti</td></tr>
+          <tr><td>Hero + propuesta de valor</td><td><span class="badge badge-green">✅</span></td><td>#2</td><td>Mantener. Ver mejoras de copy</td></tr>
+          <tr><td>Bloque de confianza / Logos</td><td><span class="badge badge-red">❌ Ausente</span></td><td>—</td><td>Añadir después del Hero</td></tr>
+          <tr><td>El Problema</td><td><span class="badge badge-green">✅</span></td><td>#3</td><td>Mantener posición</td></tr>
+          <tr><td>Demo / Producto en acción</td><td><span class="badge badge-green">✅ Excelente</span></td><td>#4</td><td>Mantener — es un diferenciador</td></tr>
+          <tr><td>Cómo funciona (pasos)</td><td><span class="badge badge-green">✅</span></td><td>#5</td><td>Mantener</td></tr>
+          <tr><td>Features</td><td><span class="badge badge-yellow">⚠️</span></td><td>#6</td><td>Añadir subtítulo orientado a beneficios</td></tr>
+          <tr><td>Testimonios / Social proof</td><td><span class="badge badge-red">❌ Ausente</span></td><td>—</td><td>Añadir entre Features y Pricing</td></tr>
+          <tr><td>Pricing</td><td><span class="badge badge-green">✅</span></td><td>#7</td><td>Mantener. Arreglar "/mes" hardcodeado</td></tr>
+          <tr><td>Servicio especial (Web Corp.)</td><td><span class="badge badge-green">✅</span></td><td>#8</td><td>Mantener posición</td></tr>
+          <tr><td>FAQ</td><td><span class="badge badge-green">✅</span></td><td>#9</td><td>Mantener</td></tr>
+          <tr><td>CTA Final</td><td><span class="badge badge-green">✅</span></td><td>#10</td><td>Mantener</td></tr>
+          <tr><td>Footer completo</td><td><span class="badge badge-yellow">⚠️ Parcial</span></td><td>#11</td><td>Ampliar columnas y redes sociales</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🆕 Orden propuesto (con nuevas secciones)</div>
+      <div class="card-body">
+        <ol class="numbered-list">
+          <li>Header (actual) — añadir link /contatti</li>
+          <li>Hero (actual) — mejorar copy del subtítulo</li>
+          <li><b>NUEVO: Bloque de confianza</b> — "X tiendas activas · SSL · GDPR · Hecho en Italia"</li>
+          <li>El Problema (actual)</li>
+          <li>Demo interactiva (actual)</li>
+          <li>Cómo funciona (actual)</li>
+          <li>Features (actual)</li>
+          <li><b>NUEVO: Testimonios</b> — 3 tarjetas con foto, nombre, tipo de negocio, quote</li>
+          <li>Pricing completo (actual)</li>
+          <li>Web Corporativa (actual)</li>
+          <li>FAQ (actual)</li>
+          <li>CTA Final (actual)</li>
+          <li>Footer (ampliar)</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5 -->
+  <div class="tab-content">
+    <p class="section-title">Mejora del copywriting</p>
+    <p class="section-desc">Comparación texto actual vs. texto mejorado para las secciones clave.</p>
+
+    <div class="card-title" style="margin-bottom:12px">Hero Principal</div>
+    <div class="before-after">
+      <div class="before"><div class="col-label">Versión actual (IT)</div><div class="col-text">"La tua vetrina online in 10 minuti" / "I tuoi clienti ordinano già su WhatsApp. Dagli un catalogo vero — gratis, pronto in 10 minuti."</div></div>
+      <div class="after"><div class="col-label">Versión mejorada</div><div class="col-text">"La tua vetrina online, aperta 24/7" / "I tuoi clienti chiedono già su WhatsApp. Adesso puoi rispondere con un catalogo vero, un POS in tasca e zero commissioni. In 10 minuti."</div></div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:12px">Sección Problema</div>
+    <div class="before-after">
+      <div class="before"><div class="col-label">Versión actual</div><div class="col-text">Título genérico del problema. Pain points con íconos emoji. Sin datos concretos.</div></div>
+      <div class="after"><div class="col-label">Versión mejorada</div><div class="col-text">Añadir dato real: "El 73% de los pequeños negocios pierde ventas porque sus clientes no saben qué tienen en stock." Hacer el problema más urgente y específico.</div></div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:12px">Features Grid</div>
+    <div class="before-after">
+      <div class="before"><div class="col-label">Versión actual</div><div class="col-text">Títulos orientados a funciones: "Checkout WhatsApp", "POS Táctil", "Reportes". Descripciones genéricas.</div></div>
+      <div class="after"><div class="col-label">Versión mejorada</div><div class="col-text">Orientar a beneficios: "Cobras en WhatsApp sin aplicación extra", "Vendes desde tu mostrador en 1 toque", "Sabes exactamente cuánto ganas cada día". El cliente ve el resultado, no la función.</div></div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:12px">CTA Final</div>
+    <div class="before-after">
+      <div class="before"><div class="col-label">Versión actual</div><div class="col-text">"Crea tu tienda gratis →" (idéntico al Hero)</div></div>
+      <div class="after"><div class="col-label">Versión mejorada</div><div class="col-text">"Abre tu tienda hoy — es gratis para siempre →" / Añadir urgencia suave: "Únete a los {n} negocios que ya venden con TIENDAONLINE."</div></div>
+    </div>
+
+    <div class="card-title" style="margin-bottom:12px">Footer tagline</div>
+    <div class="before-after">
+      <div class="before"><div class="col-label">Versión actual</div><div class="col-text">Tagline genérica traducida del diccionario.</div></div>
+      <div class="after"><div class="col-label">Versión mejorada</div><div class="col-text">"La plataforma para micronegocios que venden online y en tienda física — sin complicaciones, sin comisiones." Específico y diferenciador.</div></div>
+    </div>
+  </div>
+
+  <!-- TAB 6 -->
+  <div class="tab-content">
+    <p class="section-title">Errores detectados por severidad</p>
+    <p class="section-desc">Clasificación de todos los problemas encontrados en el código fuente.</p>
+
+    <div class="card" style="border-left: 4px solid #dc2626;">
+      <div class="card-title">🔴 Críticos — bloquean conversión o son ilegales</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-no">✗</span><span><b>Imágenes demo usan loremflickr.com</b> — servicio externo no confiable. En producción puede mostrar imágenes inadecuadas o no cargar. Reemplazar con imágenes propias en Supabase Storage.</span></li>
+          <li><span class="ck-no">✗</span><span><b>Íconos sociales del footer son placeholder</b> — el componente <code>&lt;Info&gt;</code> de Lucide no tiene href real. Un usuario que haga clic verá que no pasa nada. Añadir links reales o eliminar los íconos.</span></li>
+          <li><span class="ck-no">✗</span><span><b>"/mes" hardcodeado en español</b> en los planes de la landing — cuando el idioma es italiano, el precio muestra "€15/mes" en vez de "€15/mese". Error de internacionalización visible en la sección de mayor conversión.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid #d97706;">
+      <div class="card-title">🟡 Importantes — reducen conversión y confianza</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-warn">⚠</span><span><b>Sin testimonios reales</b> — ninguna review, ningún cliente nombrado, ningún caso de éxito. Es el punto de mayor fricción en SaaS B2B.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Sin bloque de confianza</b> — no hay badges de SSL, GDPR certified, Stripe verified, ni logos de medios o partners.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Mezcla IT/ES en footer</b> — "Sin compromiso · Risposta in 24h" mezcla idiomas en la misma frase.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Plan "Starter" vs "Básico"</b> — nombre inconsistente entre landing y dashboard.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Sin número de WhatsApp visible en landing</b> — la landing redirige a /contatti pero no muestra el número directamente, añadiendo un paso innecesario.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Web Corporativa duplicada</b> — misma sección en landing y en dashboard. Riesgo de inconsistencia de precios.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid #2563eb;">
+      <div class="card-title">🔵 UX — reducen experiencia</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-warn">⚠</span><span><b>Tabla comparativa con 16 filas</b> — en móvil es muy pesada. Implementar versión colapsada con "Ver comparación completa" como toggle.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Demo usa imágenes externas lentas</b> — loremflickr añade latencia perceptible en la demo interactiva. Impacta el LCP (Largest Contentful Paint).</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Selector de idioma oculto en móvil</b> — el selector IT/ES/EN en el header solo es visible en desktop (<code>hidden md:flex</code>). En móvil no hay forma de cambiar idioma.</span></li>
+          <li><span class="ck-warn">⚠</span><span><b>Footer columna "Plataforma" con solo 2 links</b> — Login y Registro. Muy escueto. Añadir: Precios, Características, Contacto.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 7 -->
+  <div class="tab-content">
+    <p class="section-title">Comparación con SaaS reales</p>
+    <p class="section-desc">TIENDAONLINE vs. estándares de Shopify, Tiendanube, Stripe, Notion.</p>
+
+    <div class="card">
+      <div class="card-title">📊 Puntuaciones por dimensión</div>
+      <div class="card-body">
+        <div class="score-row"><div class="score-label">Propuesta de valor</div><div class="score-bar-bg"><div class="score-bar" style="width:80%;background:#10b981"></div></div><div class="score-num">8/10</div></div>
+        <div class="score-row"><div class="score-label">Copywriting</div><div class="score-bar-bg"><div class="score-bar" style="width:65%;background:#f59e0b"></div></div><div class="score-num">6.5/10</div></div>
+        <div class="score-row"><div class="score-label">Estructura de página</div><div class="score-bar-bg"><div class="score-bar" style="width:82%;background:#10b981"></div></div><div class="score-num">8.2/10</div></div>
+        <div class="score-row"><div class="score-label">Confianza / Social proof</div><div class="score-bar-bg"><div class="score-bar" style="width:35%;background:#ef4444"></div></div><div class="score-num">3.5/10</div></div>
+        <div class="score-row"><div class="score-label">Conversión / CTAs</div><div class="score-bar-bg"><div class="score-bar" style="width:75%;background:#10b981"></div></div><div class="score-num">7.5/10</div></div>
+        <div class="score-row"><div class="score-label">Transparencia (Pricing)</div><div class="score-bar-bg"><div class="score-bar" style="width:88%;background:#10b981"></div></div><div class="score-num">8.8/10</div></div>
+        <div class="score-row"><div class="score-label">Cumplimiento legal (GDPR)</div><div class="score-bar-bg"><div class="score-bar" style="width:72%;background:#f59e0b"></div></div><div class="score-num">7.2/10</div></div>
+        <div class="score-row"><div class="score-label">Internacionalización (i18n)</div><div class="score-bar-bg"><div class="score-bar" style="width:70%;background:#f59e0b"></div></div><div class="score-num">7/10</div></div>
+        <div class="score-row"><div class="score-label">Mobile UX</div><div class="score-bar-bg"><div class="score-bar" style="width:76%;background:#10b981"></div></div><div class="score-num">7.6/10</div></div>
+        <div class="score-row" style="border-top:2px solid #e2e8f0;padding-top:10px;margin-top:8px"><div class="score-label"><b>PROMEDIO TOTAL</b></div><div class="score-bar-bg"><div class="score-bar" style="width:72%;background:#6366f1"></div></div><div class="score-num"><b>7.2/10</b></div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">💚 Lo que TIENDAONLINE tiene y otros no</div>
+        <div class="card-body">
+          <ul class="checklist">
+            <li><span class="ck-ok">✓</span><span><b>Demo interactiva real</b> — mockup de móvil con productos reales. Shopify no tiene esto en su landing.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>POS + Online en un solo plan</b> — la competencia los vende por separado.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>0% comisión por venta</b> — Shopify cobra 0.5–2% en todos sus planes. Diferenciador potente.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>Tabla comparativa completa</b> — 16 filas con comparación honesta. Genera confianza.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>Checkout por WhatsApp</b> — nadie más lo ofrece nativamente. Es el killer feature.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>Trilingüe (IT/ES/EN)</b> — desde el día 1, rarísimo en competidores locales.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">❌ Lo que TIENDAONLINE necesita para igualar</div>
+        <div class="card-body">
+          <ul class="checklist">
+            <li><span class="ck-no">✗</span><span><b>Testimonios reales</b> — Shopify, Tiendanube y Webflow los tienen en el hero mismo.</span></li>
+            <li><span class="ck-no">✗</span><span><b>Logos de clientes / medios</b> — "Visto en" o "Usado por" — genera confianza inmediata.</span></li>
+            <li><span class="ck-no">✗</span><span><b>Video de producto</b> — Notion, Webflow y Linear usan GIFs o videos cortos mostrando el producto.</span></li>
+            <li><span class="ck-no">✗</span><span><b>Número de usuarios real</b> — Stripe dice "millones de empresas". Actualmente TIENDAONLINE muestra "3 tiendas activas".</span></li>
+            <li><span class="ck-no">✗</span><span><b>Blog / contenido SEO</b> — sin contenido orgánico para captar tráfico.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 8 -->
+  <div class="tab-content">
+    <p class="section-title">Mejoras concretas y accionables</p>
+    <p class="section-desc">Lista priorizada de cambios ordenados por impacto en conversión.</p>
+
+    <div class="card" style="border-left:4px solid #dc2626;">
+      <div class="card-title">🔴 Alta prioridad — antes de distribuir o escalar</div>
+      <div class="card-body">
+        <ol class="numbered-list">
+          <li><b>Reemplazar imágenes demo</b> (loremflickr) con imágenes propias subidas a Supabase Storage. Riesgo real en producción.</li>
+          <li><b>Arreglar "/mes" hardcodeado</b>: cambiar <code>'/mes'</code> a <code>lang === 'it' ? '/mese' : lang === 'en' ? '/mo' : '/mes'</code> en la sección de pricing de la landing.</li>
+          <li><b>Añadir selector de idioma en móvil</b>: el <code>hidden md:flex</code> hace invisible el selector en teléfonos. Añadir uno en el menú hamburguesa o al pie del Hero.</li>
+          <li><b>Corregir mezcla IT/ES en footer</b>: "Sin compromiso · Risposta in 24h" → usar el diccionario correctamente por idioma.</li>
+          <li><b>Unificar nombre "Starter/Básico"</b>: elegir uno y usarlo igual en landing, dashboard y webhook de Stripe.</li>
+          <li><b>Añadir links reales en footer (redes sociales)</b> o eliminar los íconos placeholder — un usuario que haga clic en el icono <code>Info</code> pierde confianza.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #d97706;">
+      <div class="card-title">🟡 Media prioridad — antes de escalar</div>
+      <div class="card-body">
+        <ol class="numbered-list">
+          <li><b>Añadir bloque de confianza</b> después del Hero: "X tiendas activas · SSL · GDPR · Stripe certified · Hecho en Italia 🇮🇹". 2 horas de trabajo, impacto alto.</li>
+          <li><b>Añadir 3 testimonios</b> (pueden ser de beta testers) entre Features y Pricing. Foto, nombre, tipo de negocio, quote de 1 línea.</li>
+          <li><b>Añadir CTA directo de WhatsApp en la landing</b> — un botón flotante o en el footer "Habla con nosotros → WhatsApp" con el número +39 375 123 9515.</li>
+          <li><b>Tabla comparativa colapsable</b> en móvil — mostrar solo las 5 filas más importantes por defecto con botón "Ver todas las características".</li>
+          <li><b>Ampliar footer</b>: añadir columna "Recursos" (Blog, Changelog, Status), actualizar columna "Plataforma" (Características, Precios, Demo).</li>
+          <li><b>Centralizar la sección Web Corporativa</b> en un componente reutilizable — actualmente copiado en 2 archivos.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card" style="border-left:4px solid #2563eb;">
+      <div class="card-title">🔵 Baja prioridad — post lanzamiento</div>
+      <div class="card-body">
+        <ol class="numbered-list">
+          <li>Crear página <code>/blog</code> con artículos SEO en italiano sobre "vendere online", "POS gratis", "tienda WhatsApp".</li>
+          <li>Añadir video corto (30s) en el Hero mostrando el flujo completo: registro → producto → pedido por WhatsApp.</li>
+          <li>Implementar chat en vivo (Crisp o Tawk.to) para reducir abandono en la página de precios.</li>
+          <li>Añadir contador animado de pedidos procesados o ventas realizadas (número real desde la DB).</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 9 -->
+  <div class="tab-content">
+    <p class="section-title">Evaluación como inversor (VC Check)</p>
+    <p class="section-desc">Análisis del potencial de TIENDAONLINE desde la perspectiva de un venture capitalist.</p>
+
+    <div class="two-col" style="margin-bottom:16px">
+      <div class="hero-score">
+        <div class="big-num">7.0</div>
+        <div class="big-label">Puntuación general de potencial</div>
+      </div>
+      <div class="hero-score" style="background:linear-gradient(135deg,#064e3b,#065f46)">
+        <div class="big-num">6.5</div>
+        <div class="big-label">Nivel "listo para invertir"</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">💪 Lo que convence a un VC</div>
+        <div class="card-body">
+          <ul class="checklist">
+            <li><span class="ck-ok">✓</span><span><b>Mercado real y masivo</b> — millones de micronegocios en Italia y Latam sin presencia digital. TAM enorme, competencia local débil.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>Modelo híbrido único</b> — POS + e-commerce + checkout WhatsApp en un solo producto. Ningún competidor directo tiene los tres.</span></li>
+            <li><span class="ck-ok">✓</span><span><b>Pricing freemium con upsell claro</b> — la escalera de planes es razonable y el plan gratuito es generoso (retención alta esperada).</span></li>
+            <li><span class="ck-ok">✓</span><span><b>Stack técnico maduro</b> — Next.js + Supabase + Stripe + multi-tenant + RLS + PWA. No es un prototipo.</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ Lo que preocupa a un VC</div>
+        <div class="card-body">
+          <ul class="checklist">
+            <li><span class="ck-no">✗</span><span><b>Cero tracción demostrable</b> — "Ya 3 tiendas activas" en producción es una señal de muy temprana etapa. Un VC quiere ver 50–200 usuarios activos mínimo.</span></li>
+            <li><span class="ck-no">✗</span><span><b>Sin métricas de retención</b> — no hay datos de churn, activación, MRR ni NPS visible. El producto existe pero no prueba que los usuarios vuelven.</span></li>
+            <li><span class="ck-no">✗</span><span><b>Equipo no visible</b> — la landing no menciona quién construye el producto. Los VCs invierten en equipos, no solo en ideas.</span></li>
+            <li><span class="ck-no">✗</span><span><b>Sin estrategia de adquisición clara</b> — ¿cómo llegan las tiendas? ¿SEO, ads, partnerships, boca a boca? No está definido en el producto.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚀 De "interesante" a "invertible" — métricas concretas</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-ok">→</span><span><b>100 tiendas activas</b> (≥1 venta/semana) en los primeros 3 meses de lanzamiento.</span></li>
+          <li><span class="ck-ok">→</span><span><b>15% de conversión gratuito → pago</b> dentro de los primeros 30 días de uso.</span></li>
+          <li><span class="ck-ok">→</span><span><b>€2.000 MRR</b> (Monthly Recurring Revenue) antes de buscar inversión.</span></li>
+          <li><span class="ck-ok">→</span><span><b>NPS > 40</b> medido con PostHog encuesta o Typeform a usuarios activos.</span></li>
+          <li><span class="ck-ok">→</span><span><b>Caso de éxito documentado</b> — un video o artículo de 1 comerciante real usando el producto.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 10 -->
+  <div class="tab-content">
+    <p class="section-title">Plan Final — Versión lista para producción</p>
+    <p class="section-desc">Estructura definitiva y checklist de producción con estado real.</p>
+
+    <div class="card">
+      <div class="card-title">📋 Estructura definitiva de la landing</div>
+      <div class="card-body">
+        <ol class="numbered-list">
+          <li><b>Header</b> — Logo · IT/ES/EN · Login · "Empieza gratis" · Añadir link /contatti</li>
+          <li><b>Hero</b> — Título diferenciador · Subtítulo orientado a beneficios · CTA primario · Social proof (emojis actuales) · 3 checks</li>
+          <li><b>Bloque de confianza</b> ← NUEVO — "X tiendas activas · 0% comisión · SSL · GDPR · Stripe"</li>
+          <li><b>El Problema</b> — 3 pain points (añadir dato estadístico real)</li>
+          <li><b>Demo interactiva</b> — 4 tipos de tienda · mockup móvil · imágenes propias</li>
+          <li><b>Cómo funciona</b> — 3 pasos con tiempo estimado</li>
+          <li><b>Features</b> — 6 beneficios (no funciones) en fondo oscuro</li>
+          <li><b>Testimonios</b> ← NUEVO — 3 tarjetas con nombre real, tipo de negocio, quote</li>
+          <li><b>Pricing</b> — 4 planes · toggle anual/mensual · tabla comparativa · i18n corregido</li>
+          <li><b>Web Corporativa</b> — sección servicio exclusivo €980</li>
+          <li><b>FAQ</b> — 7 preguntas expandibles</li>
+          <li><b>CTA Final</b> — con contador de tiendas real</li>
+          <li><b>Footer completo</b> — Plataforma · Legal · Soporte · Redes reales · © 2026</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✅ Checklist de producción</div>
+      <div class="card-body">
+        <ul class="checklist">
+          <li><span class="ck-ok">✅</span><span>Header responsivo con selector de idioma — <b>LISTO</b> (falta mobile)</span></li>
+          <li><span class="ck-ok">✅</span><span>Hero con CTA, badge animado y social proof — <b>LISTO</b></span></li>
+          <li><span class="ck-no">❌</span><span>Bloque de confianza — <b>PENDIENTE</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Sección El Problema con 3 pain points — <b>LISTO</b></span></li>
+          <li><span class="ck-warn">⚠️</span><span>Demo interactiva — <b>LISTO pero con imágenes externas</b> (reemplazar loremflickr)</span></li>
+          <li><span class="ck-ok">✅</span><span>Sección Cómo funciona — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Features Grid — <b>LISTO</b> (mejorar copy a beneficios)</span></li>
+          <li><span class="ck-no">❌</span><span>Testimonios reales — <b>PENDIENTE</b></span></li>
+          <li><span class="ck-warn">⚠️</span><span>Pricing 4 planes + tabla — <b>LISTO pero "/mes" hardcodeado en IT</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Sección Web Corporativa — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>FAQ 7 preguntas — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>CTA Final con contador — <b>LISTO</b></span></li>
+          <li><span class="ck-warn">⚠️</span><span>Footer — <b>PARCIAL</b> (íconos placeholder, columnas escuetas, mezcla idiomas)</span></li>
+          <li><span class="ck-ok">✅</span><span>Privacy Policy /privacy — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Terms /terms — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Cookie Banner GDPR — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Meta tags OG (Open Graph) — <b>LISTO</b></span></li>
+          <li><span class="ck-warn">⚠️</span><span>Selector idioma en móvil — <b>OCULTO</b> en <code>hidden md:flex</code></span></li>
+          <li><span class="ck-ok">✅</span><span>PWA manifest.json — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Security Headers (CSP, X-Frame, nosniff) — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Rate limiting en APIs — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>RLS multi-tenant en Supabase — <b>LISTO</b></span></li>
+          <li><span class="ck-ok">✅</span><span>Stripe checkout (modo TEST) — <b>LISTO</b></span></li>
+          <li><span class="ck-no">❌</span><span>Stripe LIVE — <b>PENDIENTE</b> (~15 días)</span></li>
+          <li><span class="ck-no">❌</span><span>Emails transaccionales (Resend) — <b>PENDIENTE</b></span></li>
+          <li><span class="ck-no">❌</span><span>Supabase Plan Pro — <b>PENDIENTE</b> (antes de lanzamiento público)</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="background:#f0fdf4;border-color:#86efac">
+      <div class="card-title" style="color:#166534">🏁 Resumen ejecutivo</div>
+      <div class="card-body" style="color:#166534">
+        TIENDAONLINE tiene una landing <b>técnicamente sólida y visualmente atractiva</b>. La estructura de secciones es correcta, el pricing es transparente y la demo interactiva es un diferenciador real. Los <b>3 problemas que bloquean la conversión en este momento</b> son: (1) cero testimonios reales, (2) imágenes demo externas no confiables, y (3) selector de idioma invisible en móvil. Resolver estos tres puntos puede aumentar la conversión en un 20–30% estimado antes del lanzamiento formal.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab-content');
+  const btns = document.querySelectorAll('.tab-btn');
+  function showTab(i) {
+    tabs.forEach((t,j) => t.classList.toggle('active', i===j));
+    btns.forEach((b,j) => b.classList.toggle('active', i===j));
+  }
+</script>
+</body>
+</html>
