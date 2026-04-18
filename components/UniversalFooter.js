@@ -83,7 +83,7 @@ export default function UniversalFooter() {
           </span>
           <span className="text-slate-600 text-xs font-medium flex items-center gap-1.5">
             <Globe size={12} className="text-slate-500" />
-            {dict.footerCredit || 'Desarrollado por David Escalante'}
+            {dict.footerCredit || '© 2026 TIENDAONLINE'}
           </span>
         </div>
 

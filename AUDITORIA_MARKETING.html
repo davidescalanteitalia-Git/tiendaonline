@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Auditoría de Marketing — TIENDAONLINE</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #064e3b, #065f46); padding: 32px 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .header h1 { font-size: 1.6rem; font-weight: 900; color: #fff; margin-bottom: 6px; }
+  .header p { color: #6ee7b7; font-size: 0.85rem; font-weight: 600; }
+  .header .score-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 100px; margin-top: 16px; font-weight: 800; font-size: 1rem; color: #fff; }
+  .header .score-badge .dot { width: 10px; height: 10px; border-radius: 50%; background: #fbbf24; }
+
+  .tabs { display: flex; gap: 0; overflow-x: auto; background: #1e293b; border-bottom: 1px solid #334155; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn { flex-shrink: 0; padding: 14px 20px; font-size: 0.78rem; font-weight: 700; color: #94a3b8; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .tab-btn.active { color: #4ade80; border-bottom-color: #4ade80; background: rgba(74,222,128,0.05); }
+  .tab-btn:hover:not(.active) { color: #e2e8f0; }
+
+  .content { padding: 32px 40px; max-width: 1100px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .section-title { font-size: 1.2rem; font-weight: 900; color: #f1f5f9; margin-bottom: 6px; }
+  .section-sub { font-size: 0.82rem; color: #64748b; margin-bottom: 24px; line-height: 1.5; }
+
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; }
+  .card-title { font-size: 0.85rem; font-weight: 800; color: #f1f5f9; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .card p { font-size: 0.82rem; color: #94a3b8; line-height: 1.6; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+  .badge-green { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .badge-blue { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+
+  .issue-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 12px; }
+  .issue-table th { text-align: left; padding: 10px 14px; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; border-bottom: 1px solid #334155; }
+  .issue-table td { padding: 12px 14px; vertical-align: top; border-bottom: 1px solid #1e293b; color: #cbd5e1; line-height: 1.5; }
+  .issue-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+  .ba-box { border-radius: 12px; padding: 16px; }
+  .ba-before { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+  .ba-after { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); }
+  .ba-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .ba-before .ba-label { color: #f87171; }
+  .ba-after .ba-label { color: #4ade80; }
+  .ba-box p { font-size: 0.82rem; color: #cbd5e1; line-height: 1.6; }
+
+  .score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .score-label { font-size: 0.82rem; font-weight: 700; color: #94a3b8; min-width: 200px; }
+  .score-bar-wrap { flex: 1; background: #334155; border-radius: 100px; height: 8px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 100px; transition: width 1s ease; }
+  .score-num { font-size: 0.82rem; font-weight: 900; color: #f1f5f9; min-width: 36px; text-align: right; }
+
+  .checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #1e293b; }
+  .checklist-item:last-child { border-bottom: none; }
+  .check-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; margin-top: 1px; }
+  .check-ok { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .check-warn { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .check-err { background: rgba(239,68,68,0.15); color: #f87171; }
+  .check-text strong { font-size: 0.82rem; font-weight: 700; color: #f1f5f9; display: block; margin-bottom: 3px; }
+  .check-text span { font-size: 0.78rem; color: #64748b; line-height: 1.5; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .before-after { grid-template-columns: 1fr; } .content { padding: 20px; } .header { padding: 24px 20px; } }
+
+  .kpi-num { font-size: 2rem; font-weight: 900; color: #4ade80; margin-bottom: 4px; }
+  .kpi-label { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+
+  .tag { display: inline-block; background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 4px 10px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; margin: 3px; }
+  .tag-green { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.3); color: #4ade80; }
+  .tag-red { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+  .divider { height: 1px; background: #334155; margin: 24px 0; }
+  .summary-box { background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(96,165,250,0.05)); border: 1px solid rgba(74,222,128,0.2); border-radius: 16px; padding: 20px 24px; margin-bottom: 28px; }
+  .summary-box h3 { font-size: 1rem; font-weight: 800; color: #4ade80; margin-bottom: 10px; }
+  .summary-box p { font-size: 0.82rem; color: #94a3b8; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔍 Auditoría Completa de Marketing — TIENDAONLINE</h1>
+  <p>Brand Review · Copywriting · SEO · Competencia · Emails · Campaña · Métricas · Pendientes</p>
+  <div class="score-badge"><div class="dot"></div> Puntuación general: 6.4 / 10 — Buen producto, marketing incompleto</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('resumen')">📊 Resumen</button>
+  <button class="tab-btn" onclick="showTab('brand')">🎨 Voz de Marca</button>
+  <button class="tab-btn" onclick="showTab('copy')">✍️ Copywriting</button>
+  <button class="tab-btn" onclick="showTab('seo')">🔎 SEO</button>
+  <button class="tab-btn" onclick="showTab('competencia')">⚔️ Competencia</button>
+  <button class="tab-btn" onclick="showTab('email')">📧 Email Marketing</button>
+  <button class="tab-btn" onclick="showTab('campana')">📣 Campaña</button>
+  <button class="tab-btn" onclick="showTab('pendientes')">🚀 Plan de Acción</button>
+</div>
+
+<div class="content">
+
+  <!-- RESUMEN -->
+  <div id="panel-resumen" class="panel active">
+    <p class="section-title">Diagnóstico General</p>
+    <p class="section-sub">Estado actual de TIENDAONLINE visto desde todas las dimensiones de marketing.</p>
+
+    <div class="summary-box">
+      <h3>✅ Lo que está bien</h3>
+      <p>El producto tiene una propuesta de valor clara y diferenciada: POS + e-commerce + WhatsApp en un solo lugar, para micronegocios en Italia y Latinoamérica. El diseño visual de la landing es moderno y profesional. Los planes tienen precios razonables y la lógica de 0% comisión es un diferenciador poderoso que se comunica bien.</p>
+    </div>
+
+    <div class="card" style="border-color: rgba(239,68,68,0.3);">
+      <div class="card-title">⚠️ El problema principal</div>
+      <p>El marketing actualmente <strong style="color:#f87171">no existe como sistema</strong>. La landing está construida pero no hay: emails automáticos, presencia social activa, estrategia SEO, seguimiento de conversiones ni campaña de adquisición. El producto está listo para vender — la maquinaria para atraer clientes no.</p>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:24px;">
+      <div class="card" style="text-align:center;">
+        <div class="kpi-num">6/10</div>
+        <div class="kpi-label">Landing Page</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kpi-num">3/10</div>
+        <div class="kpi-label">SEO</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kpi-num">0/10</div>
+        <div class="kpi-label">Email Marketing</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kpi-num">4/10</div>
+        <div class="kpi-label">Copywriting</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kpi-num">0/10</div>
+        <div class="kpi-label">Campaña Activa</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div class="kpi-num">5/10</div>
+        <div class="kpi-label">Confianza / Prueba Social</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <p class="section-title" style="margin-bottom:16px;">Lo que falta por dimensión</p>
+
+    <div class="checklist-item">
+      <div class="check-icon check-err">✗</div>
+      <div class="check-text"><strong>Sin emails transaccionales</strong><span>El usuario se registra y no recibe ningún email de bienvenida. No hay confirmación de pedido, ni aviso al vendedor. Esto rompe la experiencia y destruye la retención.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-err">✗</div>
+      <div class="check-text"><strong>Sin secuencia de onboarding por email</strong><span>El momento de mayor intención es justo después del registro. No hay flujo que guíe al usuario a su primera venta.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-err">✗</div>
+      <div class="check-text"><strong>Sin estrategia SEO</strong><span>No hay blog, no hay páginas de landing por sector/ciudad, el title tag de la home no está optimizado. Google no puede posicionar el sitio.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-warn">!</div>
+      <div class="check-text"><strong>Copywriting inconsistente entre IT y ES</strong><span>Las FAQs en italiano siguen mencionando precios viejos (€0,50/giorno). La versión italiana está desactualizada respecto a la española.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-warn">!</div>
+      <div class="check-text"><strong>Prueba social débil</strong><span>El contador de tiendas activas muestra un número bajo. Los testimonios existen pero no son verificables. Falta: logos de negocios reales, casos de éxito nombrados, capturas de pantalla reales.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-warn">!</div>
+      <div class="check-text"><strong>Sin correo corporativo activo</strong><span>La landing menciona soporte pero no hay un email @tiendaonline.it funcionando. Esto reduce la credibilidad ante usuarios nuevos.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-ok">✓</div>
+      <div class="check-text"><strong>Landing visualmente sólida</strong><span>Hero claro, demo interactiva, pricing con acordeón, sección de problemas — la estructura es correcta para convertir.</span></div>
+    </div>
+    <div class="checklist-item">
+      <div class="check-icon check-ok">✓</div>
+      <div class="check-text"><strong>Modelo de negocio comunicado correctamente</strong><span>0% comisión y Stripe directo al vendedor están bien explicados en los planes.</span></div>
+    </div>
+  </div>
+
+  <!-- VOZ DE MARCA -->
+  <div id="panel-brand" class="panel">
+    <p class="section-title">Revisión de Voz de Marca</p>
+    <p class="section-sub">Evaluación del contenido actual contra los pilares de comunicación de TIENDAONLINE.</p>
+
+    <table class="issue-table">
+      <thead><tr><th>Elemento</th><th>Problema detectado</th><th>Severidad</th><th>Corrección</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>FAQ IT — Precio</strong></td>
+          <td>Las FAQs en italiano dicen "€0,50/giorno" — precio antiguo, ya no existe ese plan</td>
+          <td><span class="badge badge-red">Crítico</span></td>
+          <td>Actualizar `faq1A` en `dictionaries.js` (IT) con los precios actuales: Básico €15/mes, Pro €25/mes, Grow €40/mes</td>
+        </tr>
+        <tr>
+          <td><strong>Hero IT — Subtítulo</strong></td>
+          <td>"I tuoi clienti ordinano già su WhatsApp" es muy específico y asume un comportamiento que no todos tienen</td>
+          <td><span class="badge badge-yellow">Medio</span></td>
+          <td>"Il tuo negozio online, pronto in 10 minuti. Ordini su WhatsApp, catalogo vero, zero complicazioni."</td>
+        </tr>
+        <tr>
+          <td><strong>CTA Header IT</strong></td>
+          <td>"Inizia gratis" correcto pero genérico. No comunica la velocidad que es el diferenciador clave.</td>
+          <td><span class="badge badge-yellow">Medio</span></td>
+          <td>"Apri la tua bottega →" — más concreto y orienta al resultado</td>
+        </tr>
+        <tr>
+          <td><strong>Trust Bar</strong></td>
+          <td>"Stripe Verified" no está verificado aún (Stripe en modo TEST). Es una afirmación falsa en producción.</td>
+          <td><span class="badge badge-red">Crítico</span></td>
+          <td>Cambiar a "💳 Pagos seguros" o quitar hasta que Stripe esté en modo live</td>
+        </tr>
+        <tr>
+          <td><strong>Feature "Team incluso"</strong></td>
+          <td>"Aggiungi fino a 3 collaboratori" — esta función no está implementada. Promesa de feature no activa.</td>
+          <td><span class="badge badge-red">Crítico</span></td>
+          <td>Quitar este feature o añadirlo con badge "Próximamente" hasta implementarlo</td>
+        </tr>
+        <tr>
+          <td><strong>Soporte "Community"</strong></td>
+          <td>Plan Gratis dice soporte "Community" pero no hay comunidad creada (Discord, grupo, foro).</td>
+          <td><span class="badge badge-yellow">Medio</span></td>
+          <td>Cambiar a "FAQ + ayuda en línea" o crear el canal de comunidad</td>
+        </tr>
+        <tr>
+          <td><strong>Footer</strong></td>
+          <td>"Sviluppato da David Escalante" — el nombre del desarrollador en el footer es informal para un SaaS.</td>
+          <td><span class="badge badge-yellow">Medio</span></td>
+          <td>Cambiar a "© 2026 TIENDAONLINE · Tutti i diritti riservati" o similar</td>
+        </tr>
+        <tr>
+          <td><strong>Wizard registro IT</strong></td>
+          <td>El placeholder "Es: Pizzeria da Mario" mezcla español ("Es:") con italiano. Error de idioma.</td>
+          <td><span class="badge badge-yellow">Medio</span></td>
+          <td>Cambiar a "Es: Pizzeria da Mario" → "Es.: Pizzeria da Mario" (italiano correcto)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+    <p class="section-title" style="margin-bottom:16px;">Antes / Después — Top 3 correcciones</p>
+
+    <div class="card">
+      <div class="card-title">1. FAQ italiana (precio desactualizado)</div>
+      <div class="before-after">
+        <div class="ba-box ba-before"><div class="ba-label">❌ Actual</div><p>"Il piano base di TIENDAONLINE è gratuito per sempre. Per negozi in crescita offriamo un piano avanzato a €0,50/giorno..."</p></div>
+        <div class="ba-box ba-after"><div class="ba-label">✅ Propuesto</div><p>"Il piano Gratuito non scade mai. Per chi vuole di più: Básico a €15/mese, Pro a €25/mese, Grow a €40/mese — con 30 giorni di prova gratuita su tutti i piani a pagamento."</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. Trust Bar — "Stripe Verified"</div>
+      <div class="before-after">
+        <div class="ba-box ba-before"><div class="ba-label">❌ Actual</div><p>💳 Stripe Verified — implica que TIENDAONLINE es un procesador de pagos certificado, lo cual no es verdad mientras esté en modo TEST.</p></div>
+        <div class="ba-box ba-after"><div class="ba-label">✅ Propuesto</div><p>💳 Pagos con Stripe — indica el método, sin afirmar una certificación que aún no existe.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. Feature "3 collaboratori" no implementado</div>
+      <div class="before-after">
+        <div class="ba-box ba-before"><div class="ba-label">❌ Actual</div><p>"Team incluso — Aggiungi fino a 3 collaboratori con permessi personalizzati." (Feature inexistente en el producto real)</p></div>
+        <div class="ba-box ba-after"><div class="ba-label">✅ Propuesto</div><p>Eliminar del listado de features hasta implementarlo, o marcarlo como "🔜 Próximamente" para no crear expectativas falsas que dañan la confianza.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COPYWRITING -->
+  <div id="panel-copy" class="panel">
+    <p class="section-title">Auditoría de Copywriting</p>
+    <p class="section-sub">Análisis de los textos clave de la landing según los principios de conversión.</p>
+
+    <div class="score-row"><div class="score-label">Claridad del mensaje principal</div><div class="score-bar-wrap"><div class="score-bar" style="width:75%;background:#4ade80;"></div></div><div class="score-num">7.5</div></div>
+    <div class="score-row"><div class="score-label">CTAs orientados a beneficio</div><div class="score-bar-wrap"><div class="score-bar" style="width:55%;background:#fbbf24;"></div></div><div class="score-num">5.5</div></div>
+    <div class="score-row"><div class="score-label">Consistencia ES ↔ IT ↔ EN</div><div class="score-bar-wrap"><div class="score-bar" style="width:40%;background:#f87171;"></div></div><div class="score-num">4.0</div></div>
+    <div class="score-row"><div class="score-label">Sección "El Problema"</div><div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:#4ade80;"></div></div><div class="score-num">8.0</div></div>
+    <div class="score-row"><div class="score-label">Sección de Precios</div><div class="score-bar-wrap"><div class="score-bar" style="width:72%;background:#4ade80;"></div></div><div class="score-num">7.2</div></div>
+    <div class="score-row"><div class="score-label">FAQs</div><div class="score-bar-wrap"><div class="score-bar" style="width:35%;background:#f87171;"></div></div><div class="score-num">3.5</div></div>
+
+    <div class="divider"></div>
+    <p class="section-title" style="margin-bottom:16px;">Hallazgos específicos</p>
+
+    <div class="card">
+      <div class="card-title">🟢 Hero — Funciona bien</div>
+      <p>"La tua vetrina online in 10 minuti" (IT) y el subtítulo que menciona WhatsApp son directos y conectan con el usuario real. La promesa de tiempo específico (10 minutos) es concreta y creíble.</p>
+    </div>
+
+    <div class="card" style="border-color:rgba(251,191,36,0.3);">
+      <div class="card-title">🟡 CTAs — Demasiado genéricos</div>
+      <p>Los planes Básico y Pro tienen CTA "Empezar ahora" sin especificidad. Mejor opción:<br>
+      • Básico → <strong>"Activar mi tienda — €15/mes"</strong><br>
+      • Pro → <strong>"Empezar con Pro — 30 días gratis"</strong><br>
+      • Grow → <strong>"Hablar con un experto →"</strong></p>
+    </div>
+
+    <div class="card" style="border-color:rgba(239,68,68,0.3);">
+      <div class="card-title">🔴 FAQs en italiano — Desincronizadas</div>
+      <p>Las FAQs italianas aún tienen la estructura de precios antigua (plan avanzato a €0,50/giorno, Plan Professionale "su misura"). Necesitan reescribirse completamente para reflejar los 4 planes actuales: Gratuito, Base, Pro, Grow.</p>
+    </div>
+
+    <div class="card" style="border-color:rgba(251,191,36,0.3);">
+      <div class="card-title">🟡 Features prometidos sin implementar</div>
+      <p>Estos features aparecen en la landing pero <strong>no existen en el producto</strong>:<br>
+      • "3 collaboratori con permessi" — no hay sistema de multi-usuario<br>
+      • "Catálogo Instagram / Facebook" — no conectado<br>
+      • "Recuperación de carritos abandonados" — no implementado<br>
+      • "Programa de puntos y afiliados" — no implementado<br>
+      • "Facturación electrónica" — no implementado<br><br>
+      Vender features inexistentes destruye la confianza cuando el usuario se registra. Marcarlos como "Próximamente" o quitarlos.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✍️ Mejoras de copy sugeridas</div>
+      <p>
+      <strong>Sección "Cómo funciona"</strong> — Los 3 pasos están bien pero el paso 2 "Comparte el link" es demasiado vago. Cambiar a: <em>"Comparte tu catálogo — manda el link a tus clientes por WhatsApp o pon el QR en el mostrador."</em><br><br>
+      <strong>CTA final</strong> — "La tua bottega può essere online oggi" es bueno pero el subtítulo "Gratuito. Senza carta di credito." se repite del Hero. Cambiar a: <em>"Únete a los [N] negocios que ya venden con TIENDAONLINE — sin comisiones, sin complicaciones."</em>
+      </p>
+    </div>
+  </div>
+
+  <!-- SEO -->
+  <div id="panel-seo" class="panel">
+    <p class="section-title">Auditoría SEO</p>
+    <p class="section-sub">Estado del posicionamiento orgánico y oportunidades de keywords para Italia y Latinoamérica.</p>
+
+    <div class="grid-2" style="margin-bottom:24px;">
+      <div class="card" style="border-color:rgba(239,68,68,0.3);">
+        <div class="card-title"><span class="badge badge-red">Crítico</span> Sin blog ni contenido</div>
+        <p>No existe ninguna página de contenido. Google necesita contenido para indexar. Sin blog, sin landing pages de nicho, sin guías — el SEO es prácticamente nulo.</p>
+      </div>
+      <div class="card" style="border-color:rgba(239,68,68,0.3);">
+        <div class="card-title"><span class="badge badge-red">Crítico</span> Title tag genérico</div>
+        <p>El title tag de la home debe incluir keywords primarias. Propuesta: <strong>"TIENDAONLINE — Crea la tua bottega online gratis | POS + WhatsApp | Italia"</strong></p>
+      </div>
+      <div class="card" style="border-color:rgba(251,191,36,0.3);">
+        <div class="card-title"><span class="badge badge-yellow">Medio</span> Sin meta descriptions optimizadas</div>
+        <p>Las meta descriptions actuales no incluyen keywords de conversión. Cada página debe tener una meta description única de 150-160 caracteres con la keyword principal.</p>
+      </div>
+      <div class="card" style="border-color:rgba(251,191,36,0.3);">
+        <div class="card-title"><span class="badge badge-yellow">Medio</span> Sin schema markup</div>
+        <p>No hay datos estructurados (JSON-LD) para SoftwareApplication, FAQPage ni BreadcrumbList. Google no puede mostrar rich snippets.</p>
+      </div>
+    </div>
+
+    <p class="section-title" style="margin-bottom:16px;">Keywords de oportunidad</p>
+
+    <div class="card">
+      <div class="card-title">🇮🇹 Keywords Italia (alta intención, baja competencia)</div>
+      <div style="margin-top:8px;">
+        <span class="tag tag-green">crea negozio online gratis</span>
+        <span class="tag tag-green">gestionale negozio piccolo</span>
+        <span class="tag tag-green">pos per negozio cellulare</span>
+        <span class="tag tag-green">catalogo prodotti whatsapp</span>
+        <span class="tag tag-green">app cassa negozio gratis</span>
+        <span class="tag">tienda online gratis italia</span>
+        <span class="tag">vendere online piccolo negozio</span>
+        <span class="tag">gestione ordini whatsapp</span>
+        <span class="tag">software punto vendita mobile</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🌎 Keywords Latinoamérica (alta intención)</div>
+      <div style="margin-top:8px;">
+        <span class="tag tag-green">tienda online gratis</span>
+        <span class="tag tag-green">crear tienda whatsapp</span>
+        <span class="tag tag-green">app punto de venta celular</span>
+        <span class="tag tag-green">catálogo digital gratis</span>
+        <span class="tag">pos para negocio pequeño</span>
+        <span class="tag">tienda virtual sin costo</span>
+        <span class="tag">sistema de ventas celular</span>
+        <span class="tag">cobrar con whatsapp negocio</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📝 Plan de contenido SEO — 4 artículos para empezar</div>
+      <table class="issue-table" style="margin-top:8px;">
+        <thead><tr><th>Artículo</th><th>Keyword objetivo</th><th>Impacto</th></tr></thead>
+        <tbody>
+          <tr><td>"Cómo crear una tienda online gratis en 10 minutos (sin ser técnico)"</td><td>crear tienda online gratis</td><td><span class="badge badge-green">Alto</span></td></tr>
+          <tr><td>"La guía definitiva del catálogo digital para negocios de barrio"</td><td>catálogo digital gratis negocio</td><td><span class="badge badge-green">Alto</span></td></tr>
+          <tr><td>"POS en el celular: cómo cobrar sin máquina registradora"</td><td>pos celular negocio pequeño</td><td><span class="badge badge-yellow">Medio</span></td></tr>
+          <tr><td>"Cómo recibir pedidos por WhatsApp de forma organizada"</td><td>recibir pedidos whatsapp negocio</td><td><span class="badge badge-green">Alto</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COMPETENCIA -->
+  <div id="panel-competencia" class="panel">
+    <p class="section-title">Análisis Competitivo</p>
+    <p class="section-sub">Posicionamiento de TIENDAONLINE frente a las alternativas más relevantes.</p>
+
+    <table class="issue-table">
+      <thead><tr><th>Competidor</th><th>Fortaleza vs TIENDAONLINE</th><th>Debilidad vs TIENDAONLINE</th><th>Oportunidad</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Shopify</strong></td>
+          <td>Marca global, ecosistema de apps, reputación</td>
+          <td>Mínimo $29/mes, no tiene POS WhatsApp, complejo para no-técnicos</td>
+          <td>"La alternativa italiana a Shopify — sin cuotas en dólares"</td>
+        </tr>
+        <tr>
+          <td><strong>Tiendanube</strong></td>
+          <td>Muy fuerte en LATAM, precios bajos</td>
+          <td>No tiene POS, no tiene integración WhatsApp nativa, sin plan gratis real</td>
+          <td>"POS + tienda online + WhatsApp en un solo lugar — Tiendanube no lo tiene"</td>
+        </tr>
+        <tr>
+          <td><strong>WooCommerce</strong></td>
+          <td>Flexible, gratuito open source</td>
+          <td>Requiere WordPress, hosting, técnico. No es para micronegocios.</td>
+          <td>"Sin servidores, sin técnicos, sin WordPress. Solo tú y tu tienda."</td>
+        </tr>
+        <tr>
+          <td><strong>Kyte (Brasil)</strong></td>
+          <td>POS mobile muy similar, fuerte en Brasil</td>
+          <td>No tiene catálogo web público, sin soporte para Italia, sin i18n</td>
+          <td>Diferenciación geográfica (Italia + LATAM) y catálogo web público</td>
+        </tr>
+        <tr>
+          <td><strong>SumUp / iZettle</strong></td>
+          <td>Hardware real, reconocimiento de marca</td>
+          <td>Solo POS físico, cobran % por transacción, sin e-commerce</td>
+          <td>"Sin hardware, sin comisión por venta, con tienda online incluida"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="divider"></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🏆 Ventajas competitivas reales</div>
+        <p>
+          ✓ Único con POS + e-commerce + WhatsApp en un plan gratis<br>
+          ✓ Soporte en italiano — ningún competidor LATAM lo hace bien<br>
+          ✓ 0% comisión por venta (SumUp cobra 1,69%)<br>
+          ✓ Multi-idioma (IT/ES/EN) desde el día 1<br>
+          ✓ Instalable como PWA — sin app stores
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ Brechas frente a competidores</div>
+        <p>
+          ✗ Sin app nativa iOS/Android publicada<br>
+          ✗ Sin integraciones (Mercado Pago, PayPal)<br>
+          ✗ Sin soporte en horario extendido garantizado<br>
+          ✗ Sin reseñas verificables en Google/Trustpilot<br>
+          ✗ Sin dominio propio para el comercio (subdominio fijo)
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0;">
+      <div class="card-title">💬 Messaging anti-competencia sugerido</div>
+      <p><strong>Vs Shopify:</strong> "Sin cuotas en dólares. Sin apps de pago. Sin configuración técnica. Tu tienda lista hoy."<br>
+      <strong>Vs SumUp:</strong> "Tu celular ya es la caja registradora. Sin hardware, sin comisión por venta."<br>
+      <strong>Vs Tiendanube:</strong> "Tienda online + POS + WhatsApp en un solo lugar. Tiendanube no lo tiene."</p>
+    </div>
+  </div>
+
+  <!-- EMAIL MARKETING -->
+  <div id="panel-email" class="panel">
+    <p class="section-title">Email Marketing — Estado y Secuencias Necesarias</p>
+    <p class="section-sub">Actualmente el sistema no envía ningún email. Aquí está lo que debe construirse con Resend.</p>
+
+    <div class="card" style="border-color:rgba(239,68,68,0.3);">
+      <div class="card-title"><span class="badge badge-red">Crítico</span> Estado actual: 0 emails activos</div>
+      <p>El usuario se registra → no recibe nada. Hace una venta en el POS → no recibe nada. Un cliente hace un pedido → no recibe nada. Esto es el mayor problema de retención de todo el sistema. La solución es integrar Resend (ya en PENDIENTES.md como P2).</p>
+    </div>
+
+    <div class="divider"></div>
+    <p class="section-title" style="margin-bottom:16px;">Secuencias que construir (en orden de prioridad)</p>
+
+    <div class="card">
+      <div class="card-title">📧 Secuencia 1 — Onboarding (5 emails, días 0-7)</div>
+      <table class="issue-table" style="margin-top:8px;">
+        <thead><tr><th>#</th><th>Momento</th><th>Asunto</th><th>Objetivo</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Día 0 — registro</td><td>"Tu tienda está lista 🎉 — aquí está tu link"</td><td>Activación — que comparta el link con alguien</td></tr>
+          <tr><td>2</td><td>Día 1</td><td>"¿Ya tienes tu primer producto? Hazlo en 2 minutos"</td><td>Primer producto — reducir churn por falta de setup</td></tr>
+          <tr><td>3</td><td>Día 3</td><td>"Cómo recibir tu primer pedido por WhatsApp"</td><td>Educación — el flujo POS → WhatsApp</td></tr>
+          <tr><td>4</td><td>Día 5</td><td>"Tu tienda vs. apuntar en papel — la diferencia real"</td><td>Retención — reforzar el valor del producto</td></tr>
+          <tr><td>5</td><td>Día 7</td><td>"¿Cómo te fue esta semana? Aquí están tus stats"</td><td>Engagement — reporte semanal personalizado</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📧 Secuencia 2 — Transaccionales (envío inmediato)</div>
+      <table class="issue-table" style="margin-top:8px;">
+        <thead><tr><th>Email</th><th>Receptor</th><th>Contenido</th></tr></thead>
+        <tbody>
+          <tr><td>Nuevo pedido</td><td>Vendedor</td><td>Notificación inmediata con items, total, cliente y contacto</td></tr>
+          <tr><td>Confirmación de pedido</td><td>Comprador</td><td>Resumen del pedido con código, método de pago y contacto del vendedor</td></tr>
+          <tr><td>Abono registrado</td><td>Cliente</td><td>Recibo de pago del fiado con saldo pendiente actualizado</td></tr>
+          <tr><td>Plan activado</td><td>Vendedor</td><td>Confirmación de suscripción Básico/Pro/Grow con próxima fecha de cobro</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📧 Secuencia 3 — Upgrade (para plan Gratis)</div>
+      <p style="margin-bottom:12px;">Para usuarios en plan Gratis que superan el 80% de sus límites (40+ productos de 50):</p>
+      <table class="issue-table">
+        <thead><tr><th>Momento</th><th>Asunto</th></tr></thead>
+        <tbody>
+          <tr><td>Al llegar a 40 productos</td><td>"Estás a solo 10 productos del límite — aquí está tu solución"</td></tr>
+          <tr><td>7 días después (si no upgradó)</td><td>"Tu catálogo crece — ¿listo para crecer sin límites?"</td></tr>
+          <tr><td>14 días después</td><td>"Oferta exclusiva: primer mes de Básico a la mitad"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CAMPAÑA -->
+  <div id="panel-campana" class="panel">
+    <p class="section-title">Plan de Campaña de Lanzamiento</p>
+    <p class="section-sub">Estrategia de adquisición recomendada para los primeros 90 días después de activar Stripe en modo live.</p>
+
+    <div class="summary-box">
+      <h3>🎯 Objetivo de la campaña</h3>
+      <p>Conseguir las primeras 100 tiendas activas (que hayan subido al menos 1 producto y compartido su link). Enfoque: Italia primero, luego LATAM como segunda fase.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fase 1 — Mes 1: Validación orgánica (€0 en ads)</div>
+      <p>
+        <strong>Canal 1 — WhatsApp personal:</strong> El fundador contacta directamente a 50 negocios locales (panaderías, tiendas de barrio, bares). Mensaje personalizado: "Hola [nombre], te creé una tienda de prueba en tiendaonline.it — mira cómo quedaría tu catálogo [link]."<br><br>
+        <strong>Canal 2 — Instagram / TikTok:</strong> 3 videos semanales de formato Reels mostrando el POS en acción. Sin edición compleja — el propio fundador detrás del mostrador. La demo interactiva de la landing es el storyboard.<br><br>
+        <strong>Canal 3 — Grupos de Facebook:</strong> Grupos de emprendedores italianos, venezolanos en Italia, colombianos emprendedores. Contenido de valor, no spam.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fase 2 — Mes 2-3: Amplificación con €100-200/mes en Meta Ads</div>
+      <p>
+        <strong>Audiencia:</strong> Dueños de pequeños negocios en Italia, 28-50 años, intereses en: vendita al dettaglio, piccole imprese, WhatsApp Business, Square, SumUp.<br><br>
+        <strong>Creatividad ganadora:</strong> Video de 15 segundos — alguien en un mostrador, toma el celular, muestra el POS, cobra, tick verde. Texto: "La tua cassa nel cellulare. Gratis."<br><br>
+        <strong>Landing page objetivo:</strong> No mandar al home — crear una landing específica para el ad: `/prova-gratis` con el formulario de registro directamente arriba del fold.<br><br>
+        <strong>KPI objetivo:</strong> CPA (costo por registro) &lt; €3. Si supera €8, pausar y optimizar creatividad.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Contenido semanal sugerido (Instagram + TikTok)</div>
+      <table class="issue-table" style="margin-top:8px;">
+        <thead><tr><th>Formato</th><th>Frecuencia</th><th>Ejemplo de tema</th></tr></thead>
+        <tbody>
+          <tr><td>Video demo del POS</td><td>1x semana</td><td>"Cobra en 3 toques desde el celular"</td></tr>
+          <tr><td>Antes / Después</td><td>1x semana</td><td>"Así era anotar pedidos vs así es ahora"</td></tr>
+          <tr><td>Tutorial rápido</td><td>1x semana</td><td>"Cómo crear tu catálogo en 10 minutos"</td></tr>
+          <tr><td>Testimonio de cliente</td><td>2x mes</td><td>"María, panadería en Roma — 30 pedidos el primer día"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PLAN DE ACCIÓN -->
+  <div id="panel-pendientes" class="panel">
+    <p class="section-title">Plan de Acción — Marketing</p>
+    <p class="section-sub">Todo lo que hay que implementar, ordenado por impacto y esfuerzo.</p>
+
+    <p style="font-size:0.82rem;color:#64748b;margin-bottom:20px;">Este plan complementa el <code>PENDIENTES.md</code> técnico. Estas son las tareas específicas de marketing y comunicación.</p>
+
+    <div class="card" style="border-color:rgba(239,68,68,0.3);">
+      <div class="card-title">🔴 ANTES DE LANZAR — Sin esto no se puede salir al mercado</div>
+      <div class="checklist-item">
+        <div class="check-icon check-err">1</div>
+        <div class="check-text"><strong>Corregir FAQs italianas con precios actuales</strong><span>Archivo: lib/dictionaries.js · Tiempo: 30 min · Impacto: Crítico — usuarios italianos ven precios incorrectos</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-err">2</div>
+        <div class="check-text"><strong>Quitar o marcar "Próximamente" todos los features inexistentes</strong><span>Team de colaboradores, catálogo IG/FB, carritos abandonados, puntos, facturación electrónica · Tiempo: 1h · Impacto: Crítico — promesas falsas destruyen la confianza</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-err">3</div>
+        <div class="check-text"><strong>Cambiar "Stripe Verified" → "Pagos con Stripe"</strong><span>Archivo: app/page.js · Tiempo: 5 min · Impacto: Legal — afirmación no verificable</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-err">4</div>
+        <div class="check-text"><strong>Activar correo corporativo @tiendaonline.it</strong><span>Zoho Mail gratuito hasta 5 buzones · Tiempo: 2h · Impacto: Credibilidad — sin email corporativo el soporte no es profesional</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-err">5</div>
+        <div class="check-text"><strong>Integrar Resend + email de bienvenida</strong><span>Pendiente técnico P2 — el primer email es el más importante en retención</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:rgba(251,191,36,0.3);margin-top:0;">
+      <div class="card-title">🟡 PRIMER MES — Adquisición y conversión</div>
+      <div class="checklist-item">
+        <div class="check-icon check-warn">6</div>
+        <div class="check-text"><strong>Crear secuencia de 5 emails de onboarding</strong><span>Días 0-7 post-registro · Herramienta: Resend · Impacto: Retención — reduce churn de usuarios que se registran y no vuelven</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-warn">7</div>
+        <div class="check-text"><strong>Optimizar title tag y meta description de la home</strong><span>Tiempo: 20 min · Impacto: SEO — es el primer paso para aparecer en Google</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-warn">8</div>
+        <div class="check-text"><strong>Publicar 2 artículos de blog con keywords de alta intención</strong><span>"Cómo crear una tienda online gratis" y "POS en el celular para negocios pequeños" · Tiempo: 4h cada uno</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-warn">9</div>
+        <div class="check-text"><strong>Abrir perfil de Instagram @tiendaonline.it</strong><span>3 posts semanales de demo del producto · Sin inversión inicial · Impacto: Prueba social + adquisición orgánica</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-warn">10</div>
+        <div class="check-text"><strong>Reemplazar footer "Sviluppato da David Escalante" por branding de la empresa</strong><span>Archivo: app/page.js · Tiempo: 5 min · Impacto: Profesionalidad</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:0;">
+      <div class="card-title">🟢 MESES 2-3 — Escalado</div>
+      <div class="checklist-item">
+        <div class="check-icon check-ok">11</div>
+        <div class="check-text"><strong>Primer caso de éxito documentado</strong><span>Entrevistar a un cliente real (panadería, bar, tienda) · Foto real + cifras reales + testimonio · Publicar en landing y blog</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-ok">12</div>
+        <div class="check-text"><strong>Lanzar €100/mes en Meta Ads Italia</strong><span>Video de 15 segundos del POS · Audiencia: dueños de negocio en Italia · KPI: CPA &lt; €3/registro</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-ok">13</div>
+        <div class="check-text"><strong>Página de reseñas en Google Business Profile</strong><span>Crear perfil de empresa en Google Maps · Solicitar reseñas a primeros clientes · Impacto: SEO local + prueba social</span></div>
+      </div>
+      <div class="checklist-item">
+        <div class="check-icon check-ok">14</div>
+        <div class="check-text"><strong>Secuencia de upgrade por email (plan Gratis → Básico)</strong><span>Trigger: usuario llega al 80% de su límite de productos · 3 emails en 14 días</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

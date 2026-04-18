@@ -59,6 +59,12 @@ const PLAN_CONFIG = {
           { label: 'GDPR compliance', desc: 'La plataforma cumple con la normativa europea de protección de datos.' },
         ]
       },
+      {
+        categoria: '💬 Soporte',
+        items: [
+          { label: 'FAQ + email', desc: 'Consulta nuestra guía online en cualquier momento. Para consultas específicas, escríbenos por email. Respuesta en 48 horas hábiles.' },
+        ]
+      },
     ]
   },
   basico: {
@@ -95,7 +101,7 @@ const PLAN_CONFIG = {
       {
         categoria: '💬 Soporte',
         items: [
-          { label: 'Soporte por email', desc: 'Respuesta garantizada en menos de 24 horas hábiles.' },
+          { label: 'Email + WhatsApp', desc: 'Respuesta garantizada en 24 horas hábiles. WhatsApp disponible en horario de oficina (lun–vie 9–18).' },
         ]
       },
     ]
@@ -107,14 +113,14 @@ const PLAN_CONFIG = {
     emoji: '🚀',
     tag: '⭐ EL MÁS ELEGIDO',
     descripcion: 'Para negocios en crecimiento que necesitan herramientas avanzadas de ventas y clientes.',
-    highlights: ['5.000 productos', 'Fiados y cuentas corrientes', 'Catálogo Instagram/Facebook', '4 imágenes por producto'],
+    highlights: ['5.000 productos', 'Fiados y cuentas corrientes', '🔜 Catálogo Instagram/Facebook', '4 imágenes por producto'],
     detalle: [
       {
         categoria: '🛍️ Ventas',
         items: [
           { label: 'Pagos online con Stripe', desc: 'Igual que el plan Básico. Tu cuenta Stripe conectada directamente, el dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
           { label: 'Cupones de descuento ilimitados', desc: 'Crea códigos de descuento por porcentaje o valor fijo para tus campañas.' },
-          { label: 'Catálogo Instagram / Facebook', desc: 'Conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
+          { label: '🔜 Catálogo Instagram / Facebook', desc: 'Próximamente: conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
           { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
         ]
       },
@@ -159,8 +165,8 @@ const PLAN_CONFIG = {
         categoria: '🛍️ Ventas',
         items: [
           { label: 'Stripe propio — sin intermediarios', desc: 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene en ningún momento. Te guiamos paso a paso para activarlo la primera vez.' },
-          { label: 'Recuperación de carritos abandonados', desc: 'Aviso automático a clientes que no completaron su compra.' },
-          { label: 'Programa de puntos y afiliados', desc: 'Fideliza a tus clientes con puntos canjeables y recompensas.' },
+          { label: '🔜 Recuperación de carritos abandonados', desc: 'Próximamente: aviso automático a clientes que no completaron su compra.' },
+          { label: '🔜 Programa de puntos y afiliados', desc: 'Próximamente: fideliza a tus clientes con puntos canjeables y recompensas.' },
           { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
         ]
       },
@@ -169,7 +175,7 @@ const PLAN_CONFIG = {
         items: [
           { label: 'Productos ilimitados', desc: 'Sin techo. Crece tu catálogo todo lo que necesites.' },
           { label: '4 imágenes por producto', desc: '20 GB de almacenamiento total.' },
-          { label: 'Facturación electrónica', desc: 'Genera facturas automáticas compatibles con la normativa italiana.' },
+          { label: '🔜 Facturación electrónica', desc: 'Próximamente: facturas automáticas compatibles con la normativa italiana.' },
         ]
       },
       {

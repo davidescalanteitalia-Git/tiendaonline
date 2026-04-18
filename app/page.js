@@ -199,6 +199,9 @@ export default function Home() {
         { cat: '🔒 GDPR', items: [
           { l: 'GDPR compliance', d: lang === 'it' ? 'La piattaforma è conforme al regolamento europeo sulla protezione dei dati.' : 'La plataforma cumple con la normativa europea de protección de datos.' },
         ]},
+        { cat: lang === 'it' ? '💬 Supporto' : '💬 Soporte', items: [
+          { l: lang === 'it' ? 'FAQ + email' : 'FAQ + email', d: lang === 'it' ? 'Consulta la nostra guida online e scrivici via email. Risposta entro 48 ore lavorative.' : 'Consulta nuestra guía online y escríbenos por email. Respuesta en 48 horas hábiles.' },
+        ]},
       ],
     },
     {
@@ -216,7 +219,7 @@ export default function Home() {
         lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe',
         lang === 'it' ? 'Esportazione CSV' : 'Exportación CSV',
         '1 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
-        lang === 'it' ? 'Supporto via email' : 'Soporte por email',
+        lang === 'it' ? 'Supporto email + WhatsApp' : 'Soporte email + WhatsApp',
       ],
       detalle: [
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
@@ -232,7 +235,7 @@ export default function Home() {
           { l: lang === 'it' ? 'Reporti base' : 'Reportes básicos', d: lang === 'it' ? 'Vendite del giorno, settimana e mese.' : 'Ventas del día, semana y mes.' },
         ]},
         { cat: lang === 'it' ? '💬 Supporto' : '💬 Soporte', items: [
-          { l: lang === 'it' ? 'Supporto via email' : 'Soporte por email', d: lang === 'it' ? 'Risposta garantita entro 24 ore lavorative.' : 'Respuesta garantizada en menos de 24 horas hábiles.' },
+          { l: lang === 'it' ? 'Email + WhatsApp' : 'Email + WhatsApp', d: lang === 'it' ? 'Risposta garantita entro 24 ore lavorative. WhatsApp disponibile in orario d\'ufficio (lun–ven 9–18).' : 'Respuesta garantizada en 24 horas hábiles. WhatsApp disponible en horario de oficina (lun–vie 9–18).' },
         ]},
       ],
     },
@@ -248,7 +251,7 @@ export default function Home() {
       highlights: [
         lang === 'it' ? '5.000 prodotti' : '5.000 productos',
         lang === 'it' ? 'Rapporti finanziari avanzati' : 'Reportes financieros avanzados',
-        lang === 'it' ? 'Catalogo Instagram / Facebook' : 'Catálogo Instagram / Facebook',
+        lang === 'it' ? '🔜 Catalogo Instagram / Facebook' : '🔜 Catálogo Instagram / Facebook',
         lang === 'it' ? 'Codici sconto illimitati' : 'Códigos descuento ilimitados',
         '5 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         lang === 'it' ? 'Supporto prioritario' : 'Soporte prioritario',
@@ -257,7 +260,7 @@ export default function Home() {
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
           { l: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe', d: lang === 'it' ? 'Come il piano Base. Il tuo account Stripe collegato direttamente, i soldi arrivano sul tuo conto senza che TIENDAONLINE intervenga.' : 'Tu cuenta Stripe conectada directamente. El dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
           { l: lang === 'it' ? 'Codici sconto illimitati' : 'Cupones de descuento ilimitados', d: lang === 'it' ? 'Crea codici sconto in percentuale o valore fisso.' : 'Crea códigos de descuento por porcentaje o valor fijo.' },
-          { l: lang === 'it' ? 'Catalogo Instagram / Facebook' : 'Catálogo Instagram / Facebook', d: lang === 'it' ? 'Collega il tuo negozio ai social e vendi direttamente da lì.' : 'Conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
+          { l: (lang === 'it' ? '🔜 Catalogo Instagram / Facebook' : '🔜 Catálogo Instagram / Facebook'), d: lang === 'it' ? 'Prossimamente: collega il tuo negozio ai social e vendi direttamente da lì.' : 'Próximamente: conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
         ]},
         { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
           { l: lang === 'it' ? '5.000 prodotti' : '5.000 productos', d: lang === 'it' ? 'Per cataloghi grandi con più categorie.' : 'Para catálogos grandes con múltiples categorías.' },
@@ -286,22 +289,22 @@ export default function Home() {
       badge: null,
       highlights: [
         lang === 'it' ? 'Prodotti illimitati' : 'Productos ilimitados',
-        lang === 'it' ? 'Recupero carrelli abbandonati' : 'Recuperación carritos abandonados',
-        lang === 'it' ? 'Programma punti & Affiliati' : 'Programa de puntos y Afiliados',
-        lang === 'it' ? 'Fatturazione elettronica' : 'Facturación electrónica',
+        lang === 'it' ? '🔜 Recupero carrelli abbandonati' : '🔜 Recuperación carritos abandonados',
+        lang === 'it' ? '🔜 Programma punti & Affiliati' : '🔜 Programa de puntos y Afiliados',
+        lang === 'it' ? '🔜 Fatturazione elettronica' : '🔜 Facturación electrónica',
         '20 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',
       ],
       detalle: [
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
           { l: lang === 'it' ? 'Stripe diretto — senza intermediari' : 'Stripe propio — sin intermediarios', d: lang === 'it' ? 'Colleghi il tuo account Stripe. I soldi vanno direttamente sul tuo conto. TIENDAONLINE non interviene. Ti guidiamo passo dopo passo per attivarlo.' : 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene. Te guiamos para activarlo la primera vez.' },
-          { l: lang === 'it' ? 'Recupero carrelli abbandonati' : 'Recuperación de carritos abandonados', d: lang === 'it' ? 'Avviso automatico ai clienti che non hanno completato l\'acquisto.' : 'Aviso automático a clientes que no completaron su compra.' },
-          { l: lang === 'it' ? 'Programma punti e affiliati' : 'Programa de puntos y afiliados', d: lang === 'it' ? 'Fidelizza i clienti con punti riscattabili e premi.' : 'Fideliza a tus clientes con puntos canjeables y recompensas.' },
+          { l: (lang === 'it' ? '🔜 Recupero carrelli abbandonati' : '🔜 Recuperación de carritos abandonados'), d: lang === 'it' ? 'Prossimamente: avviso automatico ai clienti che non hanno completato l\'acquisto.' : 'Próximamente: aviso automático a clientes que no completaron su compra.' },
+          { l: (lang === 'it' ? '🔜 Programma punti e affiliati' : '🔜 Programa de puntos y afiliados'), d: lang === 'it' ? 'Prossimamente: fidelizza i clienti con punti riscattabili e premi.' : 'Próximamente: fideliza a tus clientes con puntos canjeables y recompensas.' },
         ]},
         { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
           { l: lang === 'it' ? 'Prodotti illimitati' : 'Productos ilimitados', d: lang === 'it' ? 'Nessun limite. Fai crescere il catalogo quanto vuoi.' : 'Sin techo. Crece tu catálogo todo lo que necesites.' },
           { l: lang === 'it' ? '4 foto per prodotto' : '4 imágenes por producto', d: lang === 'it' ? '20 GB di spazio totale.' : '20 GB de almacenamiento total.' },
-          { l: lang === 'it' ? 'Fatturazione elettronica' : 'Facturación electrónica', d: lang === 'it' ? 'Fatture automatiche conformi alla normativa italiana.' : 'Facturas automáticas compatibles con la normativa italiana.' },
+          { l: (lang === 'it' ? '🔜 Fatturazione elettronica' : '🔜 Facturación electrónica'), d: lang === 'it' ? 'Prossimamente: fatture automatiche conformi alla normativa italiana.' : 'Próximamente: facturas automáticas compatibles con la normativa italiana.' },
         ]},
         { cat: lang === 'it' ? '🔧 Operazioni' : '🔧 Operaciones', items: [
           { l: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado', d: lang === 'it' ? 'Uno specialista TIENDAONLINE assegnato al tuo account.' : 'Un especialista de TIENDAONLINE asignado a tu cuenta.' },
@@ -324,13 +327,13 @@ export default function Home() {
     { label: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe',  vals: [false, true, true, true] },
     { label: lang === 'it' ? 'Esportazione CSV / PDF' : 'Exportación CSV / PDF',        vals: [false, true, true, true] },
     { label: lang === 'it' ? 'Reporti finanziari' : 'Reportes financieros',             vals: [false, lang === 'it' ? 'Base' : 'Básicos', lang === 'it' ? 'Avanzati' : 'Avanzados', 'Premium'] },
-    { label: lang === 'it' ? 'Catalogo Instagram/FB' : 'Catálogo Instagram/FB',         vals: [false, false, true, true] },
+    { label: (lang === 'it' ? '🔜 Catalogo Instagram/FB' : '🔜 Catálogo Instagram/FB'), vals: [false, false, '🔜', '🔜'] },
     { label: lang === 'it' ? 'Codici sconto' : 'Códigos descuento',                     vals: [false, false, true, true] },
-    { label: lang === 'it' ? 'Carrelli abbandonati' : 'Carritos abandonados',            vals: [false, false, false, true] },
-    { label: lang === 'it' ? 'Programma punti' : 'Programa de puntos',                  vals: [false, false, false, true] },
+    { label: (lang === 'it' ? '🔜 Carrelli abbandonati' : '🔜 Carritos abandonados'),   vals: [false, false, false, '🔜'] },
+    { label: (lang === 'it' ? '🔜 Programma punti' : '🔜 Programa de puntos'),          vals: [false, false, false, '🔜'] },
     { label: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',               vals: [false, false, false, true] },
     { label: 'Backup',                                                                   vals: [lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Giornaliero' : 'Diario', lang === 'it' ? 'Giornaliero' : 'Diario'] },
-    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: ['Community', 'Email', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
+    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: [lang === 'it' ? 'FAQ + email' : 'FAQ + email', lang === 'it' ? 'Email + WhatsApp' : 'Email + WhatsApp', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
   ]
 
 
@@ -378,6 +381,9 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+            <a href="/blog" className={`hidden md:block text-xs sm:text-sm font-semibold transition-colors text-center whitespace-nowrap ${isScrolled ? 'text-slate-600 hover:text-emerald-600' : 'text-emerald-100/70 hover:text-white'}`}>
+              Blog
+            </a>
             <a href="/login" className={`text-xs sm:text-sm font-semibold transition-colors text-center whitespace-nowrap ${isScrolled ? 'text-slate-600 hover:text-emerald-600' : 'text-emerald-50 hover:text-white'}`}>
               {t('accedi')}
             </a>
@@ -473,7 +479,7 @@ export default function Home() {
           {[
             { icon: '🔒', label: 'SSL · HTTPS' },
             { icon: '✅', label: 'GDPR Compliant' },
-            { icon: '💳', label: 'Stripe Verified' },
+            { icon: '💳', label: lang === 'it' ? 'Pagamenti con Stripe' : lang === 'en' ? 'Payments via Stripe' : 'Pagos con Stripe' },
             { icon: '🏪', label: `${storeCount} ${lang === 'it' ? 'negozi attivi' : lang === 'en' ? 'active stores' : 'tiendas activas'}` },
             { icon: '🇮🇹', label: lang === 'it' ? 'Supporto in italiano' : lang === 'en' ? 'Italian support' : 'Soporte en italiano' },
             { icon: '⚡', label: lang === 'it' ? 'Attivo in 5 minuti' : lang === 'en' ? 'Live in 5 minutes' : 'Activo en 5 minutos' },
@@ -1216,6 +1222,7 @@ export default function Home() {
                 <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">{lang === 'it' ? 'Piattaforma' : lang === 'en' ? 'Platform' : 'Plataforma'}</h4>
                 <a href="/login" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('accedi')}</a>
                 <a href="/register" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">{t('ctaHeader')}</a>
+                <a href="/blog" className="block hover:text-emerald-400 transition-colors font-semibold text-sm">Blog</a>
               </div>
               <div className="space-y-4">
                 <h4 className="text-white font-black uppercase tracking-widest text-xs mb-6">Legal</h4>

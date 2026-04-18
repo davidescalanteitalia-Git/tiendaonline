@@ -95,7 +95,7 @@ export default function PrivacyPage() {
             <p>Il Titolare del trattamento dei dati personali è:</p>
             <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 space-y-2 mt-4">
               <div className="font-bold text-slate-800">TIENDAONLINE</div>
-              <div className="text-sm text-slate-500 mb-4">Sviluppato da David Escalante</div>
+              <div className="text-sm text-slate-500 mb-4">© 2026 TIENDAONLINE · Tutti i diritti riservati</div>
               
               <div className="flex flex-col gap-2">
                 <a href="mailto:davidescalanteitalia@gmail.com" className="flex items-center gap-2 text-emerald-600 font-medium hover:text-emerald-700 transition-colors">
