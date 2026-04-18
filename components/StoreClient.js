@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DICTIONARY } from '../lib/dictionaries'
 import { registrarEvento, EVENTOS } from './PostHogProvider'
+import { supabase } from '../lib/supabase'
 
 const CART_KEY_PREFIX = 'to_cart_'
 
@@ -68,6 +69,26 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
   const configPagos = config.pagos || {}
   const configEnvios = config.envios || {}
   const stockBehavior = config.mostrar_sin_stock || 'normal'
+
+  // ── Sesión del cliente logueado ────────────────────
+  const [clienteNombre, setClienteNombre] = useState(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // Buscar nombre en la tabla clientes
+        supabase
+          .from('clientes')
+          .select('nombre')
+          .eq('user_id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            const nombre = data?.nombre || session.user.email?.split('@')[0] || null
+            setClienteNombre(nombre)
+          })
+      }
+    })
+  }, [])
 
   // ── Sync cart with localStorage ────────────────────
   useEffect(() => {
@@ -397,9 +418,22 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               ))}
             </div>
 
-            {/* Mi cuenta */}
-            <a href={`/store/${tienda.subdominio}/cuenta`} style={{ display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none', color: '#475569', fontWeight: 700, fontSize: '0.8rem', padding: '7px 12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#fff', whiteSpace: 'nowrap', flexShrink: 0 }}>
-              👤 <span className="hide-xs">Mi cuenta</span>
+            {/* Mi cuenta — muestra nombre si está logueado */}
+            <a
+              href={clienteNombre ? `/store/${tienda.subdominio}/mis-pedidos` : `/store/${tienda.subdominio}/cuenta`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none',
+                fontWeight: 700, fontSize: '0.8rem', padding: '7px 12px', borderRadius: '10px',
+                border: `1.5px solid ${clienteNombre ? C.primary + '40' : '#e2e8f0'}`,
+                background: clienteNombre ? C.primary + '10' : '#fff',
+                color: clienteNombre ? C.primary : '#475569',
+                whiteSpace: 'nowrap', flexShrink: 0, maxWidth: '130px',
+                overflow: 'hidden', textOverflow: 'ellipsis',
+              }}
+            >
+              👤 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {clienteNombre ? clienteNombre.split(' ')[0] : <span className="hide-xs">Mi cuenta</span>}
+              </span>
             </a>
           </div>
         </div>

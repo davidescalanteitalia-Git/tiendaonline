@@ -158,9 +158,9 @@ export default function CuentaClientePage() {
   // — PANTALLA DE BIENVENIDA —
   if (modo === 'bienvenida') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+        <div className="shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center gap-3">
           <button onClick={() => router.back()} className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
             <ArrowLeft size={20} className="text-slate-600" />
           </button>
@@ -169,60 +169,63 @@ export default function CuentaClientePage() {
           </span>
         </div>
 
-        <div className="max-w-sm mx-auto px-4 py-8">
-          {/* Hero */}
-          <div className="text-center mb-8">
-            <div className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-              style={{ backgroundColor: colorPrincipal }}>
-              <Sparkles size={40} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-black text-slate-800 mb-2">Crea tu cuenta</h1>
-            <p className="text-slate-500 leading-relaxed">
-              Regístrate gratis y lleva el control de todas tus compras en un solo lugar.
-              <strong className="text-slate-700"> Sin complicaciones.</strong>
-            </p>
-          </div>
+        {/* Contenido con scroll */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-sm mx-auto px-4 pt-6 pb-4">
 
-          {/* Beneficios */}
-          <div className="space-y-3 mb-8">
-            {BENEFICIOS.map((b, i) => (
-              <div key={i} className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-slate-100">
-                <span className="text-2xl">{b.icon}</span>
-                <div>
-                  <p className="font-bold text-slate-800 text-sm">{b.titulo}</p>
-                  <p className="text-slate-400 text-xs">{b.desc}</p>
-                </div>
+            {/* Hero — más compacto */}
+            <div className="text-center mb-5">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-md"
+                style={{ backgroundColor: colorPrincipal }}>
+                <Sparkles size={28} className="text-white" />
               </div>
-            ))}
-          </div>
+              <h1 className="text-2xl font-black text-slate-800 mb-1">Crea tu cuenta</h1>
+              <p className="text-slate-500 text-sm leading-relaxed">
+                Regístrate gratis y lleva el control de todas tus compras.
+                <strong className="text-slate-700"> Sin complicaciones.</strong>
+              </p>
+            </div>
 
-          {/* Nota de privacidad */}
-          <div className="bg-blue-50 rounded-2xl p-4 mb-6 flex gap-3">
-            <ShieldCheck size={20} className="text-blue-500 shrink-0 mt-0.5" />
-            <p className="text-blue-700 text-sm leading-relaxed">
-              <strong>Tu privacidad importa.</strong> No compartimos tus datos con nadie.
-              En cualquier momento puedes eliminar tu cuenta y todos tus datos de forma permanente.
-            </p>
-          </div>
+            {/* Beneficios — más compactos */}
+            <div className="space-y-2 mb-4">
+              {BENEFICIOS.map((b, i) => (
+                <div key={i} className="bg-white rounded-xl p-3 flex items-center gap-3 shadow-sm border border-slate-100">
+                  <span className="text-xl shrink-0">{b.icon}</span>
+                  <div>
+                    <p className="font-bold text-slate-800 text-sm leading-tight">{b.titulo}</p>
+                    <p className="text-slate-400 text-xs">{b.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          {/* Botones */}
-          <div className="space-y-3">
-            <button onClick={() => setModo('registro')}
-              className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg"
-              style={{ backgroundColor: colorPrincipal }}>
-              <UserPlus size={20} />
-              Crear mi cuenta gratis
-            </button>
-            <button onClick={() => setModo('login')}
-              className="w-full py-4 rounded-2xl font-black text-slate-700 text-base flex items-center justify-center gap-2 transition-all active:scale-95 bg-white border border-slate-200 shadow-sm">
-              <LogIn size={20} />
-              Ya tengo una cuenta
-            </button>
-            <button onClick={() => router.back()}
-              className="w-full py-3 text-slate-400 text-sm font-medium">
-              Continuar sin registrarme →
-            </button>
+            {/* Nota de privacidad — compacta */}
+            <div className="bg-blue-50 rounded-xl p-3 flex gap-2">
+              <ShieldCheck size={16} className="text-blue-500 shrink-0 mt-0.5" />
+              <p className="text-blue-700 text-xs leading-relaxed">
+                <strong>Tu privacidad importa.</strong> No compartimos tus datos. Puedes eliminar tu cuenta cuando quieras.
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* Botones fijos en la parte de abajo */}
+        <div className="shrink-0 bg-white border-t border-slate-100 px-4 py-4 space-y-2 max-w-sm mx-auto w-full">
+          <button onClick={() => setModo('registro')}
+            className="w-full py-4 rounded-2xl font-black text-white text-base flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg"
+            style={{ backgroundColor: colorPrincipal }}>
+            <UserPlus size={20} />
+            Crear mi cuenta gratis
+          </button>
+          <button onClick={() => setModo('login')}
+            className="w-full py-3 rounded-2xl font-black text-slate-700 text-sm flex items-center justify-center gap-2 transition-all active:scale-95 bg-white border border-slate-200">
+            <LogIn size={18} />
+            Ya tengo una cuenta
+          </button>
+          <button onClick={() => router.back()}
+            className="w-full py-2 text-slate-400 text-sm font-medium">
+            Continuar sin registrarme →
+          </button>
         </div>
       </div>
     )
