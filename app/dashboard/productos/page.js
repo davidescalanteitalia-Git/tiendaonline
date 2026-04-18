@@ -150,15 +150,23 @@ function SortableProductCard({ producto: p, categorias, activeId }) {
   )
 }
 
+// Límite de imágenes según plan
+function maxImagenesPorPlan(plan) {
+  if (plan === 'pro' || plan === 'grow') return 4
+  if (plan === 'basico') return 2
+  return 1 // gratis
+}
+
 export default function ProductosPage() {
   const { lang } = useLang()
   const dict = DICTIONARY[lang] || DICTIONARY['es']
-  
+
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState('grid') // grid | list
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [planActual, setPlanActual] = useState('gratis')
   
   // Slide-over state
   const [isSlideOpen, setIsSlideOpen] = useState(false)
@@ -173,6 +181,10 @@ export default function ProductosPage() {
   const [categoriaId, setCategoriaId] = useState('')
   const [estado, setEstado] = useState('activo')
   const [imagenUrl, setImagenUrl] = useState('')
+  const [imagen2Url, setImagen2Url] = useState('')
+  const [imagen3Url, setImagen3Url] = useState('')
+  const [imagen4Url, setImagen4Url] = useState('')
+  const [uploadingSlot, setUploadingSlot] = useState(null) // null | 1 | 2 | 3 | 4
   const [stock, setStock] = useState('0')
   const [fechaVencimiento, setFechaVencimiento] = useState('')
   
@@ -188,6 +200,9 @@ export default function ProductosPage() {
   const [savingOrder, setSavingOrder] = useState(false)
 
   const fileInputRef = useRef(null)
+  const fileInput2Ref = useRef(null)
+  const fileInput3Ref = useRef(null)
+  const fileInput4Ref = useRef(null)
 
   // Sensores para dnd-kit: soporte mouse + touch
   const sensors = useSensors(
@@ -242,9 +257,10 @@ export default function ProductosPage() {
       if (!session) return
 
       const headers = { 'Authorization': `Bearer ${session.access_token}` }
-      const [resProd, resCat] = await Promise.all([
+      const [resProd, resCat, resMе] = await Promise.all([
         fetch('/api/productos', { headers }),
-        fetch('/api/categorias', { headers })
+        fetch('/api/categorias', { headers }),
+        fetch('/api/me', { headers })
       ])
 
       const prodData = await resProd.json()
@@ -252,6 +268,11 @@ export default function ProductosPage() {
 
       setProductos(Array.isArray(prodData) ? prodData : [])
       setCategorias(Array.isArray(catData) ? catData : [])
+
+      if (resMе.ok) {
+        const meData = await resMе.json()
+        setPlanActual(meData.tienda?.plan_suscripcion || 'gratis')
+      }
     } catch (err) {
       console.error('Error fetching data:', err)
     } finally {
@@ -284,10 +305,10 @@ export default function ProductosPage() {
     })
   }
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = async (e, slot = 1) => {
     const file = e.target.files[0]
     if (!file) return
-    setUploading(true)
+    setUploadingSlot(slot)
     try {
       const compressed = await compressImage(file)
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.jpg`
@@ -295,12 +316,15 @@ export default function ProductosPage() {
       const { error } = await supabase.storage.from('productos').upload(filePath, compressed, { contentType: 'image/jpeg' })
       if (error) throw error
       const { data } = supabase.storage.from('productos').getPublicUrl(filePath)
-      setImagenUrl(data.publicUrl)
+      if (slot === 1) setImagenUrl(data.publicUrl)
+      if (slot === 2) setImagen2Url(data.publicUrl)
+      if (slot === 3) setImagen3Url(data.publicUrl)
+      if (slot === 4) setImagen4Url(data.publicUrl)
     } catch (error) {
       setErrorMsg('Error al subir imagen: ' + error.message)
       setTimeout(() => setErrorMsg(null), 4000)
     } finally {
-      setUploading(false)
+      setUploadingSlot(null)
     }
   }
 
@@ -309,9 +333,10 @@ export default function ProductosPage() {
     setSaving(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const body = { 
-        nombre, descripcion, precio: parseFloat(precio) || 0, costo: parseFloat(costo) || 0, emoji, 
+      const body = {
+        nombre, descripcion, precio: parseFloat(precio) || 0, costo: parseFloat(costo) || 0, emoji,
         categoria_id: categoriaId || null, estado, imagen_url: imagenUrl,
+        imagen_2: imagen2Url || null, imagen_3: imagen3Url || null, imagen_4: imagen4Url || null,
         stock: parseInt(stock) || 0, fecha_vencimiento: fechaVencimiento || null
       }
       if (editingId) body.id = editingId
@@ -362,6 +387,9 @@ export default function ProductosPage() {
     setCategoriaId(p.categoria_id || '')
     setEstado(p.estado || 'activo')
     setImagenUrl(p.imagen_url || '')
+    setImagen2Url(p.imagen_2 || '')
+    setImagen3Url(p.imagen_3 || '')
+    setImagen4Url(p.imagen_4 || '')
     setStock(p.stock || 0)
     setFechaVencimiento(p.fecha_vencimiento || '')
     setIsSlideOpen(true)
@@ -404,6 +432,9 @@ export default function ProductosPage() {
     setCategoriaId('')
     setEstado('activo')
     setImagenUrl('')
+    setImagen2Url('')
+    setImagen3Url('')
+    setImagen4Url('')
     setStock('0')
     setFechaVencimiento('')
     setShowNewCategoryInput(false)
@@ -711,44 +742,123 @@ export default function ProductosPage() {
 
               <div className="flex-1 overflow-y-auto p-10 space-y-8 bg-[#FDFDFF]">
                  
-                 {/* Photo Selector */}
+                 {/* Photo Selector — multi-imagen según plan */}
                  <div className="space-y-4">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Identidad del Producto</h3>
-                    <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm flex flex-col items-center gap-6">
-                       <div className="relative group">
-                          <div className="w-40 h-40 rounded-[48px] bg-slate-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transition-all group-hover:scale-95">
-                             {uploading ? (
-                                <Loader2 className="animate-spin text-emerald-500" size={32} />
-                             ) : imagenUrl ? (
-                                <img src={imagenUrl} className="w-full h-full object-cover" />
-                             ) : (
-                                <span className="text-7xl">{emoji}</span>
-                             )}
-                          </div>
-                          <button 
-                            type="button" 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="absolute bottom-2 right-2 p-4 bg-emerald-500 text-white rounded-[24px] shadow-xl hover:bg-emerald-600 transition-all active:scale-90"
-                          >
-                             <Camera size={24} />
-                          </button>
-                       </div>
-                       
-                       {!imagenUrl && (
-                          <div className="flex flex-wrap items-center justify-center gap-2">
-                             {['📦', '🍕', '🍔', '🥗', '🥤', '🍰', '🍣', '🍷'].map(e => (
-                               <button 
-                                 key={e} 
-                                 onClick={() => setEmoji(e)}
-                                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${emoji === e ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-50 text-xl grayscale hover:grayscale-0'}`}
-                               >
-                                 {e}
-                               </button>
-                             ))}
-                          </div>
-                       )}
-                       <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Fotos del Producto</h3>
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+                        {maxImagenesPorPlan(planActual)} foto{maxImagenesPorPlan(planActual) > 1 ? 's' : ''} · Plan {planActual}
+                      </span>
                     </div>
+
+                    {/* Imagen principal grande */}
+                    <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Principal</p>
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="relative group">
+                          <div className="w-36 h-36 rounded-[36px] bg-slate-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transition-all group-hover:scale-95">
+                            {uploadingSlot === 1 ? (
+                              <Loader2 className="animate-spin text-emerald-500" size={28} />
+                            ) : imagenUrl ? (
+                              <img src={imagenUrl} className="w-full h-full object-cover" alt="Principal" />
+                            ) : (
+                              <span className="text-6xl">{emoji}</span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="absolute bottom-1 right-1 p-3 bg-emerald-500 text-white rounded-[20px] shadow-xl hover:bg-emerald-600 transition-all active:scale-90"
+                          >
+                            <Camera size={20} />
+                          </button>
+                          {imagenUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setImagenUrl('')}
+                              className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-full shadow hover:bg-red-600 transition-all"
+                            >
+                              <X size={12} />
+                            </button>
+                          )}
+                        </div>
+                        {!imagenUrl && (
+                          <div className="flex flex-wrap items-center justify-center gap-2">
+                            {['📦', '🍕', '🍔', '🥗', '🥤', '🍰', '🍣', '🍷'].map(e => (
+                              <button
+                                key={e}
+                                type="button"
+                                onClick={() => setEmoji(e)}
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${emoji === e ? 'bg-emerald-500 text-white shadow-lg' : 'bg-slate-50 text-xl grayscale hover:grayscale-0'}`}
+                              >
+                                {e}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <input type="file" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 1)} accept="image/*" className="hidden" />
+                    </div>
+
+                    {/* Imágenes adicionales: 2, 3, 4 */}
+                    {[
+                      { slot: 2, url: imagen2Url, setUrl: setImagen2Url, ref: fileInput2Ref, minPlan: 'basico' },
+                      { slot: 3, url: imagen3Url, setUrl: setImagen3Url, ref: fileInput3Ref, minPlan: 'pro' },
+                      { slot: 4, url: imagen4Url, setUrl: setImagen4Url, ref: fileInput4Ref, minPlan: 'pro' },
+                    ].map(({ slot, url, setUrl, ref, minPlan }) => {
+                      const maxSlots = maxImagenesPorPlan(planActual)
+                      const bloqueado = slot > maxSlots
+                      const planRequerido = minPlan === 'basico' ? 'Básico' : 'Pro'
+                      return (
+                        <div key={slot} className={`rounded-[24px] border p-4 flex items-center gap-4 transition-all ${
+                          bloqueado ? 'border-slate-100 bg-slate-50/60 opacity-60' : 'border-slate-100 bg-white shadow-sm'
+                        }`}>
+                          <div className="relative shrink-0">
+                            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden border-2 ${
+                              bloqueado ? 'border-slate-200 bg-slate-100' : 'border-white shadow-md bg-slate-50'
+                            }`}>
+                              {uploadingSlot === slot ? (
+                                <Loader2 className="animate-spin text-emerald-500" size={20} />
+                              ) : url ? (
+                                <img src={url} className="w-full h-full object-cover" alt={`Foto ${slot}`} />
+                              ) : bloqueado ? (
+                                <span className="text-2xl">🔒</span>
+                              ) : (
+                                <ImageIcon size={24} className="text-slate-300" />
+                              )}
+                            </div>
+                            {url && !bloqueado && (
+                              <button
+                                type="button"
+                                onClick={() => setUrl('')}
+                                className="absolute -top-1.5 -right-1.5 p-1 bg-red-500 text-white rounded-full shadow hover:bg-red-600 transition-all"
+                              >
+                                <X size={10} />
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-slate-700 mb-0.5">Foto {slot}</p>
+                            {bloqueado ? (
+                              <p className="text-[11px] text-slate-400">
+                                Disponible en plan <span className="font-bold text-blue-600">{planRequerido} →</span>
+                              </p>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => ref.current?.click()}
+                                className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors"
+                              >
+                                <Upload size={12} /> {url ? 'Cambiar foto' : 'Subir foto'}
+                              </button>
+                            )}
+                          </div>
+                          {!bloqueado && (
+                            <input type="file" ref={ref} onChange={(e) => handleFileUpload(e, slot)} accept="image/*" className="hidden" />
+                          )}
+                        </div>
+                      )
+                    })}
                  </div>
 
                   {/* Basic Info */}

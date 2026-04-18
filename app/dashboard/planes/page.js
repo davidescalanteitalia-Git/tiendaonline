@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../../lib/supabase'
 import { getPlan, PLANES } from '../../../lib/planes'
 import { registrarEvento, EVENTOS } from '../../../components/PostHogProvider'
+import { ChevronDown } from 'lucide-react'
 
 const PLANES_ORDEN = ['gratis', 'basico', 'pro', 'grow']
 
@@ -27,15 +28,38 @@ const PLAN_CONFIG = {
     border: '#e2e8f0',
     emoji: '🏪',
     tag: null,
-    features: [
-      '50 productos',
-      'POS táctil incluido',
-      'Checkout por WhatsApp',
-      'Subdominio personalizado',
-      '100 MB almacenamiento',
-      'GDPR compliance',
-    ],
-    noFeatures: ['Cupones de descuento', 'Reportes financieros', 'Fiados', 'Portal del cliente'],
+    descripcion: 'Para empezar a vender sin gastar nada. Perfecto para probar la plataforma.',
+    highlights: ['50 productos', 'POS táctil', 'Checkout WhatsApp', '1 imagen por producto'],
+    detalle: [
+      {
+        categoria: '🛍️ Ventas',
+        items: [
+          { label: 'POS táctil', desc: 'Cobra en persona desde tu celular o tablet, rápido y sin complicaciones.' },
+          { label: 'Checkout por WhatsApp', desc: 'Tus clientes hacen el pedido online y te escriben directo. Tú coordinas el pago.' },
+          { label: '0% comisión por venta', desc: 'TIENDAONLINE no te cobra nada por cada venta que hagas.' },
+        ]
+      },
+      {
+        categoria: '📦 Inventario',
+        items: [
+          { label: '50 productos', desc: 'Suficiente para una tienda pequeña o un catálogo básico.' },
+          { label: '1 imagen por producto', desc: '100 MB de almacenamiento total para tus fotos.' },
+          { label: 'Subdominio personalizado', desc: 'Tu tienda en tutienda.tiendaonline.it desde el primer día.' },
+        ]
+      },
+      {
+        categoria: '💳 Pagos',
+        items: [
+          { label: 'Sin pagos online', desc: 'En el plan Gratis el cobro se coordina directamente con el cliente por WhatsApp, efectivo o transferencia manual.' },
+        ]
+      },
+      {
+        categoria: '🔒 Seguridad',
+        items: [
+          { label: 'GDPR compliance', desc: 'La plataforma cumple con la normativa europea de protección de datos.' },
+        ]
+      },
+    ]
   },
   basico: {
     color: '#0284c7',
@@ -43,15 +67,38 @@ const PLAN_CONFIG = {
     border: '#7dd3fc',
     emoji: '⭐',
     tag: null,
-    features: [
-      '500 productos',
-      'Subdominio personalizado',
-      'Pagos online con Stripe',
-      'Exportación CSV / PDF',
-      '1 GB almacenamiento',
-      'Soporte por email',
-    ],
-    noFeatures: ['Cupones de descuento', 'Reportes avanzados', 'Fiados', 'Portal del cliente'],
+    descripcion: 'Para tiendas que ya venden y quieren crecer con pagos online y más productos.',
+    highlights: ['500 productos', 'Pagos online con Stripe', 'Exportación CSV/PDF', '2 imágenes por producto'],
+    detalle: [
+      {
+        categoria: '🛍️ Ventas',
+        items: [
+          { label: 'Pagos online con Stripe', desc: 'Tus clientes pagan con tarjeta directamente en tu tienda. El dinero llega a tu cuenta bancaria. TIENDAONLINE cobra €0,25 por transacción exitosa, además de las tarifas estándar de Stripe.' },
+          { label: 'Checkout por WhatsApp', desc: 'Sigue disponible como opción alternativa.' },
+          { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
+        ]
+      },
+      {
+        categoria: '📦 Inventario',
+        items: [
+          { label: '500 productos', desc: 'Para una tienda mediana con catálogo variado.' },
+          { label: '2 imágenes por producto', desc: '1 GB de almacenamiento total para tus fotos.' },
+          { label: 'Exportación CSV / PDF', desc: 'Descarga tu inventario y pedidos en cualquier momento.' },
+        ]
+      },
+      {
+        categoria: '📊 Reportes',
+        items: [
+          { label: 'Reportes básicos', desc: 'Ventas del día, semana y mes. Resumen de ingresos.' },
+        ]
+      },
+      {
+        categoria: '💬 Soporte',
+        items: [
+          { label: 'Soporte por email', desc: 'Respuesta garantizada en menos de 24 horas hábiles.' },
+        ]
+      },
+    ]
   },
   pro: {
     color: '#16a34a',
@@ -59,17 +106,45 @@ const PLAN_CONFIG = {
     border: '#86efac',
     emoji: '🚀',
     tag: '⭐ EL MÁS ELEGIDO',
-    features: [
-      '5.000 productos',
-      'Reportes financieros avanzados',
-      'Catálogo Instagram / Facebook',
-      'Cupones de descuento ilimitados',
-      'Fiados y cuentas corrientes',
-      'Portal del cliente',
-      '5 GB almacenamiento',
-      'Soporte prioritario',
-    ],
-    noFeatures: [],
+    descripcion: 'Para negocios en crecimiento que necesitan herramientas avanzadas de ventas y clientes.',
+    highlights: ['5.000 productos', 'Fiados y cuentas corrientes', 'Catálogo Instagram/Facebook', '4 imágenes por producto'],
+    detalle: [
+      {
+        categoria: '🛍️ Ventas',
+        items: [
+          { label: 'Pagos online con Stripe', desc: 'Igual que el plan Básico. TIENDAONLINE cobra €0,25 por transacción exitosa además de las tarifas estándar de Stripe.' },
+          { label: 'Cupones de descuento ilimitados', desc: 'Crea códigos de descuento por porcentaje o valor fijo para tus campañas.' },
+          { label: 'Catálogo Instagram / Facebook', desc: 'Conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
+          { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
+        ]
+      },
+      {
+        categoria: '📦 Inventario',
+        items: [
+          { label: '5.000 productos', desc: 'Para catálogos grandes con múltiples categorías.' },
+          { label: '4 imágenes por producto', desc: '5 GB de almacenamiento para fotos detalladas de alta calidad.' },
+        ]
+      },
+      {
+        categoria: '👥 Clientes',
+        items: [
+          { label: 'Fiados y cuentas corrientes', desc: 'Registra ventas a crédito, lleva el control de quién te debe y gestiona abonos parciales.' },
+          { label: 'Portal del cliente', desc: 'Tus clientes pueden ver su historial de pedidos y gestionar su cuenta.' },
+        ]
+      },
+      {
+        categoria: '📊 Reportes',
+        items: [
+          { label: 'Reportes financieros avanzados', desc: 'Ventas vs costos, margen de ganancia real por producto, top productos más vendidos.' },
+        ]
+      },
+      {
+        categoria: '💬 Soporte',
+        items: [
+          { label: 'Soporte prioritario', desc: 'Tu consulta pasa al frente de la fila. Respuesta en menos de 4 horas hábiles.' },
+        ]
+      },
+    ]
   },
   grow: {
     color: '#7c3aed',
@@ -77,16 +152,40 @@ const PLAN_CONFIG = {
     border: '#c4b5fd',
     emoji: '💎',
     tag: null,
-    features: [
-      'Productos ilimitados',
-      'Recuperación de carritos abandonados',
-      'Programa de puntos y afiliados',
-      'Facturación electrónica',
-      '20 GB almacenamiento',
-      'Consultor dedicado',
-      'Backup diario',
-    ],
-    noFeatures: [],
+    descripcion: 'Para negocios establecidos que quieren escalar sin límites y con atención dedicada.',
+    highlights: ['Productos ilimitados', 'Stripe propio sin intermediarios', 'Consultor dedicado', '4 imágenes por producto'],
+    detalle: [
+      {
+        categoria: '🛍️ Ventas',
+        items: [
+          { label: 'Stripe propio — sin intermediarios', desc: 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene ni cobra €0,25 por transacción. Te guiamos paso a paso para activarlo.' },
+          { label: 'Recuperación de carritos abandonados', desc: 'Aviso automático a clientes que no completaron su compra.' },
+          { label: 'Programa de puntos y afiliados', desc: 'Fideliza a tus clientes con puntos canjeables y recompensas.' },
+          { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
+        ]
+      },
+      {
+        categoria: '📦 Inventario',
+        items: [
+          { label: 'Productos ilimitados', desc: 'Sin techo. Crece tu catálogo todo lo que necesites.' },
+          { label: '4 imágenes por producto', desc: '20 GB de almacenamiento total.' },
+          { label: 'Facturación electrónica', desc: 'Genera facturas automáticas compatibles con la normativa italiana.' },
+        ]
+      },
+      {
+        categoria: '🔧 Operaciones',
+        items: [
+          { label: 'Consultor dedicado', desc: 'Un especialista de TIENDAONLINE asignado a tu cuenta para ayudarte a crecer.' },
+          { label: 'Backup diario', desc: 'Copia de seguridad automática de todos tus datos cada 24 horas.' },
+        ]
+      },
+      {
+        categoria: '💬 Soporte',
+        items: [
+          { label: 'Soporte dedicado', desc: 'Acceso directo a tu consultor. Sin tiempos de espera.' },
+        ]
+      },
+    ]
   },
 }
 
@@ -94,7 +193,8 @@ export default function PlanesPage() {
   const [tienda, setTienda] = useState(null)
   const [loading, setLoading] = useState(true)
   const [anualizacion, setAnualizacion] = useState(false)
-  const [procesando, setProcesando] = useState(null) // key del plan que está procesando
+  const [procesando, setProcesando] = useState(null)
+  const [expandedPlan, setExpandedPlan] = useState(null)
 
   useEffect(() => {
     // Detectar redirect post-checkout de Stripe
@@ -273,111 +373,171 @@ export default function PlanesPage() {
             ? Math.round(plan.precio * 0.8)
             : plan.precio
           const estaProcesando = procesando === key
+          const estaExpandido = expandedPlan === key
 
           return (
             <div
               key={key}
               style={{
                 background: esActual ? cfg.bg : '#fff',
-                border: `${esActual ? '2.5px' : '1.5px'} solid ${esActual ? cfg.color : '#e2e8f0'}`,
-                borderRadius: 18,
-                padding: 22,
+                border: `${esActual ? '2.5px' : '1.5px'} solid ${estaExpandido ? cfg.color : esActual ? cfg.color : '#e2e8f0'}`,
+                borderRadius: 20,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 12,
                 position: 'relative',
-                boxShadow: esActual ? `0 4px 24px ${cfg.color}20` : '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: esActual || estaExpandido ? `0 4px 24px ${cfg.color}20` : '0 1px 4px rgba(0,0,0,0.04)',
+                transition: 'box-shadow 0.2s, border-color 0.2s',
+                overflow: 'hidden',
               }}
             >
-              {/* Tag "El más elegido" */}
-              {cfg.tag && (
-                <div style={{
-                  position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
-                  background: cfg.color, color: '#fff',
-                  borderRadius: 20, padding: '3px 14px', fontSize: '0.7rem', fontWeight: 700,
-                  whiteSpace: 'nowrap',
-                }}>
-                  {cfg.tag}
-                </div>
-              )}
+              {/* Contenido principal de la tarjeta */}
+              <div style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-              {/* Plan actual badge */}
-              {esActual && (
-                <div style={{
-                  position: 'absolute', top: 14, right: 14,
-                  background: cfg.color, color: '#fff',
-                  borderRadius: 20, padding: '2px 10px', fontSize: '0.68rem', fontWeight: 700,
-                }}>
-                  {info?.esTrial ? 'TRIAL' : 'ACTUAL'}
-                </div>
-              )}
+                {/* Tag "El más elegido" */}
+                {cfg.tag && (
+                  <div style={{
+                    position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
+                    background: cfg.color, color: '#fff',
+                    borderRadius: 20, padding: '3px 14px', fontSize: '0.7rem', fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {cfg.tag}
+                  </div>
+                )}
 
-              {/* Emoji + Nombre */}
-              <div>
-                <div style={{ fontSize: '1.5rem', marginBottom: 4 }}>{cfg.emoji}</div>
-                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>{plan.nombre}</h2>
+                {/* Plan actual badge */}
+                {esActual && (
+                  <div style={{
+                    position: 'absolute', top: 14, right: 14,
+                    background: cfg.color, color: '#fff',
+                    borderRadius: 20, padding: '2px 10px', fontSize: '0.68rem', fontWeight: 700,
+                  }}>
+                    {info?.esTrial ? 'TRIAL' : 'ACTUAL'}
+                  </div>
+                )}
+
+                {/* Emoji + Nombre + descripción */}
+                <div>
+                  <div style={{ fontSize: '1.5rem', marginBottom: 4 }}>{cfg.emoji}</div>
+                  <h2 style={{ margin: '0 0 4px', fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>{plan.nombre}</h2>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: '#64748b', lineHeight: 1.4 }}>{cfg.descripcion}</p>
+                </div>
+
+                {/* Precio */}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  {precio === 0 ? (
+                    <span style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a' }}>Gratis</span>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: '2rem', fontWeight: 900, color: cfg.color }}>€{precio}</span>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>/mes</span>
+                      {anualizacion && plan.precio > 0 && (
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', textDecoration: 'line-through', marginLeft: 4 }}>€{plan.precio}</span>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                {/* Highlights — solo lo más importante, siempre visible */}
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {cfg.highlights.map((f, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: '#334155', fontWeight: 600 }}>
+                      <span style={{ color: cfg.color, flexShrink: 0, fontSize: '0.9rem' }}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Botón ver detalle */}
+                <button
+                  onClick={() => setExpandedPlan(estaExpandido ? null : key)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    background: 'transparent', border: `1.5px solid ${cfg.color}40`,
+                    borderRadius: 10, padding: '8px 0',
+                    color: cfg.color, fontWeight: 700, fontSize: '0.8rem',
+                    cursor: 'pointer', width: '100%',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = `${cfg.color}10`}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  {estaExpandido ? 'Ocultar detalle' : 'Ver qué incluye'}
+                  <ChevronDown
+                    size={15}
+                    style={{
+                      transform: estaExpandido ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.25s',
+                    }}
+                  />
+                </button>
+
+                {/* Botón suscribirse */}
+                <button
+                  disabled={(esActual && !info?.esTrial) || estaProcesando}
+                  onClick={() => handleSuscribir(key)}
+                  style={{
+                    padding: '12px 0', borderRadius: 12, border: 'none',
+                    background: (esActual && !info?.esTrial) || estaProcesando ? '#f1f5f9' : cfg.color,
+                    color: (esActual && !info?.esTrial) || estaProcesando ? '#94a3b8' : '#fff',
+                    fontWeight: 700, fontSize: '0.9rem',
+                    cursor: (esActual && !info?.esTrial) || estaProcesando ? 'default' : 'pointer',
+                    width: '100%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    transition: 'opacity 0.15s',
+                    minHeight: 48,
+                  }}
+                >
+                  {estaProcesando ? (
+                    <>
+                      <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #cbd5e1', borderTopColor: '#64748b', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                      Procesando…
+                    </>
+                  ) : esActual && !info?.esTrial ? (
+                    'Plan actual'
+                  ) : key === 'gratis' ? (
+                    'Cambiar a Gratis'
+                  ) : (
+                    `Suscribirse — €${precio}/mes`
+                  )}
+                </button>
               </div>
 
-              {/* Precio */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                {precio === 0 ? (
-                  <span style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a' }}>Gratis</span>
-                ) : (
-                  <>
-                    <span style={{ fontSize: '2rem', fontWeight: 900, color: cfg.color }}>€{precio}</span>
-                    <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 500 }}>/mes</span>
-                    {anualizacion && plan.precio > 0 && (
-                      <span style={{ fontSize: '0.75rem', color: '#64748b', textDecoration: 'line-through', marginLeft: 4 }}>€{plan.precio}</span>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* Features */}
-              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-                {cfg.features.map((f, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.82rem', color: '#334155' }}>
-                    <span style={{ color: cfg.color, flexShrink: 0, marginTop: 1 }}>✓</span>
-                    {f}
-                  </li>
-                ))}
-                {cfg.noFeatures.map((f, i) => (
-                  <li key={`no-${i}`} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.82rem', color: '#94a3b8' }}>
-                    <span style={{ flexShrink: 0, marginTop: 1 }}>—</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              {/* Botón */}
-              <button
-                disabled={(esActual && !info?.esTrial) || estaProcesando}
-                onClick={() => handleSuscribir(key)}
-                style={{
-                  marginTop: 4,
-                  padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: (esActual && !info?.esTrial) || estaProcesando ? '#f1f5f9' : cfg.color,
-                  color: (esActual && !info?.esTrial) || estaProcesando ? '#94a3b8' : '#fff',
-                  fontWeight: 700, fontSize: '0.9rem',
-                  cursor: (esActual && !info?.esTrial) || estaProcesando ? 'default' : 'pointer',
-                  width: '100%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  transition: 'opacity 0.15s',
-                }}
-              >
-                {estaProcesando ? (
-                  <>
-                    <span style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #cbd5e1', borderTopColor: '#64748b', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
-                    Procesando…
-                  </>
-                ) : esActual && !info?.esTrial ? (
-                  'Plan actual'
-                ) : key === 'gratis' ? (
-                  'Cambiar a Gratis'
-                ) : (
-                  `Suscribirse — €${precio}/mes`
-                )}
-              </button>
+              {/* ── ACORDEÓN: detalle expandible ── */}
+              {estaExpandido && (
+                <div style={{
+                  borderTop: `1.5px solid ${cfg.color}25`,
+                  background: cfg.bg,
+                  padding: '20px 22px 24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 20,
+                }}>
+                  {cfg.detalle.map((seccion, si) => (
+                    <div key={si}>
+                      <p style={{ margin: '0 0 10px', fontSize: '0.72rem', fontWeight: 800, color: cfg.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                        {seccion.categoria}
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {seccion.items.map((item, ii) => (
+                          <div key={ii} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                            <span style={{
+                              width: 20, height: 20, borderRadius: '50%',
+                              background: `${cfg.color}15`, color: cfg.color,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.65rem', fontWeight: 900, flexShrink: 0, marginTop: 1,
+                            }}>✓</span>
+                            <div>
+                              <p style={{ margin: '0 0 2px', fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{item.label}</p>
+                              <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b', lineHeight: 1.4 }}>{item.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}

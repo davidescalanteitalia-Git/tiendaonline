@@ -3125,3 +3125,115 @@ ALTER TABLE clientes ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 | 🔴 Pendiente | **Actualizar Supabase a Plan Pro** antes del lanzamiento público |
 | 🔴 Pendiente | Sistema de reseñas de clientes con foto de avatar visible |
 | 🔴 Pendiente | Guards de features: UpgradeModal por plan |
+
+---
+
+## SESIÓN 23 — Reorganización UX dashboard, acordeón de planes y múltiples imágenes por producto
+
+**Fecha:** 2026-04-18
+
+### A. Sidebar del dashboard reorganizado por frecuencia de uso
+
+Basado en investigación de Square, Shopify y SumUp (análisis_competidores_dashboard.html), se rediseñó completamente `app/dashboard/layout.js`:
+
+**Antes:** menú agrupado con colapsables (Ventas, Catálogo, Configuración).  
+**Ahora:** arquitectura de 3 capas:
+
+1. **Primary nav** — 5 items siempre visibles y planos, ordenados por frecuencia real de uso:
+   - Cobrar (POS) — botón destacado con color primario sólido
+   - Pedidos — con badge pulsante de pendientes
+   - Productos
+   - Clientes & Fiados
+   - Reportes
+
+2. **Secondary nav** — colapsable "Más": Inicio, Categorías, Compras, Diseño.
+
+3. **Settings nav** — en la zona inferior: Ajustes, Mi Cuenta, Planes.
+
+Todos los labels son trilingües (es/it/en). Touch targets mínimos de `min-h-[48px]` en primary nav.
+
+Nuevos iconos importados: `Wallet`, `ClipboardList`, `BookUser`, `TrendingUp`.
+
+### B. Touch targets WCAG 2.2 en POS
+
+En `app/dashboard/pos/page.js`:
+- Botones −/+ del carrito: de `w-7 h-7` (28px) → `w-9 h-9` (36px) con `aria-label`
+- Botón eliminar ítem: de `w-8 h-8` → `w-10 h-10` con `aria-label`
+- Botones de método de pago: de `py-3` → `min-h-[56px]` + `aria-pressed` para accesibilidad semántica
+
+### C. Modelo de pagos definido (decisión de producto)
+
+Tras análisis legal y de negocio, se definió el modelo definitivo de pagos:
+
+| Plan | Modelo de pago |
+|------|---------------|
+| Gratis | Solo coordinación por WhatsApp. Sin pagos online. |
+| Básico, Pro, Grow | Cada vendedor conecta su propia cuenta Stripe. El dinero va directo a su banco. TIENDAONLINE no actúa como intermediario financiero (evita requisitos PSP/PSD2). |
+
+TIENDAONLINE guía al vendedor en el onboarding de su cuenta Stripe (una sola vez). No cobra €0,25 por transacción — modelo 100% por suscripción.
+
+### D. Tarjetas de planes con acordeón expandible
+
+Rediseño completo de `app/dashboard/planes/page.js`:
+
+**Antes:** lista de features/noFeatures en cada tarjeta.  
+**Ahora:** tarjetas con dos estados:
+
+**Estado cerrado:**
+- Emoji + nombre + descripción del perfil ideal de comercio
+- Precio
+- 4 highlights clave (los más diferenciadores)
+- Botón "Ver qué incluye ↓" (acordeón)
+- Botón "Suscribirse"
+
+**Estado expandido (acordeón):**
+- Secciones por categoría: 🛍️ Ventas, 📦 Inventario, 👥 Clientes, 📊 Reportes, 💬 Soporte
+- Cada feature con `label` (título) + `desc` (explicación en lenguaje humano)
+- Background en color del plan, transición suave con `ChevronDown` rotado
+
+Solo un plan puede estar expandido a la vez (`expandedPlan` state).
+
+El modelo de pagos correcto está documentado en el acordeón:
+- Gratis: "coordinación directa con el cliente por WhatsApp"
+- Básico/Pro: Stripe del vendedor (sin mención de intermediario)
+- Grow: Stripe propio, guía de activación incluida
+
+### E. Múltiples imágenes por producto
+
+**Base de datos (Supabase):**
+```sql
+ALTER TABLE productos
+  ADD COLUMN IF NOT EXISTS imagen_2 TEXT,
+  ADD COLUMN IF NOT EXISTS imagen_3 TEXT,
+  ADD COLUMN IF NOT EXISTS imagen_4 TEXT;
+```
+
+**Lógica de negocio — límite por plan:**
+```js
+function maxImagenesPorPlan(plan) {
+  if (plan === 'pro' || plan === 'grow') return 4
+  if (plan === 'basico') return 2
+  return 1 // gratis
+}
+```
+
+**Frontend (`app/dashboard/productos/page.js`):**
+- Se carga el plan actual del vendedor desde `/api/me` en `fetchData`
+- Imagen principal: mantiene el diseño grande con emoji fallback
+- Imágenes 2, 3, 4: nuevos slots con diseño de fila compacta
+- Slots bloqueados muestran 🔒 y mensaje "Disponible en plan Básico/Pro →"
+- Cada slot tiene su propio `fileInputRef` (fileInput2Ref, fileInput3Ref, fileInput4Ref)
+- `uploadingSlot` (null | 1 | 2 | 3 | 4) indica qué slot está subiendo
+- `handleFileUpload(e, slot)` unificado para los 4 slots
+- Botón X para eliminar imagen en cada slot activo
+
+**API:** sin cambios necesarios — `POST` y `PATCH` usan spread `...body`/`...updates` que pasan las columnas nuevas automáticamente.
+
+### F. Pendientes identificados en esta sesión
+
+| Estado | Item |
+|--------|------|
+| 🔴 Pendiente | Galería de imágenes en el catálogo público (swipe entre las 4 fotos) |
+| 🔴 Pendiente | Stripe Connect onboarding para planes Básico/Pro/Grow |
+| 🔴 Pendiente | Tabla de comparación en landing pública actualizada con nuevas reglas de imágenes |
+| 🔴 Pendiente | Consulta legal PSP en Italia (no bloqueante — modelo actual no requiere licencia) |
