@@ -120,7 +120,7 @@ export async function PUT(request) {
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
 
-    const { nombre, telefono, fecha_nacimiento } = await request.json()
+    const { nombre, telefono, fecha_nacimiento, direccion } = await request.json()
 
     const { error } = await supabaseAdmin
       .from('clientes')
@@ -128,6 +128,7 @@ export async function PUT(request) {
         nombre: nombre || '',
         telefono: telefono || '',
         fecha_nacimiento: fecha_nacimiento || null,
+        direccion: direccion || null,
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id)
@@ -167,12 +168,4 @@ export async function DELETE(request) {
       .eq('user_id', user.id)
 
     // Eliminar usuario de Supabase Auth
-    await supabaseAdmin.auth.admin.deleteUser(user.id)
-
-    return NextResponse.json({ success: true, message: 'Cuenta eliminada correctamente.' })
-
-  } catch (err) {
-    console.error('Error eliminando cuenta:', err)
-    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
-  }
-}
+    aw

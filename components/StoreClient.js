@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useLang } from './LanguageProvider'
 import { DICTIONARY } from '../lib/dictionaries'
 import { registrarEvento, EVENTOS } from './PostHogProvider'
 
@@ -18,7 +17,23 @@ function saveCartToStorage(domain, cart) {
 }
 
 export default function StoreClient({ tienda, groupedProducts, uncategorized, C, config = {} }) {
-  const { lang, changeLang } = useLang()
+  // Idioma con estado local propio — más confiable que el contexto global en rutas de store
+  const [lang, setLang] = useState('es')
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('appLang') : null
+    if (saved && ['it', 'es', 'en'].includes(saved)) {
+      setLang(saved)
+    }
+  }, [])
+
+  const changeLang = (newLang) => {
+    setLang(newLang)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('appLang', newLang)
+    }
+  }
+
   const dict = DICTIONARY[lang] || DICTIONARY['es']
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -353,26 +368,31 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             <div style={{ flex: 1 }} />
 
             {/* Selector de idioma */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#f8fafc', borderRadius: '10px', padding: '4px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', background: '#f1f5f9', borderRadius: '10px', padding: '3px', border: '1px solid #e2e8f0' }}>
               {[
-                { code: 'es', flag: '🇪🇸' },
-                { code: 'it', flag: '🇮🇹' },
-                { code: 'en', flag: '🇬🇧' },
-              ].map(({ code, flag }) => (
+                { code: 'es', label: 'ES' },
+                { code: 'it', label: 'IT' },
+                { code: 'en', label: 'EN' },
+              ].map(({ code, label }) => (
                 <button
                   key={code}
                   onClick={() => changeLang(code)}
-                  title={code.toUpperCase()}
+                  aria-label={`Cambiar idioma a ${label}`}
                   style={{
-                    background: lang === code ? '#fff' : 'transparent',
-                    border: lang === code ? `1px solid ${C.primary}30` : '1px solid transparent',
-                    borderRadius: '7px', padding: '4px 7px', cursor: 'pointer',
-                    fontSize: '1rem', lineHeight: 1,
-                    boxShadow: lang === code ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                    background: lang === code ? C.primary : 'transparent',
+                    color: lang === code ? '#fff' : '#64748b',
+                    border: 'none',
+                    borderRadius: '7px',
+                    padding: '5px 10px',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: lang === code ? 800 : 600,
+                    lineHeight: 1,
+                    letterSpacing: '0.05em',
                     transition: 'all 0.15s',
                   }}
                 >
-                  {flag}
+                  {label}
                 </button>
               ))}
             </div>

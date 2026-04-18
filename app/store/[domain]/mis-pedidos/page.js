@@ -7,7 +7,7 @@ import {
   ArrowLeft, Package, Clock, CheckCircle2, XCircle, Truck,
   Star, Trash2, LogOut, User, Phone, Calendar, Mail,
   ChevronRight, AlertCircle, Edit3, Save, X, ExternalLink,
-  ShoppingBag, CreditCard, BadgePercent
+  ShoppingBag, CreditCard, BadgePercent, MapPin
 } from 'lucide-react'
 
 const ESTADO_CONFIG = {
@@ -31,7 +31,7 @@ export default function MisPedidosPage() {
   const [tab, setTab] = useState('pedidos') // pedidos | perfil | cuenta
   const [editandoPerfil, setEditandoPerfil] = useState(false)
   const [savingPerfil, setSavingPerfil] = useState(false)
-  const [perfil, setPerfil] = useState({ nombre: '', telefono: '', fecha_nacimiento: '' })
+  const [perfil, setPerfil] = useState({ nombre: '', telefono: '', fecha_nacimiento: '', direccion: '' })
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [pedidoDetalle, setPedidoDetalle] = useState(null)
@@ -76,7 +76,8 @@ export default function MisPedidosPage() {
       setPerfil({
         nombre: cli.nombre || '',
         telefono: cli.telefono || '',
-        fecha_nacimiento: cli.fecha_nacimiento || ''
+        fecha_nacimiento: cli.fecha_nacimiento || '',
+        direccion: cli.direccion || ''
       })
       fetchPedidos(cli.tienda_id, cli.email || sess.user.email, cli.telefono || '')
     }
@@ -321,7 +322,7 @@ export default function MisPedidosPage() {
                   </button>
                 ) : (
                   <div className="flex gap-2">
-                    <button onClick={() => { setEditandoPerfil(false); setPerfil({ nombre: cliente?.nombre || '', telefono: cliente?.telefono || '', fecha_nacimiento: cliente?.fecha_nacimiento || '' }) }}
+                    <button onClick={() => { setEditandoPerfil(false); setPerfil({ nombre: cliente?.nombre || '', telefono: cliente?.telefono || '', fecha_nacimiento: cliente?.fecha_nacimiento || '', direccion: cliente?.direccion || '' }) }}
                       className="p-2 rounded-xl bg-slate-100 text-slate-600">
                       <X size={14} />
                     </button>
@@ -340,6 +341,7 @@ export default function MisPedidosPage() {
                   { icon: User, label: 'Nombre', field: 'nombre', type: 'text', placeholder: 'Tu nombre completo' },
                   { icon: Mail, label: 'Email', field: null, value: session?.user?.email, type: 'email', disabled: true },
                   { icon: Phone, label: 'Teléfono', field: 'telefono', type: 'tel', placeholder: '+39 333 000 0000' },
+                  { icon: MapPin, label: 'Dirección de envío', field: 'direccion', type: 'text', placeholder: 'Calle, número, ciudad, código postal' },
                   { icon: Calendar, label: 'Fecha de nacimiento', field: 'fecha_nacimiento', type: 'date', placeholder: '' },
                 ].map(({ icon: Icon, label, field, value, type, placeholder, disabled }) => (
                   <div key={label}>
