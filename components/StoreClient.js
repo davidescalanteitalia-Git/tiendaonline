@@ -311,7 +311,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             : <div className="product-img-placeholder">{product.emoji || '📦'}</div>
           }
           {outOfStock && (
-            <div className="product-badge product-badge-stock">Sin stock</div>
+            <div className="product-badge product-badge-stock">{dict.sinStockBadge}</div>
           )}
         </div>
 
@@ -337,7 +337,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                   style={{ background: C.primary }}
                   onClick={() => addToCart(product)}
                 >
-                  + Agregar
+                  {dict.btnAgregar}
                 </button>
               ) : (
                 <div className="qty-control" style={{ borderColor: C.primary }}>
@@ -393,7 +393,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             {!config.banner_url && estadoTienda && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, fontSize: '0.7rem', fontWeight: 800, background: estadoTienda.abierto ? '#dcfce7' : '#fee2e2', color: estadoTienda.abierto ? '#15803d' : '#dc2626', flexShrink: 0 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: estadoTienda.abierto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
-                {estadoTienda.abierto ? 'Abierto' : 'Cerrado'}
+                {estadoTienda.abierto ? dict.abierto : dict.cerrado}
               </span>
             )}
 
@@ -469,7 +469,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               {estadoTienda && (
                 <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 99, fontSize: '0.72rem', fontWeight: 800, background: estadoTienda.abierto ? 'rgba(22,163,74,0.92)' : 'rgba(220,38,38,0.92)', color: '#fff', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', opacity: 0.9, flexShrink: 0 }} />
-                  {estadoTienda.abierto ? 'Abierto' : 'Cerrado'}
+                  {estadoTienda.abierto ? dict.abierto : dict.cerrado}
                 </span>
               )}
             </div>
@@ -519,7 +519,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={`Buscar en ${tienda.nombre}...`}
+                  placeholder={`${dict.buscarEn} ${tienda.nombre}...`}
                   style={{
                     width: '100%', padding: '9px 36px 9px 38px', borderRadius: '12px',
                     border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem',
@@ -547,7 +547,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                   whiteSpace: 'nowrap',
                 }}
               >
-                ⚙ {(selectedPriceRange || showOnlyInStock) ? 'Filtros ✓' : 'Filtrar'}
+                ⚙ {(selectedPriceRange || showOnlyInStock) ? dict.filtrosActivos : dict.filtrar}
               </button>
 
               {/* Carrito */}
@@ -563,7 +563,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                     <span>€{total.toFixed(2)}</span>
                   </>
                 )}
-                {totalItems === 0 && <span className="hide-xs">Carrito</span>}
+                {totalItems === 0 && <span className="hide-xs">{dict.carritoLabel}</span>}
               </button>
             </div>
 
@@ -571,7 +571,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             {allCategories.length > 0 && !isSearchActive && (
               <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none' }}>
                 <button onClick={() => scrollToCategory(null)} style={{ flexShrink: 0, padding: '6px 14px', borderRadius: '99px', border: `1.5px solid ${activeCategory === null ? C.primary : '#e2e8f0'}`, background: activeCategory === null ? C.primary : '#fff', color: activeCategory === null ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
-                  Todos
+                  {dict.todos}
                 </button>
                 {allCategories.map(cat => (
                   <button key={cat.id} onClick={() => scrollToCategory(cat.id)} style={{ flexShrink: 0, padding: '6px 14px', borderRadius: '99px', border: `1.5px solid ${activeCategory === cat.id ? C.primary : '#e2e8f0'}`, background: activeCategory === cat.id ? C.primary : '#fff', color: activeCategory === cat.id ? '#fff' : '#475569', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
@@ -587,7 +587,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
       {/* ── No acepta pedidos banner ──────────── */}
       {!aceptarPedidos && (
         <div style={{ background: '#fff7ed', borderBottom: '1px solid #fed7aa', color: '#c2410c', padding: '10px 24px', textAlign: 'center', fontSize: '0.88rem', fontWeight: 600 }}>
-          🔒 No estamos aceptando pedidos en este momento.
+          {dict.noPedidosMsg}
         </div>
       )}
 
@@ -605,7 +605,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             {estadoTienda && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '99px', fontSize: '0.72rem', fontWeight: 800, background: estadoTienda.abierto ? '#dcfce7' : '#fee2e2', color: estadoTienda.abierto ? '#15803d' : '#dc2626' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: estadoTienda.abierto ? '#22c55e' : '#ef4444' }} />
-                {estadoTienda.abierto ? 'Abierto ahora' : 'Cerrado'} · {estadoTienda.texto}
+                {estadoTienda.abierto ? dict.abiertoAhora : dict.cerrado} · {estadoTienda.texto}
               </span>
             )}
           </div>
@@ -613,7 +613,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           {/* Filtro: Categorías */}
           {allCategories.length > 0 && (
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-              <p style={{ margin: '0 0 10px', fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Categorías</p>
+              <p style={{ margin: '0 0 10px', fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{dict.categorias}</p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {allCategories.map(cat => (
                   <li key={cat.id} onClick={() => scrollToCategory(cat.id)} style={{ padding: '8px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: activeCategory === cat.id ? 800 : 500, color: activeCategory === cat.id ? C.primary : '#475569', background: activeCategory === cat.id ? C.primary + '12' : 'transparent', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -627,13 +627,13 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
           {/* Filtro: Precio */}
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
-            <p style={{ margin: '0 0 10px', fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Precio</p>
+            <p style={{ margin: '0 0 10px', fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{dict.precio}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {[
-                { key: null, label: 'Todos los precios' },
-                { key: 'low', label: 'Menos de €10' },
-                { key: 'mid', label: 'Entre €10 y €50' },
-                { key: 'high', label: 'Más de €50' },
+                { key: null, label: dict.todosPrecios },
+                { key: 'low', label: dict.menosDe10 },
+                { key: 'mid', label: dict.entre10y50 },
+                { key: 'high', label: dict.masDe50 },
               ].map(opt => (
                 <button key={opt.key} onClick={() => setSelectedPriceRange(opt.key)} style={{ textAlign: 'left', padding: '7px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.83rem', fontWeight: selectedPriceRange === opt.key ? 800 : 500, color: selectedPriceRange === opt.key ? C.primary : '#475569', background: selectedPriceRange === opt.key ? C.primary + '12' : 'transparent' }}>
                   {opt.label}
@@ -646,7 +646,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #f1f5f9' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>
               <input type="checkbox" checked={showOnlyInStock} onChange={e => setShowOnlyInStock(e.target.checked)} style={{ accentColor: C.primary, width: '16px', height: '16px' }} />
-              Solo con stock disponible
+              {dict.soloConStock}
             </label>
           </div>
 
@@ -660,18 +660,18 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
-                  {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''}
-                  {searchQuery && <span> para "<strong>{searchQuery}</strong>"</span>}
+                  {searchResults.length} {searchResults.length !== 1 ? dict.resultados : dict.resultado}
+                  {searchQuery && <span> {dict.para} "<strong>{searchQuery}</strong>"</span>}
                 </p>
                 <button onClick={() => { setSearchQuery(''); setSelectedPriceRange(null); setShowOnlyInStock(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: '#64748b', fontWeight: 700 }}>
-                  Limpiar filtros ✕
+                  {dict.limpiarFiltros}
                 </button>
               </div>
               {searchResults.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🔍</div>
-                  <p style={{ fontWeight: 700, fontSize: '1rem' }}>No encontramos resultados</p>
-                  <p style={{ fontSize: '0.85rem' }}>Intenta con otro término o limpia los filtros</p>
+                  <p style={{ fontWeight: 700, fontSize: '1rem' }}>{dict.noEncontramosResultados}</p>
+                  <p style={{ fontSize: '0.85rem' }}>{dict.intentaOtroTermino}</p>
                 </div>
               ) : (
                 <div className="store-product-grid">
@@ -762,14 +762,14 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               {estadoTienda && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '99px', fontSize: '0.72rem', fontWeight: 800, background: estadoTienda.abierto ? '#14532d' : '#450a0a', color: estadoTienda.abierto ? '#86efac' : '#fca5a5', marginTop: '8px' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: estadoTienda.abierto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
-                  {estadoTienda.abierto ? 'Abierto ahora' : 'Cerrado'}
+                  {estadoTienda.abierto ? dict.abiertoAhora : dict.cerrado}
                 </span>
               )}
             </div>
 
             {/* Columna 2 — Contacto */}
             <div>
-              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Contacto</h4>
+              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{dict.contacto}</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {tienda.whatsapp && typeof tienda.whatsapp === 'string' && (
                   <a href={`https://wa.me/${tienda.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4ade80', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
@@ -797,29 +797,29 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
             {/* Columna 3 — Mi cuenta */}
             <div>
-              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Mi cuenta</h4>
+              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{dict.miCuenta}</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <a href={`/store/${tienda.subdominio}/cuenta`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  👤 Mi perfil
+                  {dict.miPerfil}
                 </a>
                 <a href={`/store/${tienda.subdominio}/mis-pedidos`} style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  📦 Mis pedidos
+                  {dict.misPedidos}
                 </a>
               </div>
             </div>
 
             {/* Columna 4 — Normas */}
             <div>
-              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Información legal</h4>
+              <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{dict.informacionLegal}</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <a href="/cookie-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>🍪 Política de Cookies</a>
-                <a href="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>🔒 Política de Privacidad</a>
-                <a href="/terminos" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>📄 Términos y Condiciones</a>
+                <a href="/cookie-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>{dict.politicaCookies}</a>
+                <a href="/privacy-policy" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>{dict.politicaPrivacidad}</a>
+                <a href="/terminos" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.82rem', fontWeight: 600 }}>{dict.terminosCondiciones}</a>
               </div>
               {/* Aviso datos */}
               <div style={{ marginTop: '16px', padding: '12px', background: '#1e293b', borderRadius: '10px', border: '1px solid #334155' }}>
                 <p style={{ margin: 0, fontSize: '0.72rem', color: '#64748b', lineHeight: 1.6 }}>
-                  🔐 <strong style={{ color: '#94a3b8' }}>Privacidad:</strong> Al realizar un pedido compartes tus datos únicamente con {tienda.nombre} para gestionar tu pedido. No se venden a terceros. Consulta nuestra política para más detalles.
+                  <strong style={{ color: '#94a3b8' }}>{dict.privacidadLabel}</strong> {dict.privacidadTexto.replace('{nombre}', tienda.nombre)}
                 </p>
               </div>
             </div>
@@ -828,11 +828,11 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           {/* Línea divisoria */}
           <div style={{ borderTop: '1px solid #1e293b', paddingTop: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', textAlign: 'center' }}>
             <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569' }}>
-              © {new Date().getFullYear()} <strong style={{ color: '#64748b' }}>{tienda.nombre}</strong> · Todos los derechos reservados
+              © {new Date().getFullYear()} <strong style={{ color: '#64748b' }}>{tienda.nombre}</strong> · {dict.derechos}
             </p>
             <a href="https://tiendaonline.it" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
               <p style={{ margin: 0, fontSize: '0.78rem', color: '#94a3b8', fontWeight: 600 }}>
-                Desarrollado con <span style={{ color: '#60a5fa', fontWeight: 900 }}>TIENDAONLINE</span> 🛍️
+                {dict.desarrolladoCon} <span style={{ color: '#60a5fa', fontWeight: 900 }}>TIENDAONLINE</span> 🛍️
               </p>
             </a>
           </div>
@@ -845,7 +845,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           <div style={{ width: '100%', maxWidth: '420px', background: '#fff', height: '100%', display: 'flex', flexDirection: 'column', boxShadow: '-8px 0 40px rgba(0,0,0,0.15)' }} onClick={e => e.stopPropagation()}>
             {/* Head */}
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#0f172a' }}>🛒 Tu Carrito ({totalItems})</h2>
+              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#0f172a' }}>{dict.tuCarrito} ({totalItems})</h2>
               <button onClick={() => setIsCartOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '10px', width: '36px', height: '36px', cursor: 'pointer', fontSize: '1rem', color: '#64748b' }}>✕</button>
             </div>
             {/* Items */}
@@ -853,7 +853,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               {cart.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '12px' }}>🛒</div>
-                  <p style={{ fontWeight: 600 }}>El carrito está vacío</p>
+                  <p style={{ fontWeight: 600 }}>{dict.carritoVacio}</p>
                 </div>
               ) : cart.map(item => (
                 <div key={item.id} style={{ display: 'flex', gap: '12px', padding: '14px 0', borderBottom: '1px solid #f8fafc', alignItems: 'center' }}>
@@ -877,11 +877,11 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             {cart.length > 0 && (
               <div style={{ padding: '20px 24px', borderTop: '1px solid #f1f5f9' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                  <span>Total</span>
+                  <span>{dict.total}</span>
                   <span>€{totalProductos.toFixed(2)}</span>
                 </div>
                 <button onClick={() => { setIsCartOpen(false); setIsModalOpen(true) }} style={{ width: '100%', padding: '16px', borderRadius: '14px', border: 'none', background: C.primary, color: '#fff', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}>
-                  Finalizar pedido →
+                  {dict.finalizarPedido}
                 </button>
               </div>
             )}
@@ -902,19 +902,19 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
             {checkoutStep === 1 ? (
               <>
-                <h2 style={{ margin: '0 0 6px', color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>Tus datos</h2>
-                <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '0.88rem' }}>Completa tu información para el pedido.</p>
+                <h2 style={{ margin: '0 0 6px', color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>{dict.tusDatos}</h2>
+                <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '0.88rem' }}>{dict.completaInfoPedido}</p>
 
-                <input type="text" placeholder="Tu nombre completo *" value={customerName} onChange={e => setCustomerName(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.95rem', marginBottom: '12px', boxSizing: 'border-box', outline: 'none' }} autoFocus />
+                <input type="text" placeholder={dict.tuNombreCompleto} value={customerName} onChange={e => setCustomerName(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.95rem', marginBottom: '12px', boxSizing: 'border-box', outline: 'none' }} autoFocus />
                 <input type="tel" placeholder="WhatsApp (ej: +39 340...)" value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a', fontSize: '0.95rem', marginBottom: '20px', boxSizing: 'border-box', outline: 'none' }} />
 
-                <p style={{ margin: '0 0 10px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>¿Cómo quieres recibirlo?</p>
+                <p style={{ margin: '0 0 10px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{dict.comoRecibirlo}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                   {configEnvios.retiro?.habilitado !== false && (
                     <button onClick={() => setMetodoEnvio('retiro')} style={{ padding: '14px', borderRadius: '14px', textAlign: 'left', border: `2px solid ${metodoEnvio === 'retiro' ? C.primary : '#e2e8f0'}`, background: metodoEnvio === 'retiro' ? C.primary + '08' : 'transparent', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                       <span>🏪</span>
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0f172a' }}>Retiro en local</div>
+                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0f172a' }}>{dict.retiroEnLocal}</div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{configEnvios.retiro?.direccion}</div>
                       </div>
                     </button>
@@ -923,36 +923,36 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                     <button onClick={() => setMetodoEnvio('domicilio')} style={{ padding: '14px', borderRadius: '14px', textAlign: 'left', border: `2px solid ${metodoEnvio === 'domicilio' ? C.primary : '#e2e8f0'}`, background: metodoEnvio === 'domicilio' ? C.primary + '08' : 'transparent', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                       <span>🛵</span>
                       <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0f172a' }}>Envío a domicilio</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Reparto en zonas disponibles</div>
+                        <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#0f172a' }}>{dict.envioADomicilio}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{dict.repartoZonas}</div>
                       </div>
                     </button>
                   )}
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f1f5f9', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
+                  <button onClick={() => setIsModalOpen(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f1f5f9', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}>{dict.annulla}</button>
                   <button disabled={!customerName.trim() || !customerPhone.trim() || !metodoEnvio} onClick={() => setCheckoutStep(2)} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: C.primary, color: '#fff', fontWeight: 800, cursor: 'pointer', opacity: (!customerName.trim() || !customerPhone.trim() || !metodoEnvio) ? 0.5 : 1 }}>
-                    Continuar →
+                    {dict.continuar}
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <h2 style={{ margin: '0 0 20px', color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>Detalles finales</h2>
+                <h2 style={{ margin: '0 0 20px', color: '#0f172a', fontSize: '1.3rem', fontWeight: 900 }}>{dict.detallesFinales}</h2>
                 <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
                   {metodoEnvio === 'domicilio' && (
                     <div style={{ marginBottom: '20px' }}>
-                      <p style={{ margin: '0 0 8px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>Zona de envío</p>
+                      <p style={{ margin: '0 0 8px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>{dict.zonaDeEnvio}</p>
                       <select value={zonaSeleccionada?.id || ''} onChange={e => setZonaSeleccionada(configEnvios.domicilio.zonas.find(z => z.id.toString() === e.target.value))} style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', marginBottom: '10px', outline: 'none', boxSizing: 'border-box' }}>
-                        <option value="">Selecciona tu zona...</option>
+                        <option value="">{dict.seleccionaTuZona}</option>
                         {configEnvios.domicilio.zonas.map(z => <option key={z.id} value={z.id}>{z.nombre} (+€{z.costo.toFixed(2)})</option>)}
                       </select>
-                      <textarea placeholder="Tu dirección completa..." value={direccionCliente} onChange={e => setDireccionCliente(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', height: '72px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
+                      <textarea placeholder={dict.tuDireccionCompleta} value={direccionCliente} onChange={e => setDireccionCliente(e.target.value)} style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', height: '72px', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
                     </div>
                   )}
 
-                  <p style={{ margin: '0 0 10px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>Método de pago</p>
+                  <p style={{ margin: '0 0 10px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>{dict.metodosDePago}</p>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' }}>
                     {configPagos.efectivo?.habilitado !== false && (
                       <button onClick={() => setMetodoPago('efectivo')} style={{ padding: '12px', borderRadius: '12px', border: `2px solid ${metodoPago === 'efectivo' ? C.primary : '#e2e8f0'}`, background: metodoPago === 'efectivo' ? C.primary + '08' : 'transparent', fontWeight: 800, fontSize: '0.82rem', color: '#0f172a', cursor: 'pointer' }}>
@@ -968,7 +968,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
 
                   {config.cupones?.length > 0 && (
                     <div style={{ marginBottom: '20px' }}>
-                      <p style={{ margin: '0 0 8px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>Cupón de descuento</p>
+                      <p style={{ margin: '0 0 8px', fontWeight: 800, fontSize: '0.75rem', color: '#94a3b8', textTransform: 'uppercase' }}>{dict.cuponDescuento}</p>
                       {cuponAplicado ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#dcfce7', color: '#15803d', padding: '10px 14px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700 }}>
                           <span>✅ {cuponAplicado.codigo} (-€{discount.toFixed(2)})</span>
@@ -976,8 +976,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                         </div>
                       ) : (
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <input type="text" placeholder="Código de cupón..." value={cuponInput} onChange={e => { setCuponInput(e.target.value.toUpperCase()); setCuponError(null) }} style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', border: `1.5px solid ${cuponError ? '#ef4444' : '#e2e8f0'}`, background: '#f8fafc', outline: 'none', fontSize: '0.9rem' }} />
-                          <button onClick={applyCupon} style={{ background: C.primary, color: '#fff', border: 'none', borderRadius: '12px', padding: '0 16px', fontWeight: 800, cursor: 'pointer' }}>Aplicar</button>
+                          <input type="text" placeholder={dict.codigoCupon} value={cuponInput} onChange={e => { setCuponInput(e.target.value.toUpperCase()); setCuponError(null) }} style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', border: `1.5px solid ${cuponError ? '#ef4444' : '#e2e8f0'}`, background: '#f8fafc', outline: 'none', fontSize: '0.9rem' }} />
+                          <button onClick={applyCupon} style={{ background: C.primary, color: '#fff', border: 'none', borderRadius: '12px', padding: '0 16px', fontWeight: 800, cursor: 'pointer' }}>{dict.aplicar}</button>
                         </div>
                       )}
                       {cuponError && <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: '6px 0 0', fontWeight: 600 }}>{cuponError}</p>}
@@ -985,17 +985,17 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                   )}
 
                   <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '14px', marginBottom: '4px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#64748b', marginBottom: '6px' }}><span>Subtotal</span><span>€{totalProductos.toFixed(2)}</span></div>
-                    {discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#16a34a', marginBottom: '6px', fontWeight: 700 }}><span>Descuento</span><span>-€{discount.toFixed(2)}</span></div>}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#64748b', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}><span>Envío</span><span>€{shippingCost.toFixed(2)}</span></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 900, color: '#0f172a' }}><span>Total</span><span>€{total.toFixed(2)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#64748b', marginBottom: '6px' }}><span>{dict.subtotal}</span><span>€{totalProductos.toFixed(2)}</span></div>
+                    {discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#16a34a', marginBottom: '6px', fontWeight: 700 }}><span>{dict.descuento}</span><span>-€{discount.toFixed(2)}</span></div>}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#64748b', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}><span>{dict.envioLabel}</span><span>€{shippingCost.toFixed(2)}</span></div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 900, color: '#0f172a' }}><span>{dict.total}</span><span>€{total.toFixed(2)}</span></div>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                  <button onClick={() => setCheckoutStep(1)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f1f5f9', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}>← Volver</button>
+                  <button onClick={() => setCheckoutStep(1)} style={{ flex: 1, padding: '14px', borderRadius: '12px', border: 'none', background: '#f1f5f9', color: '#64748b', fontWeight: 700, cursor: 'pointer' }}>{dict.volver}</button>
                   <button disabled={isSubmitting || (metodoEnvio === 'domicilio' && (!zonaSeleccionada || !direccionCliente)) || !metodoPago} onClick={processOrder} style={{ flex: 2, padding: '14px', borderRadius: '12px', border: 'none', background: C.primary, color: '#fff', fontWeight: 800, cursor: 'pointer', opacity: (isSubmitting || (metodoEnvio === 'domicilio' && (!zonaSeleccionada || !direccionCliente)) || !metodoPago) ? 0.6 : 1 }}>
-                    {isSubmitting ? '⏳ Enviando...' : 'Finalizar Pedido ✓'}
+                    {isSubmitting ? dict.enviandoPedido : dict.finalizarPedidoConfirm}
                   </button>
                 </div>
               </>
@@ -1009,17 +1009,17 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <div style={{ background: '#fff', borderRadius: '24px', width: '100%', maxWidth: '400px', padding: '32px 28px', textAlign: 'center', boxShadow: '0 32px 80px rgba(0,0,0,0.25)' }}>
             <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>🎉</div>
-            <h2 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '1.4rem', fontWeight: 900 }}>¡Pedido enviado!</h2>
+            <h2 style={{ margin: '0 0 8px', color: '#0f172a', fontSize: '1.4rem', fontWeight: 900 }}>{dict.pedidoEnviado}</h2>
             <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6 }}>{mensajePost}</p>
             <div style={{ margin: '20px 0 4px', background: 'linear-gradient(135deg, #f8f4ff 0%, #ede9fe 100%)', borderRadius: '16px', padding: '16px', border: '1.5px solid #ddd6fe', textAlign: 'left' }}>
-              <p style={{ margin: '0 0 4px', fontWeight: 800, fontSize: '0.85rem', color: '#5b21b6' }}>✨ ¿Quieres seguir tu pedido?</p>
-              <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: '#7c3aed', lineHeight: 1.5 }}>Crea tu cuenta gratis y consulta el estado en tiempo real.</p>
+              <p style={{ margin: '0 0 4px', fontWeight: 800, fontSize: '0.85rem', color: '#5b21b6' }}>{dict.queriesSeguirPedido}</p>
+              <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: '#7c3aed', lineHeight: 1.5 }}>{dict.queriesCuentaDesc}</p>
               <a href={`/store/${tienda.subdominio}/cuenta`} style={{ display: 'block', width: '100%', padding: '12px', borderRadius: '12px', textDecoration: 'none', background: '#7c3aed', color: '#fff', fontWeight: 800, fontSize: '0.85rem', textAlign: 'center', boxSizing: 'border-box' }}>
-                Crear mi cuenta gratis →
+                {dict.crearCuentaGratis}
               </a>
             </div>
             <button onClick={() => setSuccessMessageOpen(false)} style={{ marginTop: '12px', width: '100%', padding: '14px', borderRadius: '14px', border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#64748b', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}>
-              Cerrar
+              {dict.cerrar}
             </button>
           </div>
         </div>
@@ -1036,22 +1036,22 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               <div style={{ width: 40, height: 4, borderRadius: 99, background: '#e2e8f0' }} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 20px 16px' }}>
-              <p style={{ margin: 0, fontWeight: 900, fontSize: '1rem', color: '#0f172a' }}>Filtros</p>
+              <p style={{ margin: 0, fontWeight: 900, fontSize: '1rem', color: '#0f172a' }}>{dict.filtros}</p>
               <button onClick={() => { setSelectedPriceRange(null); setShowOnlyInStock(false) }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: '#64748b', fontWeight: 700 }}>
-                Limpiar todo
+                {dict.limpiarTodo}
               </button>
             </div>
 
             {/* Filtro precio */}
             <div style={{ padding: '0 20px 20px', borderBottom: '1px solid #f1f5f9' }}>
-              <p style={{ margin: '0 0 12px', fontSize: '0.72rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Precio</p>
+              <p style={{ margin: '0 0 12px', fontSize: '0.72rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>{dict.precio}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[
-                  { key: null, label: 'Todos' },
-                  { key: 'low', label: 'Menos de €10' },
-                  { key: 'mid', label: '€10 – €50' },
-                  { key: 'high', label: 'Más de €50' },
+                  { key: null, label: dict.todos },
+                  { key: 'low', label: dict.menosDe10 },
+                  { key: 'mid', label: dict.entre10y50 },
+                  { key: 'high', label: dict.masDe50 },
                 ].map(opt => (
                   <button key={String(opt.key)} onClick={() => setSelectedPriceRange(opt.key)}
                     style={{ padding: '12px', borderRadius: 12, border: `2px solid ${selectedPriceRange === opt.key ? C.primary : '#e2e8f0'}`, background: selectedPriceRange === opt.key ? C.primary + '10' : '#fff', color: selectedPriceRange === opt.key ? C.primary : '#475569', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
@@ -1066,7 +1066,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
               <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#334155' }}>
                 <input type="checkbox" checked={showOnlyInStock} onChange={e => setShowOnlyInStock(e.target.checked)}
                   style={{ accentColor: C.primary, width: 18, height: 18 }} />
-                Solo productos con stock disponible
+                {dict.soloProductosConStock}
               </label>
             </div>
 
@@ -1074,7 +1074,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             <div style={{ padding: '16px 20px 0' }}>
               <button onClick={() => setActiveMobileFilters(false)}
                 style={{ width: '100%', padding: '14px', borderRadius: 14, border: 'none', background: C.primary, color: '#fff', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}>
-                Ver productos →
+                {dict.verProductos}
               </button>
             </div>
           </div>
