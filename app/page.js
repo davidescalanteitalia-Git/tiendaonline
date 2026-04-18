@@ -315,8 +315,10 @@ export default function Home() {
               <ShoppingBag className="w-6 h-6" /> {t('heroCtaMain')}
             </a>
             <div className="flex -space-x-3 items-center">
-              {[1, 2, 3, 4].map(i => (
-                <img key={i} src={`https://i.pravatar.cc/100?img=${i+10}`} className="w-10 h-10 rounded-full border-2 border-emerald-800 shadow-xl" alt="User" />
+              {['🛍️', '🥖', '☕', '🏪'].map((emoji, i) => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-emerald-800 shadow-xl flex items-center justify-center text-lg" style={{ background: ['#065f46','#047857','#059669','#10b981'][i] }}>
+                  {emoji}
+                </div>
               ))}
               <div className="pl-6 text-emerald-100 text-sm font-bold">
                 {t('heroStores').replace('{n}', storeCount)}
