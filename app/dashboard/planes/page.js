@@ -209,7 +209,7 @@ export default function PlanesPage() {
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <h1 style={{ margin: '0 0 8px', fontSize: '1.8rem', fontWeight: 900, color: '#0f172a' }}>
-          Elige tu plan
+          Planes y Servicios
         </h1>
         <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
           Sin comisión por venta en todos los planes. Cancela cuando quieras.
@@ -389,10 +389,238 @@ export default function PlanesPage() {
         Los precios incluyen IVA según la legislación aplicable.
       </p>
 
+      {/* ── SECCIÓN PÁGINA WEB CORPORATIVA ── */}
+      <div style={{
+        marginTop: 56,
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        borderRadius: 24,
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr auto',
+          gap: 0,
+          alignItems: 'stretch',
+        }} className="corporativa-grid">
+
+          {/* Columna izquierda — info */}
+          <div style={{ padding: '48px 40px' }}>
+            <span style={{
+              display: 'inline-block',
+              background: '#ca8a04',
+              color: '#fff',
+              fontSize: '0.7rem',
+              fontWeight: 800,
+              letterSpacing: '0.12em',
+              padding: '4px 12px',
+              borderRadius: 20,
+              marginBottom: 20,
+              textTransform: 'uppercase',
+            }}>
+              + Servicio exclusivo
+            </span>
+
+            <h2 style={{ margin: '0 0 14px', fontSize: '2.2rem', fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>
+              Crea tu <span style={{ color: '#4ade80' }}>Página Web Corporativa</span>
+            </h2>
+
+            <p style={{ margin: '0 0 24px', color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: 520 }}>
+              Un sitio web profesional, diseñado y configurado para ti. Sin plantillas genéricas — una identidad digital única para tu empresa.
+            </p>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+              {['✓ Diseño a medida', '✓ SEO optimizado', '✓ Hosting & dominio', '✓ Panel de control', '✓ Integración con tu tienda'].map(f => (
+                <span key={f} style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  color: '#cbd5e1',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  padding: '6px 14px',
+                  borderRadius: 20,
+                }}>
+                  {f}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Columna derecha — precio y CTA */}
+          <div style={{
+            background: 'rgba(255,255,255,0.05)',
+            borderLeft: '1px solid rgba(255,255,255,0.08)',
+            padding: '48px 36px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            minWidth: 260,
+          }}>
+            <p style={{ margin: '0 0 4px', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: '#94a3b8', textTransform: 'uppercase' }}>
+              Inversión inicial
+            </p>
+            <p style={{ margin: '0 0 20px', fontSize: '3rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+              €980
+            </p>
+            <p style={{ margin: '0 0 4px', color: '#64748b', fontSize: '0.78rem' }}>Diseño + configuración</p>
+
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '20px 0' }} />
+
+            <p style={{ margin: '0 0 4px', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: '#94a3b8', textTransform: 'uppercase' }}>
+              + Mantenimiento anual
+            </p>
+            <p style={{ margin: '0 0 4px', fontSize: '2rem', fontWeight: 900, color: '#fff', lineHeight: 1 }}>
+              €190 <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}>/ año</span>
+            </p>
+            <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '0.78rem' }}>≈€15,80 al mes</p>
+
+            <a
+              href={`https://wa.me/393751239515?text=${encodeURIComponent('Hola, vengo de tiendaonline.it y me gustaría una página web completa y personalizada para mi empresa o negocio. ¿Me pueden preparar un presupuesto?')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                background: '#ca8a04',
+                color: '#fff',
+                textAlign: 'center',
+                padding: '14px 20px',
+                borderRadius: 14,
+                fontWeight: 800,
+                fontSize: '1rem',
+                textDecoration: 'none',
+                marginBottom: 10,
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              Solicitar ahora →
+            </a>
+            <p style={{ margin: 0, textAlign: 'center', color: '#64748b', fontSize: '0.72rem' }}>
+              Sin compromiso · Respuesta en 24h
+            </p>
+          </div>
+        </div>
+
+        {/* Formulario de contacto */}
+        <ContactoWebForm />
+      </div>
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
         @media (max-width: 600px) {
           .planes-grid { grid-template-columns: 1fr !important; }
+          .corporativa-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function ContactoWebForm() {
+  const [form, setForm] = useState({ nombre: '', email: '', mensaje: '' })
+  const [enviado, setEnviado] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+
+  function handleChange(e) {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!form.nombre || !form.email) return
+    setEnviando(true)
+
+    // Abre WhatsApp con el mensaje pre-cargado incluyendo los datos del formulario
+    const msg = `Hola, vengo de tiendaonline.it y me gustaría una página web personalizada.\n\n👤 Nombre: ${form.nombre}\n📧 Email: ${form.email}${form.mensaje ? `\n💬 Mensaje: ${form.mensaje}` : ''}\n\n¿Me pueden preparar un presupuesto?`
+    window.open(`https://wa.me/393751239515?text=${encodeURIComponent(msg)}`, '_blank')
+
+    setEnviando(false)
+    setEnviado(true)
+    setTimeout(() => setEnviado(false), 5000)
+    setForm({ nombre: '', email: '', mensaje: '' })
+  }
+
+  return (
+    <div style={{
+      borderTop: '1px solid rgba(255,255,255,0.08)',
+      padding: '36px 40px 44px',
+    }}>
+      <h3 style={{ margin: '0 0 6px', fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>
+        ¿Quieres saber más? Déjanos tus datos
+      </h3>
+      <p style={{ margin: '0 0 24px', color: '#64748b', fontSize: '0.85rem' }}>
+        Te contactamos en menos de 24 horas con una propuesta personalizada.
+      </p>
+
+      {enviado ? (
+        <div style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 12, padding: '16px 20px', color: '#4ade80', fontWeight: 600 }}>
+          ✅ ¡Mensaje enviado! Te respondemos en menos de 24h.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }} className="corporativa-form">
+          <input
+            name="nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            placeholder="Tu nombre o empresa *"
+            required
+            style={{
+              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 10, padding: '12px 16px', color: '#fff', fontSize: '0.9rem',
+              outline: 'none',
+            }}
+          />
+          <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Tu correo electrónico *"
+            required
+            style={{
+              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 10, padding: '12px 16px', color: '#fff', fontSize: '0.9rem',
+              outline: 'none',
+            }}
+          />
+          <textarea
+            name="mensaje"
+            value={form.mensaje}
+            onChange={handleChange}
+            placeholder="Cuéntanos sobre tu negocio (opcional)"
+            rows={3}
+            style={{
+              gridColumn: '1 / -1',
+              background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 10, padding: '12px 16px', color: '#fff', fontSize: '0.9rem',
+              outline: 'none', resize: 'vertical', fontFamily: 'inherit',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={enviando}
+            style={{
+              gridColumn: '1 / -1',
+              background: '#16a34a', color: '#fff',
+              border: 'none', borderRadius: 12,
+              padding: '14px', fontWeight: 800, fontSize: '0.95rem',
+              cursor: enviando ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              opacity: enviando ? 0.7 : 1,
+            }}
+          >
+            📲 Enviar por WhatsApp
+          </button>
+          <p style={{ gridColumn: '1 / -1', margin: 0, color: '#475569', fontSize: '0.72rem' }}>
+            Al enviar abrirá WhatsApp con tus datos pre-cargados. Sin spam, sin compromiso.
+          </p>
+        </form>
+      )}
+
+      <style>{`
+        .corporativa-form { }
+        @media (max-width: 600px) {
+          .corporativa-form { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>
