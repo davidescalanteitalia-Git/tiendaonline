@@ -80,6 +80,7 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState(null)
   const [isScrolled, setIsScrolled] = useState(false)
   const [billing, setBilling] = useState('monthly')
+  const [expandedPricingPlan, setExpandedPricingPlan] = useState(null)
 
   const t = (key) => dict[key] || key
 
@@ -127,13 +128,31 @@ export default function Home() {
         '100 MB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         'GDPR compliance',
       ],
+      detalle: [
+        { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
+          { l: 'POS ' + (lang === 'it' ? 'tattile' : 'táctil'), d: lang === 'it' ? 'Incassa in negozio dal tuo cellulare o tablet.' : 'Cobra en persona desde tu celular o tablet, rápido y sin complicaciones.' },
+          { l: 'Checkout WhatsApp', d: lang === 'it' ? 'I clienti ordinano online e ti scrivono su WhatsApp. Coordini tu il pagamento.' : 'Tus clientes hacen el pedido online y te escriben directo. Tú coordinas el pago.' },
+          { l: lang === 'it' ? '0% commissioni' : '0% comisión', d: lang === 'it' ? 'TIENDAONLINE non prende nulla sulle tue vendite.' : 'TIENDAONLINE no cobra nada sobre tus ventas.' },
+        ]},
+        { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
+          { l: lang === 'it' ? '50 prodotti' : '50 productos', d: lang === 'it' ? 'Ideale per un piccolo negozio o catalogo base.' : 'Suficiente para una tienda pequeña o catálogo básico.' },
+          { l: lang === 'it' ? '1 foto per prodotto' : '1 imagen por producto', d: lang === 'it' ? '100 MB di spazio totale per le tue immagini.' : '100 MB de almacenamiento total para tus fotos.' },
+          { l: lang === 'it' ? 'Sottodominio personalizzato' : 'Subdominio personalizado', d: lang === 'it' ? 'Il tuo negozio su tuazienda.tiendaonline.it dal primo giorno.' : 'Tu tienda en tutienda.tiendaonline.it desde el primer día.' },
+        ]},
+        { cat: lang === 'it' ? '💳 Pagamenti' : '💳 Pagos', items: [
+          { l: lang === 'it' ? 'Solo WhatsApp' : 'Solo WhatsApp', d: lang === 'it' ? 'Nel piano gratuito il pagamento viene concordato direttamente con il cliente tramite WhatsApp, contanti o bonifico.' : 'En el plan Gratis el cobro se coordina directamente con el cliente por WhatsApp, efectivo o transferencia manual.' },
+        ]},
+        { cat: '🔒 GDPR', items: [
+          { l: 'GDPR compliance', d: lang === 'it' ? 'La piattaforma è conforme al regolamento europeo sulla protezione dei dati.' : 'La plataforma cumple con la normativa europea de protección de datos.' },
+        ]},
+      ],
     },
     {
       key: 'starter',
       name: lang === 'it' ? 'Base' : lang === 'en' ? 'Basic' : 'Básico',
       desc: lang === 'it' ? 'Il tuo negozio base per iniziare a vendere' : 'Tu tienda básica para empezar a vender',
       monthly: 15,
-      annual: 12,   // ≈ 20% ahorro → €144/año  (vs €180)
+      annual: 12,
       popular: false,
       cta: lang === 'it' ? 'Inizia ora' : 'Empezar ahora',
       badge: null,
@@ -145,14 +164,31 @@ export default function Home() {
         '1 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         lang === 'it' ? 'Supporto via email' : 'Soporte por email',
       ],
+      detalle: [
+        { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
+          { l: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe', d: lang === 'it' ? 'I tuoi clienti pagano con carta direttamente nel tuo negozio. Il denaro va direttamente sul tuo conto bancario — TIENDAONLINE non tocca nulla.' : 'Tus clientes pagan con tarjeta directamente en tu tienda. El dinero va directo a tu cuenta bancaria — TIENDAONLINE no interviene.' },
+          { l: lang === 'it' ? '0% commissioni' : '0% comisión', d: lang === 'it' ? 'Nessuna percentuale sulle vendite.' : 'Sin porcentaje sobre tus ventas.' },
+        ]},
+        { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
+          { l: lang === 'it' ? '500 prodotti' : '500 productos', d: lang === 'it' ? 'Per un negozio medio con catalogo variato.' : 'Para una tienda mediana con catálogo variado.' },
+          { l: lang === 'it' ? '2 foto per prodotto' : '2 imágenes por producto', d: lang === 'it' ? '1 GB di spazio totale per le foto.' : '1 GB de almacenamiento total para tus fotos.' },
+          { l: lang === 'it' ? 'Esportazione CSV / PDF' : 'Exportación CSV / PDF', d: lang === 'it' ? 'Scarica inventario e ordini quando vuoi.' : 'Descarga tu inventario y pedidos en cualquier momento.' },
+        ]},
+        { cat: lang === 'it' ? '📊 Reporti' : '📊 Reportes', items: [
+          { l: lang === 'it' ? 'Reporti base' : 'Reportes básicos', d: lang === 'it' ? 'Vendite del giorno, settimana e mese.' : 'Ventas del día, semana y mes.' },
+        ]},
+        { cat: lang === 'it' ? '💬 Supporto' : '💬 Soporte', items: [
+          { l: lang === 'it' ? 'Supporto via email' : 'Soporte por email', d: lang === 'it' ? 'Risposta garantita entro 24 ore lavorative.' : 'Respuesta garantizada en menos de 24 horas hábiles.' },
+        ]},
+      ],
     },
     {
       key: 'pro',
       name: 'Pro',
       desc: lang === 'it' ? 'La scelta perfetta per i negozi in crescita' : 'La elección perfecta para negocios en crecimiento',
       monthly: 25,
-      annual: 20,   // ≈ 20% ahorro → €240/año  (vs €300)
-      popular: true,   // ← SIEMPRE DESTACADO
+      annual: 20,
+      popular: true,
       cta: lang === 'it' ? 'Inizia ora' : 'Empezar ahora',
       badge: lang === 'it' ? '⭐ Più scelto' : '⭐ El más elegido',
       highlights: [
@@ -163,13 +199,34 @@ export default function Home() {
         '5 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         lang === 'it' ? 'Supporto prioritario' : 'Soporte prioritario',
       ],
+      detalle: [
+        { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
+          { l: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe', d: lang === 'it' ? 'Come il piano Base. Il tuo account Stripe collegato direttamente, i soldi arrivano sul tuo conto senza che TIENDAONLINE intervenga.' : 'Tu cuenta Stripe conectada directamente. El dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
+          { l: lang === 'it' ? 'Codici sconto illimitati' : 'Cupones de descuento ilimitados', d: lang === 'it' ? 'Crea codici sconto in percentuale o valore fisso.' : 'Crea códigos de descuento por porcentaje o valor fijo.' },
+          { l: lang === 'it' ? 'Catalogo Instagram / Facebook' : 'Catálogo Instagram / Facebook', d: lang === 'it' ? 'Collega il tuo negozio ai social e vendi direttamente da lì.' : 'Conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
+        ]},
+        { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
+          { l: lang === 'it' ? '5.000 prodotti' : '5.000 productos', d: lang === 'it' ? 'Per cataloghi grandi con più categorie.' : 'Para catálogos grandes con múltiples categorías.' },
+          { l: lang === 'it' ? '4 foto per prodotto' : '4 imágenes por producto', d: lang === 'it' ? '5 GB di spazio per foto di alta qualità.' : '5 GB de almacenamiento para fotos detalladas de alta calidad.' },
+        ]},
+        { cat: lang === 'it' ? '👥 Clienti' : '👥 Clientes', items: [
+          { l: lang === 'it' ? 'Fiati e conti correnti' : 'Fiados y cuentas corrientes', d: lang === 'it' ? 'Registra vendite a credito e gestisci i pagamenti parziali.' : 'Registra ventas a crédito y gestiona abonos parciales.' },
+          { l: lang === 'it' ? 'Portale clienti' : 'Portal del cliente', d: lang === 'it' ? 'I tuoi clienti vedono la cronologia degli ordini.' : 'Tus clientes pueden ver su historial de pedidos.' },
+        ]},
+        { cat: lang === 'it' ? '📊 Reporti' : '📊 Reportes', items: [
+          { l: lang === 'it' ? 'Reporti finanziari avanzati' : 'Reportes financieros avanzados', d: lang === 'it' ? 'Vendite vs costi, margine di guadagno reale, top prodotti più venduti.' : 'Ventas vs costos, margen de ganancia real por producto, top productos más vendidos.' },
+        ]},
+        { cat: lang === 'it' ? '💬 Supporto' : '💬 Soporte', items: [
+          { l: lang === 'it' ? 'Supporto prioritario' : 'Soporte prioritario', d: lang === 'it' ? 'Risposta in meno di 4 ore lavorative.' : 'Respuesta en menos de 4 horas hábiles.' },
+        ]},
+      ],
     },
     {
       key: 'grow',
       name: 'Grow',
       desc: lang === 'it' ? 'Il negozio completo per chi vuole crescere' : 'Tu tienda completa para crecer sin límites',
       monthly: 40,
-      annual: 32,   // ≈ 20% ahorro → €384/año  (vs €480)
+      annual: 32,
       popular: false,
       cta: lang === 'it' ? 'Contattaci' : 'Contactar',
       badge: null,
@@ -180,6 +237,25 @@ export default function Home() {
         lang === 'it' ? 'Fatturazione elettronica' : 'Facturación electrónica',
         '20 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
         lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',
+      ],
+      detalle: [
+        { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
+          { l: lang === 'it' ? 'Stripe diretto — senza intermediari' : 'Stripe propio — sin intermediarios', d: lang === 'it' ? 'Colleghi il tuo account Stripe. I soldi vanno direttamente sul tuo conto. TIENDAONLINE non interviene. Ti guidiamo passo dopo passo per attivarlo.' : 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene. Te guiamos para activarlo la primera vez.' },
+          { l: lang === 'it' ? 'Recupero carrelli abbandonati' : 'Recuperación de carritos abandonados', d: lang === 'it' ? 'Avviso automatico ai clienti che non hanno completato l\'acquisto.' : 'Aviso automático a clientes que no completaron su compra.' },
+          { l: lang === 'it' ? 'Programma punti e affiliati' : 'Programa de puntos y afiliados', d: lang === 'it' ? 'Fidelizza i clienti con punti riscattabili e premi.' : 'Fideliza a tus clientes con puntos canjeables y recompensas.' },
+        ]},
+        { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
+          { l: lang === 'it' ? 'Prodotti illimitati' : 'Productos ilimitados', d: lang === 'it' ? 'Nessun limite. Fai crescere il catalogo quanto vuoi.' : 'Sin techo. Crece tu catálogo todo lo que necesites.' },
+          { l: lang === 'it' ? '4 foto per prodotto' : '4 imágenes por producto', d: lang === 'it' ? '20 GB di spazio totale.' : '20 GB de almacenamiento total.' },
+          { l: lang === 'it' ? 'Fatturazione elettronica' : 'Facturación electrónica', d: lang === 'it' ? 'Fatture automatiche conformi alla normativa italiana.' : 'Facturas automáticas compatibles con la normativa italiana.' },
+        ]},
+        { cat: lang === 'it' ? '🔧 Operazioni' : '🔧 Operaciones', items: [
+          { l: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado', d: lang === 'it' ? 'Uno specialista TIENDAONLINE assegnato al tuo account.' : 'Un especialista de TIENDAONLINE asignado a tu cuenta.' },
+          { l: lang === 'it' ? 'Backup giornaliero' : 'Backup diario', d: lang === 'it' ? 'Copia di sicurezza automatica ogni 24 ore.' : 'Copia de seguridad automática de todos tus datos cada 24 horas.' },
+        ]},
+        { cat: lang === 'it' ? '💬 Supporto' : '💬 Soporte', items: [
+          { l: lang === 'it' ? 'Supporto dedicato' : 'Soporte dedicado', d: lang === 'it' ? 'Accesso diretto al tuo consulente. Senza tempi di attesa.' : 'Acceso directo a tu consultor. Sin tiempos de espera.' },
+        ]},
       ],
     },
   ]
@@ -719,6 +795,55 @@ export default function Home() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Botón acordeón */}
+                    <button
+                      onClick={() => setExpandedPricingPlan(expandedPricingPlan === plan.key ? null : plan.key)}
+                      className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold mb-3 transition-all border ${
+                        isPro
+                          ? 'border-white/20 text-white hover:bg-white/10'
+                          : 'border-slate-200 text-slate-500 hover:bg-slate-100'
+                      }`}
+                    >
+                      {expandedPricingPlan === plan.key
+                        ? (lang === 'it' ? 'Nascondi dettagli' : 'Ocultar detalle')
+                        : (lang === 'it' ? 'Vedi tutto incluso' : 'Ver qué incluye')}
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style={{ transform: expandedPricingPlan === plan.key ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s' }}>
+                        <path d="M6 8L1 3h10z"/>
+                      </svg>
+                    </button>
+
+                    {/* Panel expandible */}
+                    {expandedPricingPlan === plan.key && plan.detalle && (
+                      <div className={`rounded-2xl p-4 mb-4 space-y-4 text-left ${
+                        isPro ? 'bg-emerald-700/60' : 'bg-slate-100'
+                      }`}>
+                        {plan.detalle.map((sec, si) => (
+                          <div key={si}>
+                            <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${
+                              isPro ? 'text-emerald-200' : 'text-emerald-600'
+                            }`}>{sec.cat}</p>
+                            <div className="space-y-2.5">
+                              {sec.items.map((item, ii) => (
+                                <div key={ii} className="flex gap-2.5 items-start">
+                                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5 ${
+                                    isPro ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700'
+                                  }`}>✓</span>
+                                  <div>
+                                    <p className={`text-[11px] font-bold leading-tight ${
+                                      isPro ? 'text-white' : 'text-slate-800'
+                                    }`}>{item.l}</p>
+                                    <p className={`text-[10px] leading-snug mt-0.5 ${
+                                      isPro ? 'text-emerald-200' : 'text-slate-500'
+                                    }`}>{item.d}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <a
                       href={plan.key === 'grow' ? '/contatti' : '/register'}
