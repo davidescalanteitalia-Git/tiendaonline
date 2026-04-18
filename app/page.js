@@ -72,6 +72,59 @@ const DEMO_TABS = [
   },
 ]
 
+const WEB_DETALLE_LANDING = [
+  {
+    cat: { it: '🎨 Design & UX', es: '🎨 Diseño & UX', en: '🎨 Design & UX' },
+    items: [
+      { l: { it: 'Design personalizzato', es: 'Diseño personalizado', en: 'Custom design' }, d: { it: 'Nessun template generico — identità visiva costruita su misura per il tuo brand.', es: 'Sin plantillas genéricas — identidad visual construida a medida para tu marca.', en: 'No generic templates — visual identity built specifically for your brand.' } },
+      { l: { it: 'UI moderna e professionale', es: 'UI moderna y profesional', en: 'Modern professional UI' }, d: { it: 'Stile pulito, contemporaneo, che ispira fiducia ai tuoi visitatori.', es: 'Estilo limpio y contemporáneo que inspira confianza a tus visitantes.', en: 'Clean, contemporary style that builds trust with your visitors.' } },
+      { l: { it: 'Responsive (mobile + tablet)', es: 'Responsive (móvil + tablet)', en: 'Responsive (mobile + tablet)' }, d: { it: 'Il sito si adatta perfettamente a qualsiasi schermo, dal telefono al desktop.', es: 'El sitio se adapta perfectamente a cualquier pantalla, del móvil al escritorio.', en: 'The site adapts perfectly to any screen, from mobile to desktop.' } },
+    ],
+  },
+  {
+    cat: { it: '📄 Struttura del sito', es: '📄 Estructura del sitio', en: '📄 Site structure' },
+    items: [
+      { l: { it: '5 sezioni incluse', es: '5 secciones incluidas', en: '5 sections included' }, d: { it: 'Home, Chi siamo, Servizi, Contatti e Blog — tutto ciò che serve per presentarti.', es: 'Home, Sobre nosotros, Servicios, Contacto y Blog — todo lo que necesitas para presentarte.', en: 'Home, About, Services, Contact and Blog — everything you need to present yourself.' } },
+    ],
+  },
+  {
+    cat: { it: '🔍 SEO & Prestazioni', es: '🔍 SEO & Rendimiento', en: '🔍 SEO & Performance' },
+    items: [
+      { l: { it: 'SEO di base configurato', es: 'SEO básico configurado', en: 'Basic SEO configured' }, d: { it: 'Meta tag, titoli, descrizioni e sitemap pronti per essere indicizzati da Google.', es: 'Meta tags, títulos, descripciones y sitemap listos para que Google te indexe.', en: 'Meta tags, titles, descriptions and sitemap ready for Google indexing.' } },
+      { l: { it: 'Ottimizzazione velocità', es: 'Optimización de velocidad', en: 'Speed optimization' }, d: { it: 'Immagini compresse, codice ottimizzato, caricamento veloce per ridurre i rimbalzi.', es: 'Imágenes comprimidas, código optimizado, carga rápida para reducir los rebotes.', en: 'Compressed images, optimized code, fast loading to reduce bounce rates.' } },
+    ],
+  },
+  {
+    cat: { it: '🔒 Sicurezza', es: '🔒 Seguridad', en: '🔒 Security' },
+    items: [
+      { l: { it: 'Certificato SSL incluso', es: 'Certificado SSL incluido', en: 'SSL certificate included' }, d: { it: 'Connessione HTTPS garantita, il lucchetto verde che ispira fiducia.', es: 'Conexión HTTPS garantizada, el candado verde que inspira confianza.', en: 'HTTPS connection guaranteed, the green padlock that builds trust.' } },
+      { l: { it: 'Protezione base inclusa', es: 'Protección básica incluida', en: 'Basic protection included' }, d: { it: 'Configurazione standard per proteggerti da bot, spam e accessi non autorizzati.', es: 'Configuración estándar para protegerte de bots, spam y accesos no autorizados.', en: 'Standard configuration to protect you from bots, spam and unauthorized access.' } },
+    ],
+  },
+  {
+    cat: { it: '🔗 Integrazioni', es: '🔗 Integraciones', en: '🔗 Integrations' },
+    items: [
+      { l: { it: 'Collegamento social media', es: 'Enlace a redes sociales', en: 'Social media links' }, d: { it: 'Instagram, Facebook, TikTok — i tuoi profili social connessi al sito.', es: 'Instagram, Facebook, TikTok — tus perfiles sociales conectados a la web.', en: 'Instagram, Facebook, TikTok — your social profiles connected to the site.' } },
+      { l: { it: 'Pulsante WhatsApp integrato', es: 'Botón WhatsApp integrado', en: 'WhatsApp button integrated' }, d: { it: 'I visitatori ti contattano direttamente su WhatsApp con un clic.', es: 'Los visitantes te contactan directamente por WhatsApp con un clic.', en: 'Visitors contact you directly on WhatsApp with one click.' } },
+      { l: { it: 'Integrazione con il tuo negozio', es: 'Integración con tu tienda', en: 'Store integration' }, d: { it: 'Link diretto al tuo catalogo TIENDAONLINE per vendere anche online.', es: 'Enlace directo a tu catálogo TIENDAONLINE para vender también online.', en: 'Direct link to your TIENDAONLINE catalog to sell online too.' } },
+    ],
+  },
+  {
+    cat: { it: '⚙️ Pannello di amministrazione', es: '⚙️ Panel de administración', en: '⚙️ Admin panel' },
+    items: [
+      { l: { it: 'CMS semplice per aggiornamenti', es: 'CMS sencillo para actualizaciones', en: 'Simple CMS for updates' }, d: { it: 'Aggiorna testi, immagini e prezzi senza toccare il codice.', es: 'Actualiza textos, imágenes y precios sin tocar el código.', en: 'Update texts, images and prices without touching the code.' } },
+    ],
+  },
+  {
+    cat: { it: '🛠️ Supporto & Manutenzione', es: '🛠️ Soporte & Mantenimiento', en: '🛠️ Support & Maintenance' },
+    items: [
+      { l: { it: 'Aggiornamenti inclusi nel piano annuale', es: 'Actualizaciones incluidas en plan anual', en: 'Updates included in annual plan' }, d: { it: 'Teniamo il sito aggiornato, sicuro e ottimizzato tutto l\'anno.', es: 'Mantenemos el sitio actualizado, seguro y optimizado todo el año.', en: 'We keep the site updated, secure and optimized all year.' } },
+      { l: { it: 'Supporto prioritario via WhatsApp', es: 'Soporte prioritario vía WhatsApp', en: 'Priority WhatsApp support' }, d: { it: 'Assistenza diretta dal team ogni volta che hai bisogno.', es: 'Asistencia directa del equipo cada vez que lo necesites.', en: 'Direct team assistance whenever you need it.' } },
+      { l: { it: 'Backup automatici regolari', es: 'Backups automáticos regulares', en: 'Regular automatic backups' }, d: { it: 'I tuoi contenuti sempre al sicuro con copie di riserva automatiche.', es: 'Tu contenido siempre seguro con copias de respaldo automáticas.', en: 'Your content always safe with automatic backup copies.' } },
+    ],
+  },
+]
+
 export default function Home() {
   const { lang, changeLang: setLang } = useLang()
   const dict = DICTIONARY[lang]
@@ -81,6 +134,7 @@ export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [billing, setBilling] = useState('monthly')
   const [expandedPricingPlan, setExpandedPricingPlan] = useState(null)
+  const [showWebDetail, setShowWebDetail] = useState(false)
 
   const t = (key) => dict[key] || key
 
@@ -974,7 +1028,7 @@ export default function Home() {
                       : 'Un sitio web profesional, diseñado y configurado para ti. Sin plantillas genéricas — una identidad digital única para tu empresa.'}
                   </p>
 
-                  <div className="flex flex-wrap gap-4">
+                  <div className="flex flex-wrap gap-4 mb-6">
                     {[
                       lang === 'it' ? '✓ Design su misura' : '✓ Diseño a medida',
                       lang === 'it' ? '✓ SEO ottimizzato' : '✓ SEO optimizado',
@@ -987,6 +1041,42 @@ export default function Home() {
                       </span>
                     ))}
                   </div>
+
+                  {/* Botón acordeón servicio web */}
+                  <button
+                    onClick={() => setShowWebDetail(!showWebDetail)}
+                    className="flex items-center justify-center gap-2 w-full border border-slate-600 hover:border-slate-400 text-slate-400 hover:text-slate-200 text-sm font-bold rounded-2xl py-3 px-5 transition-all bg-transparent"
+                  >
+                    {showWebDetail
+                      ? (lang === 'it' ? 'Nascondi dettagli ▲' : 'Ocultar detalle ▲')
+                      : (lang === 'it' ? 'Vedi tutto incluso ▼' : 'Ver qué incluye el servicio ▼')}
+                  </button>
+
+                  {/* Panel expandible */}
+                  {showWebDetail && (
+                    <div className="mt-6 flex flex-col gap-6">
+                      {WEB_DETALLE_LANDING.map((sec, si) => (
+                        <div key={si}>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-3">
+                            {sec.cat[lang] || sec.cat.es}
+                          </p>
+                          {sec.items.map((item, ii) => (
+                            <div key={ii} className="flex gap-3 mb-3 items-start">
+                              <span className="text-emerald-400 font-black text-xs mt-0.5 flex-shrink-0">✓</span>
+                              <div>
+                                <p className="m-0 text-sm font-bold text-slate-100 leading-tight">
+                                  {item.l[lang] || item.l.es}
+                                </p>
+                                <p className="m-0 text-xs text-slate-400 leading-relaxed mt-0.5">
+                                  {item.d[lang] || item.d.es}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Price card */}

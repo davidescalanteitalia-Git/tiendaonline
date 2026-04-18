@@ -195,6 +195,43 @@ export default function PlanesPage() {
   const [anualizacion, setAnualizacion] = useState(false)
   const [procesando, setProcesando] = useState(null)
   const [expandedPlan, setExpandedPlan] = useState(null)
+  const [showWebDetail, setShowWebDetail] = useState(false)
+
+  const WEB_DETALLE = [
+    { cat: '🎨 Diseño y UX', items: [
+      { l: 'Diseño personalizado', d: 'Acorde a la identidad visual de tu marca. Sin plantillas genéricas.' },
+      { l: 'Interfaz moderna y profesional', d: 'Experiencia de usuario optimizada para facilitar la navegación y convertir visitas en clientes.' },
+      { l: 'Responsive Design', d: 'Compatible con móviles, tablets y ordenadores. Se ve perfecto en cualquier pantalla.' },
+    ]},
+    { cat: '📄 Estructura del sitio', items: [
+      { l: 'Página de Inicio (Home)', d: 'Presentación general de tu empresa y propuesta de valor.' },
+      { l: 'Sobre Nosotros', d: 'Información corporativa, misión, visión y valores.' },
+      { l: 'Servicios / Productos', d: 'Descripción detallada de lo que ofrece tu empresa.' },
+      { l: 'Contacto', d: 'Formulario, datos de contacto y ubicación en mapa.' },
+      { l: 'Blog (opcional)', d: 'Sección para publicaciones y contenido relevante para posicionamiento SEO.' },
+    ]},
+    { cat: '🔍 SEO y Rendimiento', items: [
+      { l: 'SEO básico optimizado', d: 'Títulos, descripciones y palabras clave configuradas para aparecer en Google.' },
+      { l: 'Velocidad de carga optimizada', d: 'Imágenes comprimidas y código limpio para que el sitio cargue rápido.' },
+    ]},
+    { cat: '🔒 Seguridad', items: [
+      { l: 'Certificado SSL (https)', d: 'Tu sitio aparecerá como seguro en todos los navegadores.' },
+      { l: 'Protección básica', d: 'Contra accesos no autorizados y ataques comunes.' },
+    ]},
+    { cat: '🔗 Integraciones', items: [
+      { l: 'Redes sociales', d: 'Enlaces directos a tu Instagram, Facebook, TikTok u otras redes.' },
+      { l: 'WhatsApp y correo', d: 'Botón de contacto directo para que tus clientes te escriban en un clic.' },
+      { l: 'Integración con tu tienda', d: 'Conectamos la web corporativa con tu tienda TIENDAONLINE.' },
+    ]},
+    { cat: '⚙️ Panel de administración', items: [
+      { l: 'CMS incluido', d: 'Sistema de gestión de contenido para que puedas editar textos e imágenes fácilmente, sin saber programar.' },
+    ]},
+    { cat: '🛠️ Soporte y mantenimiento', items: [
+      { l: 'Actualizaciones técnicas', d: 'Mantenemos el sitio actualizado y seguro.' },
+      { l: 'Soporte ante incidencias', d: 'Te asistimos si algo no funciona correctamente.' },
+      { l: 'Copias de seguridad periódicas', d: 'Tus datos siempre protegidos con backups regulares.' },
+    ]},
+  ]
 
   useEffect(() => {
     // Detectar redirect post-checkout de Stripe
@@ -589,7 +626,7 @@ export default function PlanesPage() {
               Un sitio web profesional, diseñado y configurado para ti. Sin plantillas genéricas — una identidad digital única para tu empresa.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
               {['✓ Diseño a medida', '✓ SEO optimizado', '✓ Hosting & dominio', '✓ Panel de control', '✓ Integración con tu tienda'].map(f => (
                 <span key={f} style={{
                   background: 'rgba(255,255,255,0.08)',
@@ -603,6 +640,45 @@ export default function PlanesPage() {
                 </span>
               ))}
             </div>
+
+            {/* Botón acordeón web corporativa */}
+            <button
+              onClick={() => setShowWebDetail(!showWebDetail)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                background: 'transparent', border: '1.5px solid rgba(255,255,255,0.15)',
+                borderRadius: 12, padding: '10px 20px',
+                color: '#94a3b8', fontWeight: 700, fontSize: '0.82rem',
+                cursor: 'pointer', width: '100%', transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {showWebDetail ? 'Ocultar detalle ▲' : 'Ver qué incluye el servicio ▼'}
+              <ChevronDown size={14} style={{ transform: showWebDetail ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s' }} />
+            </button>
+
+            {/* Panel expandible web corporativa */}
+            {showWebDetail && (
+              <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {WEB_DETALLE.map((sec, si) => (
+                  <div key={si}>
+                    <p style={{ margin: '0 0 8px', fontSize: '0.7rem', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      {sec.cat}
+                    </p>
+                    {sec.items.map((item, ii) => (
+                      <div key={ii} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
+                        <span style={{ color: '#4ade80', fontWeight: 900, fontSize: '0.75rem', marginTop: 3, flexShrink: 0 }}>✓</span>
+                        <div>
+                          <p style={{ margin: '0 0 2px', fontSize: '0.82rem', fontWeight: 700, color: '#f1f5f9' }}>{item.l}</p>
+                          <p style={{ margin: 0, fontSize: '0.76rem', color: '#94a3b8', lineHeight: 1.4 }}>{item.d}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Columna derecha — precio y CTA */}
