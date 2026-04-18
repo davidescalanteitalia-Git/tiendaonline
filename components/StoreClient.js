@@ -256,7 +256,8 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
           const message = `*ORDEN #${pedido.codigo || pedido.id.slice(0,5).toUpperCase()}*%0A*Cliente:* ${customerName}%0A%0A*PEDIDO:*%0A` +
             cart.map(item => `- ${item.quantity}x ${item.nombre} (€${parseFloat(item.price || item.precio).toFixed(2)})`).join('%0A') +
             `%0A%0A${shippingInfo}%0A%0A${paymentInfo}${bankDetails}${discountInfo}%0A%0A*Total: €${total.toFixed(2)}*%0A%0A_Enviado desde: ${tienda.nombre}_`
-          window.open(`https://wa.me/${tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '')}?text=${message}`, '_blank')
+          const waNumber = typeof tienda.whatsapp === 'string' ? tienda.whatsapp.replace(/\+/g, '').replace(/\s/g, '') : ''
+          window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank')
           registrarEvento(EVENTOS.WHATSAPP_ABIERTO, { tienda_id: tienda.id, total })
         }
         // PostHog: pedido completado
@@ -479,7 +480,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
         {(tienda.whatsapp || tienda.horario || config.redes_sociales?.instagram) && (
           <div style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '0 16px' }}>
             <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '20px', height: '40px', overflowX: 'auto', scrollbarWidth: 'none' }}>
-              {tienda.whatsapp && (
+              {tienda.whatsapp && typeof tienda.whatsapp === 'string' && (
                 <a href={`https://wa.me/${tienda.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer"
                   style={{ display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: '#16a34a', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
                   💬 WhatsApp
@@ -490,7 +491,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                   🕐 {tienda.horario}
                 </span>
               )}
-              {config.redes_sociales?.instagram && (
+              {config.redes_sociales?.instagram && typeof config.redes_sociales.instagram === 'string' && (
                 <a href={`https://instagram.com/${config.redes_sociales.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
                   style={{ display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: '#7c3aed', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
                   📸 {config.redes_sociales.instagram}
@@ -770,7 +771,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
             <div>
               <h4 style={{ margin: '0 0 14px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Contacto</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {tienda.whatsapp && (
+                {tienda.whatsapp && typeof tienda.whatsapp === 'string' && (
                   <a href={`https://wa.me/${tienda.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4ade80', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
                     💬 WhatsApp
                   </a>
@@ -780,7 +781,7 @@ export default function StoreClient({ tienda, groupedProducts, uncategorized, C,
                     ✉️ {tienda.email}
                   </a>
                 )}
-                {(config.redes_sociales?.instagram) && (
+                {(config.redes_sociales?.instagram && typeof config.redes_sociales.instagram === 'string') && (
                   <a href={`https://instagram.com/${config.redes_sociales.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>
                     📸 Instagram
                   </a>
