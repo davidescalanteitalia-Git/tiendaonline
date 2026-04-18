@@ -9,7 +9,7 @@ import LanguageSelector from '../../components/LanguageSelector'
 import UniversalFooter from '../../components/UniversalFooter'
 import OnboardingWizard from '../../components/OnboardingWizard'
 import DashboardChecklist from '../../components/DashboardChecklist'
-import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle, ChevronDown, CreditCard } from 'lucide-react'
+import { Home, Package, FolderTree, ShoppingCart, Paintbrush, Settings, LogOut, Globe, Store, ShoppingBag, Menu, X, Users, Calculator, PieChart, UserCircle, CheckCircle2, Circle, ChevronDown, CreditCard, Wallet, ClipboardList, BookUser, TrendingUp } from 'lucide-react'
 import PlanBanner from '../../components/PlanBanner'
 import { identificarDueno, resetearIdentidad } from '../../components/PostHogProvider'
 
@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
-  const [openGroups, setOpenGroups] = useState({ ventas: true })
+  const [openGroups, setOpenGroups] = useState({ secondary: true })
 
   const toggleGroup = (key) => setOpenGroups(prev => ({ ...prev, [key]: !prev[key] }))
 
@@ -133,52 +133,54 @@ export default function DashboardLayout({ children }) {
     router.replace('/login')
   }
 
-  const navGroups = [
+  // ── Nav structure: primary actions flat, secondary grouped ──
+  // Order based on Square/Shopify UX research: most-used first
+  const primaryNav = [
     {
-      key: 'inicio',
-      single: true,
-      icon: Home,
-      label: dict.home || 'Inicio',
-      href: '/dashboard',
+      key: 'pos',
+      icon: Wallet,
+      label: lang === 'it' ? 'Cassa (POS)' : lang === 'en' ? 'POS / Checkout' : 'Cobrar (POS)',
+      href: '/dashboard/pos',
+      highlight: true, // CTA principal
     },
     {
-      key: 'ventas',
-      icon: ShoppingCart,
-      label: 'Ventas',
-      items: [
-        { icon: Calculator, label: 'Caja (POS)', href: '/dashboard/pos' },
-        { icon: ShoppingCart, label: dict.ordini || 'Pedidos', href: '/dashboard/pedidos' },
-      ],
+      key: 'pedidos',
+      icon: ClipboardList,
+      label: lang === 'it' ? 'Ordini' : lang === 'en' ? 'Orders' : 'Pedidos',
+      href: '/dashboard/pedidos',
+      badge: pendingCount,
     },
     {
-      key: 'catalogo',
+      key: 'productos',
       icon: Package,
-      label: 'Catálogo',
-      items: [
-        { icon: Package, label: dict.prodotti || 'Productos', href: '/dashboard/productos' },
-        { icon: FolderTree, label: dict.categorie || 'Categorías', href: '/dashboard/categorias' },
-        { icon: ShoppingBag, label: dict.compras || 'Compras', href: '/dashboard/compras' },
-        { icon: Users, label: dict.clienti || 'Clientes', href: '/dashboard/clientes' },
-      ],
+      label: lang === 'it' ? 'Prodotti' : lang === 'en' ? 'Products' : 'Productos',
+      href: '/dashboard/productos',
+    },
+    {
+      key: 'clientes',
+      icon: BookUser,
+      label: lang === 'it' ? 'Clienti & Fidi' : lang === 'en' ? 'Customers' : 'Clientes & Fiados',
+      href: '/dashboard/clientes',
     },
     {
       key: 'reportes',
-      single: true,
-      icon: PieChart,
-      label: 'Reportes',
+      icon: TrendingUp,
+      label: lang === 'it' ? 'Analitiche' : lang === 'en' ? 'Reports' : 'Reportes',
       href: '/dashboard/reportes',
     },
-    {
-      key: 'config',
-      icon: Settings,
-      label: 'Configuración',
-      items: [
-        { icon: Paintbrush, label: dict.design || 'Diseño', href: '/dashboard/diseno' },
-        { icon: Settings, label: dict.impostazioni || 'Ajustes', href: '/dashboard/ajustes' },
-        { icon: UserCircle, label: 'Mi Cuenta', href: '/dashboard/cuenta' },
-        { icon: CreditCard, label: 'Planes y precios', href: '/dashboard/planes' },
-      ],
-    },
+  ]
+
+  const secondaryNav = [
+    { icon: Home, label: lang === 'it' ? 'Home' : lang === 'en' ? 'Home' : 'Inicio', href: '/dashboard' },
+    { icon: FolderTree, label: lang === 'it' ? 'Categorie' : lang === 'en' ? 'Categories' : 'Categorías', href: '/dashboard/categorias' },
+    { icon: ShoppingBag, label: lang === 'it' ? 'Acquisti' : lang === 'en' ? 'Purchases' : 'Compras', href: '/dashboard/compras' },
+    { icon: Paintbrush, label: lang === 'it' ? 'Design' : lang === 'en' ? 'Design' : 'Diseño', href: '/dashboard/diseno' },
+  ]
+
+  const settingsNav = [
+    { icon: Settings, label: lang === 'it' ? 'Impostazioni' : lang === 'en' ? 'Settings' : 'Ajustes', href: '/dashboard/ajustes' },
+    { icon: UserCircle, label: lang === 'it' ? 'Il mio account' : lang === 'en' ? 'My Account' : 'Mi Cuenta', href: '/dashboard/cuenta' },
+    { icon: CreditCard, label: lang === 'it' ? 'Piani' : lang === 'en' ? 'Plans' : 'Planes', href: '/dashboard/planes' },
   ]
 
   // En producción usamos el subdominio real; en desarrollo la ruta interna /store/
@@ -194,118 +196,110 @@ export default function DashboardLayout({ children }) {
   // ── Sidebar content (shared between desktop and mobile drawer) ──
   const SidebarContent = () => (
     <>
-      <div className="p-6 pb-2 relative z-10 flex-1 overflow-y-auto">
+      <div className="p-5 pb-2 relative z-10 flex-1 overflow-y-auto">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-8 cursor-default">
-          <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30 shrink-0">
+        <div className="flex items-center gap-3 mb-6 cursor-default">
+          <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-primary/30 shrink-0">
             <ShoppingBag size={20} />
           </div>
-          <span className="font-bold text-slate-900 tracking-tight text-lg">TIENDAONLINE</span>
+          <span className="font-black text-slate-900 tracking-tight text-base">TIENDAONLINE</span>
         </div>
 
         {/* ── Gamification Checklist ── */}
         {!loading && tienda && (
-          <div className="mb-6 -mx-2">
-            <DashboardChecklist 
-              tienda={tienda} 
-              productos={productos} 
-              pedidos={pedidos} 
-              clientes={clientes} 
+          <div className="mb-5 -mx-1">
+            <DashboardChecklist
+              tienda={tienda}
+              productos={productos}
+              pedidos={pedidos}
+              clientes={clientes}
             />
           </div>
         )}
 
-        {/* Nav */}
-        <nav className="flex flex-col gap-0.5">
-          {navGroups.map((group) => {
-            if (group.single) {
-              const isActive = pathname === group.href
-              const Icon = group.icon
-              return (
-                <button
-                  key={group.key}
-                  onClick={() => router.push(group.href)}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
-                    ${isActive
-                      ? 'bg-primary/10 text-primary border border-primary/10'
-                      : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
-                    }`}
-                >
-                  <Icon size={18} className={isActive ? 'text-primary' : 'text-slate-500'} />
-                  <span className="flex-1">{group.label}</span>
-                </button>
-              )
-            }
-
-            const isGroupOpen = !!openGroups[group.key]
-            const hasActiveChild = group.items?.some(i => pathname === i.href)
-
+        {/* ── PRIMARY NAV: Top 5 most-used actions — always flat, always visible ── */}
+        <nav aria-label="Navegación principal" className="flex flex-col gap-1 mb-4">
+          {primaryNav.map((item) => {
+            const isActive = pathname === item.href
+            const Icon = item.icon
             return (
-              <div key={group.key}>
-                {/* Group Header */}
-                <button
-                  onClick={() => toggleGroup(group.key)}
-                  className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                    hasActiveChild
-                      ? 'bg-primary/8 text-primary'
-                      : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-700'
+              <button
+                key={item.key}
+                onClick={() => router.push(item.href)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex items-center gap-3 px-3.5 rounded-xl font-semibold text-sm transition-all duration-200 cursor-pointer w-full text-left
+                  min-h-[48px]
+                  ${item.highlight && !isActive
+                    ? 'bg-primary text-white shadow-md shadow-primary/25 hover:bg-primary/90 border border-primary/0'
+                    : isActive
+                      ? 'bg-primary/10 text-primary border border-primary/15'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
                   }`}
-                >
-                  {group.icon && (
-                    <group.icon size={17} className={hasActiveChild ? 'text-primary' : 'text-slate-500'} />
-                  )}
-                  <span className="flex-1 text-left">{group.label}</span>
-                  <ChevronDown
-                    size={13}
-                    className={`text-slate-500 transition-transform duration-200 ${isGroupOpen ? 'rotate-180' : ''}`}
-                  />
-                </button>
-
-                {/* Group Items */}
-                {isGroupOpen && (
-                  <div className="pl-2 flex flex-col gap-0.5 mb-1">
-                    {group.items.map((item) => {
-                      const isActive = pathname === item.href
-                      const Icon = item.icon
-                      return (
-                        <button
-                          key={item.href}
-                          onClick={() => router.push(item.href)}
-                          aria-current={isActive ? 'page' : undefined}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
-                            ${isActive
-                              ? 'bg-primary/10 text-primary border border-primary/10'
-                              : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 border border-transparent'
-                            }`}
-                        >
-                          <Icon size={16} className={isActive ? 'text-primary' : 'text-slate-500'} />
-                          <span className="flex-1">{item.label}</span>
-                          {item.href === '/dashboard/pedidos' && pendingCount > 0 && (
-                            <span className="bg-emerald-500 text-white text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center animate-pulse">
-                              {pendingCount}
-                            </span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
+              >
+                <Icon size={18} className={item.highlight && !isActive ? 'text-white' : isActive ? 'text-primary' : 'text-slate-400'} />
+                <span className="flex-1">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className={`text-xs font-black px-2 py-0.5 rounded-full min-w-[20px] text-center ${
+                    isActive ? 'bg-primary/20 text-primary' : 'bg-emerald-500 text-white animate-pulse'
+                  }`}>
+                    {item.badge}
+                  </span>
                 )}
-              </div>
+              </button>
             )
           })}
         </nav>
+
+        {/* ── DIVIDER ── */}
+        <div className="border-t border-slate-100 my-3" />
+
+        {/* ── SECONDARY NAV: Less-used actions, collapsible ── */}
+        <div>
+          <button
+            onClick={() => toggleGroup('secondary')}
+            className="flex items-center gap-2 w-full px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+          >
+            <span className="flex-1 text-left">{lang === 'it' ? 'Altro' : lang === 'en' ? 'More' : 'Más'}</span>
+            <ChevronDown
+              size={12}
+              className={`text-slate-400 transition-transform duration-200 ${openGroups.secondary !== false ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {openGroups.secondary !== false && (
+            <nav aria-label="Navegación secundaria" className="flex flex-col gap-0.5 mt-1">
+              {secondaryNav.map((item) => {
+                const isActive = pathname === item.href
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => router.push(item.href)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`flex items-center gap-3 px-3.5 min-h-[44px] rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer w-full text-left
+                      ${isActive
+                        ? 'bg-primary/10 text-primary border border-primary/15'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 border border-transparent'
+                      }`}
+                  >
+                    <Icon size={16} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                    <span className="flex-1">{item.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
+          )}
+        </div>
       </div>
 
-      {/* Bottom: store info + logout */}
+      {/* Bottom: settings + store info + logout */}
       <div className="p-4 border-t border-slate-200/50 bg-white/40 shrink-0">
         {loading ? (
           <div className="text-slate-400 text-sm text-center py-4">{dict.caricamento}</div>
         ) : (
           <>
             {/* Store card */}
-            <div className="flex items-center gap-3 mb-4 p-2 rounded-xl bg-slate-50/80 border border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+            <div className="flex items-center gap-3 mb-3 p-2.5 rounded-xl bg-slate-50/80 border border-slate-100">
+              <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
                 {inicial}
               </div>
               <div className="overflow-hidden flex-1">
@@ -320,24 +314,47 @@ export default function DashboardLayout({ children }) {
               </div>
             </div>
 
+            {/* Settings nav items */}
+            <nav aria-label="Configuración" className="flex flex-col gap-0.5 mb-3">
+              {settingsNav.map((item) => {
+                const isActive = pathname === item.href
+                const Icon = item.icon
+                return (
+                  <button
+                    key={item.href}
+                    onClick={() => router.push(item.href)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`flex items-center gap-2.5 px-3 min-h-[40px] rounded-lg font-medium text-xs transition-all cursor-pointer w-full text-left
+                      ${isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                      }`}
+                  >
+                    <Icon size={15} className={isActive ? 'text-primary' : 'text-slate-400'} />
+                    <span className="flex-1">{item.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
+
             {/* Visit store */}
             {storeUrl && (
               <a
                 href={storeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2.5 mb-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium transition-colors cursor-pointer"
+                className="flex items-center justify-center gap-2 w-full min-h-[40px] mb-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
               >
-                <Globe size={16} /> {dict.visitarSitio || 'Ver Tienda'}
+                <Globe size={15} /> {dict.visitarSitio || 'Ver Tienda'}
               </a>
             )}
 
             {/* Logout */}
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-100 hover:bg-red-50 text-sm font-medium transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 w-full min-h-[40px] rounded-xl border border-slate-200 text-slate-500 hover:text-red-500 hover:border-red-100 hover:bg-red-50 text-xs font-medium transition-colors cursor-pointer"
             >
-              <LogOut size={16} /> {dict.salir || 'Cerrar Sesión'}
+              <LogOut size={15} /> {dict.salir || 'Cerrar Sesión'}
             </button>
           </>
         )}

@@ -471,12 +471,12 @@ export default function PosPage() {
                        <p className="font-bold text-slate-800 text-sm truncate">{item.nombre}</p>
                        <p className="text-xs font-bold text-blue-600">€{parseFloat(item.precio || item.price).toFixed(2)}</p>
                     </div>
-                    <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl">
-                       <button onClick={() => adjustQty(item.id, -1)} className="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-sm text-slate-600 hover:text-blue-600"><Minus size={14}/></button>
-                       <span className="w-6 text-center font-bold text-sm">{item.quantity}</span>
-                       <button onClick={() => adjustQty(item.id, 1)} className="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-sm text-slate-600 hover:text-blue-600"><Plus size={14}/></button>
+                    <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl">
+                       <button onClick={() => adjustQty(item.id, -1)} aria-label="Quitar uno" className="w-9 h-9 flex items-center justify-center bg-white rounded-lg shadow-sm text-slate-600 hover:text-blue-600 transition-colors"><Minus size={15}/></button>
+                       <span className="w-7 text-center font-bold text-sm">{item.quantity}</span>
+                       <button onClick={() => adjustQty(item.id, 1)} aria-label="Agregar uno" className="w-9 h-9 flex items-center justify-center bg-white rounded-lg shadow-sm text-slate-600 hover:text-blue-600 transition-colors"><Plus size={15}/></button>
                     </div>
-                    <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                    <button onClick={() => removeFromCart(item.id)} aria-label="Eliminar del carrito" className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors">
                        <Trash2 size={16} />
                     </button>
                  </div>
@@ -510,30 +510,34 @@ export default function PosPage() {
             </div>
 
             <div className="grid grid-cols-4 gap-2 mb-6">
-               <button 
+               <button
                  onClick={() => setMetodoPago('efectivo')}
-                 className={`py-3 rounded-xl flex flex-col items-center gap-1 border-2 transition-all ${metodoPago === 'efectivo' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                 aria-pressed={metodoPago === 'efectivo'}
+                 className={`min-h-[56px] rounded-xl flex flex-col items-center justify-center gap-1 border-2 transition-all active:scale-95 ${metodoPago === 'efectivo' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
                >
                   <Banknote size={20} />
                   <span className="text-[10px] font-black uppercase tracking-wider">Efectivo</span>
                </button>
-               <button 
+               <button
                  onClick={() => setMetodoPago('tarjeta')}
-                 className={`py-3 rounded-xl flex flex-col items-center gap-1 border-2 transition-all ${metodoPago === 'tarjeta' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                 aria-pressed={metodoPago === 'tarjeta'}
+                 className={`min-h-[56px] rounded-xl flex flex-col items-center justify-center gap-1 border-2 transition-all active:scale-95 ${metodoPago === 'tarjeta' ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
                >
                   <CreditCard size={20} />
                   <span className="text-[10px] font-black uppercase tracking-wider">Tarjeta</span>
                </button>
-               <button 
+               <button
                  onClick={() => setMetodoPago('transferencia')}
-                 className={`py-3 rounded-xl flex flex-col items-center gap-1 border-2 transition-all ${metodoPago === 'transferencia' ? 'border-purple-500 bg-purple-50 text-purple-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                 aria-pressed={metodoPago === 'transferencia'}
+                 className={`min-h-[56px] rounded-xl flex flex-col items-center justify-center gap-1 border-2 transition-all active:scale-95 ${metodoPago === 'transferencia' ? 'border-purple-500 bg-purple-50 text-purple-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
                >
                   <Smartphone size={20} />
                   <span className="text-[10px] font-black uppercase tracking-wider">Transf.</span>
                </button>
-               <button 
+               <button
                  onClick={() => setMetodoPago('fiado')}
-                 className={`py-3 rounded-xl flex flex-col items-center gap-1 border-2 transition-all ${metodoPago === 'fiado' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                 aria-pressed={metodoPago === 'fiado'}
+                 className={`min-h-[56px] rounded-xl flex flex-col items-center justify-center gap-1 border-2 transition-all active:scale-95 ${metodoPago === 'fiado' ? 'border-amber-500 bg-amber-50 text-amber-600' : 'border-slate-100 text-slate-400 hover:bg-slate-50'}`}
                >
                   <User size={20} />
                   <span className="text-[10px] font-black uppercase tracking-wider">Fiado</span>
