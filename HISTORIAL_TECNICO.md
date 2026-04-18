@@ -2937,3 +2937,191 @@ Coolify detectará el push y ejecutará el redeploy automáticamente.
 | 🔴 Pendiente | Wizard de registro campo a campo (mejora UX del onboarding) |
 | 🔴 Pendiente | Correo corporativo `@tiendaonline.it` (recomendado: Zoho Mail, gratis hasta 5 usuarios) |
 | 🔴 Pendiente | Guards de features: bloquear con UpgradeModal cupones, fiados avanzados y reportes según plan |
+
+---
+
+## SESIÓN 22 — Internacionalización, Landing Reforzada y Sistema de Avatares
+**Fecha:** 2026-04-18
+**Duración:** ~3 horas
+**Modelo:** claude-sonnet-4-6
+
+---
+
+### A — Fixes de Internacionalización (i18n)
+
+**Problema:** Varios textos en `app/page.js` estaban hardcodeados en español o solo tenían soporte IT/ES sin inglés. El selector de idioma era invisible en móvil.
+
+**Fixes aplicados en `app/page.js`:**
+
+| Elemento | Antes | Después |
+|----------|-------|---------|
+| Precio por mes | `/mes` hardcoded | `/mese` (IT) · `/mo` (EN) · `/mes` (ES) |
+| Descuento anual | `/año · Ahorras` | `/anno · Risparmi` (IT) · `/yr · Save` (EN) |
+| Alta gratis | `Alta gratis` solo ES | `Alta gratuita` (IT) · `Free signup` (EN) |
+| Footer "Sin compromiso" | `Sin compromiso · Risposta in 24h` (mix IT+ES) | Trilingüe correcto |
+| Footer "Plataforma" | Hardcoded ES | `Piattaforma` (IT) · `Platform` (EN) |
+| Footer "Soporte" | Hardcoded ES | `Supporto` (IT) · `Support` (EN) |
+| Selector IT/ES/EN | `hidden md:flex` — invisible en móvil | Visible en todos los dispositivos |
+
+---
+
+### B — Imágenes Demo Migradas a Supabase Storage
+
+**Problema:** La sección demo interactiva usaba `loremflickr.com` — servicio externo, lento, a veces bloqueado.
+
+**Solución:**
+1. Se creó bucket `demo` en Supabase Storage (`public: true`, 5 MB límite)
+2. Se desplegó Edge Function `upload-demo-images` para subir las 16 imágenes con permisos `service_role`
+3. Se reemplazaron todas las URLs en `app/page.js`
+
+**16 imágenes subidas a Supabase Storage:**
+- Panetteria: `panetteria-pane.jpg`, `panetteria-cornetti.jpg`, `panetteria-torta.jpg`, `panetteria-focaccia.jpg`
+- Frutta: `frutta-fragole.jpg`, `frutta-arance.jpg`, `frutta-insalata.jpg`, `frutta-pomodori.jpg`
+- Bar: `bar-espresso.jpg`, `bar-cappuccino.jpg`, `bar-tramezzino.jpg`, `bar-succo.jpg`
+- Alimentari: `alimentari-olio.jpg`, `alimentari-pasta.jpg`, `alimentari-marmellata.jpg`, `alimentari-conserve.jpg`
+
+**URL base:** `https://bripfrfkwahsxtegmils.supabase.co/storage/v1/object/public/demo/`
+
+---
+
+### C — Unificación del Nombre de Plan
+
+**Problema:** El plan de entrada se llamaba "Starter" en italiano (anglicismo), "Básico" en español. Inconsistente.
+
+**Decisión:** Usar nombre local en cada idioma:
+- 🇮🇹 Italiano: **"Base"**
+- 🇪🇸 Español: **"Básico"**
+- 🇬🇧 Inglés: **"Basic"**
+
+**Archivo modificado:** `app/page.js` línea del array `pricingPlans`
+
+---
+
+### D — Trust Bar (Barra de Confianza)
+
+**Nueva sección** añadida en `app/page.js` justo debajo del Hero, antes de "El Problema".
+
+**6 badges mostrados:**
+- 🔒 SSL · HTTPS
+- ✅ GDPR Compliant
+- 💳 Stripe Verified
+- 🏪 N tiendas activas (dinámico, usa `storeCount`)
+- 🇮🇹 Soporte en italiano / Supporto in italiano / Italian support
+- ⚡ Activo en 5 minutos / Attivo in 5 minuti / Live in 5 minutes
+
+**Diseño:** Banda blanca con `border-b border-slate-100`, texto gris pequeño, trilingüe.
+
+---
+
+### E — Sección de Testimonios
+
+**Nueva sección** añadida entre Features y Pricing.
+
+**3 testimonios:**
+| Persona | Negocio | Cita clave |
+|---------|---------|-----------|
+| Marco R. | Panetteria · Milano | Pedidos nocturnos automáticos sin perder órdenes de WhatsApp |
+| Lucia F. | Boutique · Roma | POS en celular sin caja registradora |
+| Carlos M. | Bar · Napoli | Clientes ordenan por WhatsApp, recogen al mediodía |
+
+**Fotos reales:** Subidas a Supabase Storage bucket `demo`:
+- `testimonio-marco.jpg`, `testimonio-lucia.jpg`, `testimonio-carlos.jpg`
+- Fuente: Unsplash (CC0, sin copyright)
+- Se usa `<Image>` de Next.js con `width={44} height={44} className="rounded-full object-cover"`
+
+**Sección completamente trilingüe IT/ES/EN.**
+
+---
+
+### F — Sistema de Avatares (AvatarUpload)
+
+**Nuevo componente:** `components/AvatarUpload.js`
+
+**Props:**
+```js
+<AvatarUpload
+  currentUrl={string | null}   // URL actual del avatar
+  userId={string}              // ID del usuario — define ruta en Storage
+  bucket="avatars"             // bucket de Supabase
+  size={80}                    // tamaño en px
+  shape="circle" | "rounded"   // circle para personas, rounded para logos
+  label="texto"                // etiqueta debajo
+  onUploaded={(url) => {}}     // callback con URL pública final
+/>
+```
+
+**Características del componente:**
+- Preview local inmediato al seleccionar archivo (sin esperar upload)
+- Overlay "cámara" al hacer hover
+- Badge verde de cámara en la esquina inferior derecha
+- Validación: máx 2 MB, solo JPG/PNG/WEBP
+- Spinner durante upload
+- Cache-buster en URL (`?t=Date.now()`) para forzar recarga
+- Revierte al avatar anterior si falla el upload
+
+**Bucket `avatars` en Supabase:**
+- `public: true` (lectura pública sin auth)
+- `file_size_limit: 2097152` (2 MB)
+- `allowed_mime_types: ['image/jpeg','image/png','image/webp']`
+- Políticas RLS:
+  - `avatars-public-read`: SELECT sin restricción
+  - `avatars-auth-upload`: INSERT solo para `auth.role() = 'authenticated'`
+  - `avatars-owner-update`: UPDATE solo al propietario del path
+
+**Ruta de almacenamiento:** `avatars/{userId}/avatar.{ext}` — sobreescribe siempre con `upsert: true`
+
+**Integrado en 3 lugares:**
+
+| Archivo | Quién | Para qué |
+|---------|-------|---------|
+| `app/dashboard/ajustes/page.js` | Vendedor | Logo de la tienda (shape="rounded", 112px) |
+| `app/dashboard/cuenta/page.js` | Vendedor | Foto de perfil personal (shape="circle", 68px) |
+| `app/store/[domain]/mis-pedidos/page.js` | Cliente | Foto de perfil (shape="circle", 80px) |
+
+---
+
+### G — Base de Datos: Columna avatar_url en clientes
+
+**Migración ejecutada:**
+```sql
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+```
+
+**API actualizada:** `app/api/auth/cliente/route.js` — método PUT ahora acepta `avatar_url` en el body. Solo se actualiza si viene en el payload (no sobreescribe con null si no se envía).
+
+---
+
+### H — Edge Functions de Supabase Utilizadas
+
+| Función | Versión | Propósito |
+|---------|---------|-----------|
+| `upload-demo-images` | v1 | Subir 16 imágenes de productos demo al bucket `demo` |
+| `upload-demo-images` | v2 | Subir 3 fotos de personas para testimonios |
+
+> **Nota:** Estas Edge Functions son de uso único. Pueden eliminarse desde el Dashboard de Supabase → Edge Functions.
+
+---
+
+### I — Roadmap Actualizado Post-Sesión 22
+
+| Estado | Feature |
+|--------|---------|
+| ✅ Hecho | Fix `/mes` hardcoded → trilingüe IT/ES/EN |
+| ✅ Hecho | Selector idioma visible en móvil |
+| ✅ Hecho | Footer corregido — sin mezcla IT/ES |
+| ✅ Hecho | 16 imágenes demo migradas a Supabase Storage (adiós loremflickr) |
+| ✅ Hecho | Plan "Starter" → Base/Básico/Basic según idioma |
+| ✅ Hecho | Trust Bar debajo del Hero (SSL, GDPR, Stripe, tiendas activas) |
+| ✅ Hecho | Sección testimonios con fotos reales entre Features y Pricing |
+| ✅ Hecho | Componente `AvatarUpload` reutilizable |
+| ✅ Hecho | Bucket `avatars` con políticas RLS correctas |
+| ✅ Hecho | Logo de tienda mejorado en Ajustes (usa AvatarUpload) |
+| ✅ Hecho | Foto de perfil para vendedor en `cuenta/page.js` |
+| ✅ Hecho | Foto de perfil para clientes en `mis-pedidos/page.js` |
+| ✅ Hecho | `avatar_url` en tabla `clientes` + API actualizada |
+| 🔴 Pendiente | Configurar `STRIPE_SECRET_KEY` en Coolify self-hosted |
+| 🔴 Pendiente | Pasar Stripe a modo LIVE (~15 días) |
+| 🔴 Pendiente | **Resend** — emails transaccionales |
+| 🔴 Pendiente | **Actualizar Supabase a Plan Pro** antes del lanzamiento público |
+| 🔴 Pendiente | Sistema de reseñas de clientes con foto de avatar visible |
+| 🔴 Pendiente | Guards de features: UpgradeModal por plan |
