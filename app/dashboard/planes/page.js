@@ -113,14 +113,14 @@ const PLAN_CONFIG = {
     emoji: '🚀',
     tag: '⭐ EL MÁS ELEGIDO',
     descripcion: 'Para negocios en crecimiento que necesitan herramientas avanzadas de ventas y clientes.',
-    highlights: ['5.000 productos', 'Fiados y cuentas corrientes', '🔜 Catálogo Instagram/Facebook', '4 imágenes por producto'],
+    highlights: ['5.000 productos', 'Fiados y cuentas corrientes', '🔜 Catálogo Instagram/Facebook', '3 imágenes por producto'],
     detalle: [
       {
         categoria: '🛍️ Ventas',
         items: [
           { label: 'Pagos online con Stripe', desc: 'Igual que el plan Básico. Tu cuenta Stripe conectada directamente, el dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
           { label: 'Cupones de descuento ilimitados', desc: 'Crea códigos de descuento por porcentaje o valor fijo para tus campañas.' },
-          { label: '🔜 Catálogo Instagram / Facebook', desc: 'Próximamente: conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
+          { label: '🔜 Catálogo Instagram / Facebook', desc: 'Próximamente: comparte tu catálogo directo en tu página de Facebook e Instagram en un solo clic.' },
           { label: '0% comisión TIENDAONLINE', desc: 'No cobramos porcentaje sobre tus ventas. Si activas pagos online, solo pagas la tarifa Stripe estándar (1,5% + €0,25 SEPA).' },
         ]
       },
@@ -128,7 +128,7 @@ const PLAN_CONFIG = {
         categoria: '📦 Inventario',
         items: [
           { label: '5.000 productos', desc: 'Para catálogos grandes con múltiples categorías.' },
-          { label: '4 imágenes por producto', desc: '5 GB de almacenamiento para fotos detalladas de alta calidad.' },
+          { label: '3 imágenes por producto', desc: '5 GB de almacenamiento. Recuerda: fotos de mayor resolución ocupan más espacio.' },
         ]
       },
       {
@@ -159,7 +159,7 @@ const PLAN_CONFIG = {
     emoji: '💎',
     tag: null,
     descripcion: 'Para negocios establecidos que quieren escalar sin límites y con atención dedicada.',
-    highlights: ['Productos ilimitados', 'Stripe propio sin intermediarios', 'Consultor dedicado', '4 imágenes por producto'],
+    highlights: ['Productos ilimitados', 'Stripe propio sin intermediarios', 'Asesoría prioritaria', '3 imágenes por producto'],
     detalle: [
       {
         categoria: '🛍️ Ventas',
@@ -174,21 +174,20 @@ const PLAN_CONFIG = {
         categoria: '📦 Inventario',
         items: [
           { label: 'Productos ilimitados', desc: 'Sin techo. Crece tu catálogo todo lo que necesites.' },
-          { label: '4 imágenes por producto', desc: '20 GB de almacenamiento total.' },
-          { label: '🔜 Facturación electrónica', desc: 'Próximamente: facturas automáticas compatibles con la normativa italiana.' },
+          { label: '3 imágenes por producto', desc: '20 GB de almacenamiento. Recuerda: fotos de mayor resolución ocupan más espacio.' },
         ]
       },
       {
         categoria: '🔧 Operaciones',
         items: [
-          { label: 'Consultor dedicado', desc: 'Un especialista de TIENDAONLINE asignado a tu cuenta para ayudarte a crecer.' },
+          { label: 'Asesoría prioritaria en horario de oficina', desc: 'Respuesta garantizada en horario de oficina (lun–vie 9–18) para dudas sobre tu negocio y la plataforma.' },
           { label: 'Backup diario', desc: 'Copia de seguridad automática de todos tus datos cada 24 horas.' },
         ]
       },
       {
         categoria: '💬 Soporte',
         items: [
-          { label: 'Soporte dedicado', desc: 'Acceso directo a tu consultor. Sin tiempos de espera.' },
+          { label: 'Soporte técnico prioritario', desc: 'Los problemas técnicos de tu plan se resuelven antes que cualquier otro. En horario de oficina.' },
         ]
       },
     ]
