@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { withAxiom } from 'next-axiom';
 
 export const config = {
   matcher: [
@@ -7,7 +8,7 @@ export const config = {
   ],
 };
 
-export default function middleware(req) {
+export default withAxiom(function middleware(req) {
   const url = req.nextUrl.clone();
 
   // Leemos el host en orden de prioridad:
@@ -53,4 +54,4 @@ export default function middleware(req) {
   }
 
   return NextResponse.next();
-}
+})

@@ -1,4 +1,5 @@
 import { withSentryConfig } from '@sentry/nextjs'
+import { withAxiom } from 'next-axiom'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -37,8 +38,8 @@ const nextConfig = {
       "img-src 'self' data: blob: https://bripfrfkwahsxtegmils.supabase.co https://images.unsplash.com https://picsum.photos https://*.tiendaonline.it",
       // Fuentes
       "font-src 'self' data:",
-      // Conexiones: Supabase API, Stripe API, Sentry
-      "connect-src 'self' https://bripfrfkwahsxtegmils.supabase.co wss://bripfrfkwahsxtegmils.supabase.co https://api.stripe.com https://*.sentry.io https://o4509068217901056.ingest.sentry.io",
+      // Conexiones: Supabase API, Stripe API, Sentry, Axiom
+      "connect-src 'self' https://bripfrfkwahsxtegmils.supabase.co wss://bripfrfkwahsxtegmils.supabase.co https://api.stripe.com https://*.sentry.io https://o4509068217901056.ingest.sentry.io https://api.axiom.co",
       // iFrames de Stripe Checkout
       "frame-src https://js.stripe.com https://hooks.stripe.com",
       // Sin objetos embebidos
@@ -72,8 +73,10 @@ const nextConfig = {
 const hasSentryToken = !!process.env.SENTRY_AUTH_TOKEN
 const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN
 
+const configWithAxiom = withAxiom(nextConfig)
+
 export default hasSentryToken
-  ? withSentryConfig(nextConfig, {
+  ? withSentryConfig(configWithAxiom, {
       dsn: sentryDsn,
       org: 'deibys-david-escalante-rodrigu',
       project: 'tiendaonline',
@@ -85,4 +88,4 @@ export default hasSentryToken
       disableClientWebpackPlugin: false,
       disableServerWebpackPlugin: false,
     })
-  : nextConfig
+  : configWithAxiom
