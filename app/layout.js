@@ -110,12 +110,8 @@ const SOFTWARE_SCHEMA = {
           priceCurrency: 'EUR',
         },
       ],
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: '4.8',
-        reviewCount: '47',
-        bestRating: '5',
-      },
+      // aggregateRating removido hasta disponer de reseñas reales verificables (Trustpilot/Google).
+      // Mantenerlo sin respaldo es riesgo de publicidad engañosa (Art. 23 Codice del Consumo IT / RDL 24/2021 ES).
     },
     {
       '@type': 'Organization',

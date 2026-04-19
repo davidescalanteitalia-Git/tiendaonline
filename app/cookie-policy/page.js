@@ -8,17 +8,17 @@ import { Cookie, Settings2, HelpCircle, Check, X, ShieldCheck } from 'lucide-rea
 const PAGE_T = {
   it: {
     title: 'Cookie Policy',
-    subtitle: 'Ultimo aggiornamento: 8 aprile 2026\nConforme alle Linee Guida del Garante Privacy italiano — Provvedimento del 10 giugno 2021',
+    subtitle: 'Ultimo aggiornamento: 19 aprile 2026\nConforme alle Linee Guida del Garante Privacy italiano — Provvedimento del 10 giugno 2021',
     langNote: null,
   },
   es: {
     title: 'Política de Cookies',
-    subtitle: 'Última actualización: 8 de abril de 2026\nConforme a las directrices del Garante Privacy italiano',
+    subtitle: 'Última actualización: 19 de abril de 2026\nConforme a las directrices del Garante Privacy italiano',
     langNote: '📋 Este documento legal está disponible en italiano. El contenido jurídico es vinculante en su versión italiana.',
   },
   en: {
     title: 'Cookie Policy',
-    subtitle: 'Last updated: 8 April 2026\nCompliant with Italian Garante Privacy guidelines — Provision of 10 June 2021',
+    subtitle: 'Last updated: 19 April 2026\nCompliant with Italian Garante Privacy guidelines — Provision of 10 June 2021',
     langNote: '📋 This legal document is available in Italian. The Italian version is the legally binding one.',
   },
 }
@@ -129,10 +129,8 @@ export default function CookiePolicyPage() {
               <li>Mantenere la sessione dell&apos;utente attiva</li>
               <li>Ricordare le preferenze dell&apos;utente (es. lingua)</li>
               <li>Analizzare il traffico e migliorare il servizio (solo con consenso)</li>
+              <li>Elaborare i pagamenti in sicurezza (solo quando l&apos;utente inserisce una carta)</li>
             </ul>
-            <p className="mt-4 bg-emerald-50 p-4 rounded-xl text-emerald-800 font-medium text-sm">
-              I cookie <strong>non contengono virus</strong> e non possono eseguire programmi sul tuo dispositivo.
-            </p>
           </Section>
 
           <Section title="2. Cookie tecnici — Sempre attivi" delay={0.1}>
@@ -182,9 +180,17 @@ export default function CookiePolicyPage() {
                     <td className="px-5 py-4 text-slate-600">Analisi traffico</td>
                     <td className="px-5 py-4"><span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg uppercase">Richiesto</span></td>
                   </tr>
+                  <tr className="hover:bg-slate-50 bg-slate-50/50">
+                    <td className="px-5 py-4 font-bold text-slate-800">Stripe</td>
+                    <td className="px-5 py-4 text-slate-600">Elaborazione pagamenti (solo al checkout)</td>
+                    <td className="px-5 py-4"><span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg uppercase">Non richiesto</span><br /><span className="text-[11px] text-slate-500 font-medium">base giuridica: contratto</span></td>
+                  </tr>
                 </tbody>
               </table>
             </div>
+            <p className="text-[13px] text-slate-500 mt-4 leading-relaxed font-medium">
+              I cookie Stripe (<code>__stripe_mid</code>, <code>__stripe_sid</code>) vengono impostati solo quando l&apos;utente apre un modulo di pagamento con carta; sono essenziali per prevenire frodi e completare la transazione, e si basano sulla base giuridica del contratto (art. 6.1.b GDPR), non sul consenso analitico/pubblicitario.
+            </p>
           </Section>
 
           <Section title="5. Come gestire i cookie" delay={0.1}>
@@ -220,7 +226,7 @@ export default function CookiePolicyPage() {
                 </div>
                 <ul className="text-sm text-emerald-900/80 space-y-2 list-disc list-inside">
                   <li>Ci aiuti a migliorare</li>
-                  <li>Dati sempre anonimi</li>
+                  <li>IP anonimizzato, senza cross-site tracking</li>
                 </ul>
               </div>
               <div className="bg-slate-100 rounded-2xl p-6 border border-slate-200">

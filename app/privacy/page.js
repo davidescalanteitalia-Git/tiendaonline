@@ -8,17 +8,17 @@ import { ShieldCheck, ChevronRight } from 'lucide-react'
 const PAGE_T = {
   it: {
     title: 'Privacy Policy',
-    subtitle: 'Ultimo aggiornamento: 8 aprile 2026 · Conforme al GDPR (Reg. UE 2016/679) e al D.Lgs. 196/2003',
+    subtitle: 'Ultimo aggiornamento: 19 aprile 2026 · Conforme al GDPR (Reg. UE 2016/679) e al D.Lgs. 196/2003',
     langNote: null,
   },
   es: {
     title: 'Política de Privacidad',
-    subtitle: 'Última actualización: 8 de abril de 2026 · Conforme al GDPR (Reg. UE 2016/679)',
+    subtitle: 'Última actualización: 19 de abril de 2026 · Conforme al GDPR (Reg. UE 2016/679)',
     langNote: '📋 Este documento legal está disponible en italiano. El contenido jurídico es vinculante en su versión italiana.',
   },
   en: {
     title: 'Privacy Policy',
-    subtitle: 'Last updated: 8 April 2026 · Compliant with GDPR (EU Reg. 2016/679)',
+    subtitle: 'Last updated: 19 April 2026 · Compliant with GDPR (EU Reg. 2016/679)',
     langNote: '📋 This legal document is available in Italian. The Italian version is the legally binding one.',
   },
 }
@@ -116,9 +116,12 @@ export default function PrivacyPage() {
               <Li><strong>Dati di registrazione:</strong> nome, cognome, indirizzo email, numero di telefono (WhatsApp).</Li>
               <Li><strong>Dati del negozio:</strong> nome del negozio, prodotti, prezzi, immagini caricate.</Li>
               <Li><strong>Dati di navigazione:</strong> indirizzo IP, tipo di browser, pagine visitate, orari di accesso.</Li>
-              <Li><strong>Dati degli ordini:</strong> prodotti selezionati, quantità, messaggi inviati tramite WhatsApp.</Li>
+              <Li><strong>Dati degli ordini (POS e online):</strong> articoli, quantità, totali, eventuale nome/telefono del cliente fornito dal negoziante o inserito dal cliente finale al checkout. Conservati nei database della piattaforma per consentire al negoziante la gestione (storico ordini, fatture, fiati/conti in sospeso).</Li>
+              <Li><strong>Dati di pagamento (solo se attivato):</strong> trattati interamente da Stripe (vedi sezione 5). TIENDAONLINE non memorizza numeri di carta, CVV o dati bancari completi.</Li>
             </ul>
-            <p>I dati degli ordini vengono trasmessi direttamente tramite WhatsApp e non vengono memorizzati sui nostri server.</p>
+            <p className="text-sm bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-900">
+              <strong>⚠️ Nota importante:</strong> il negoziante che apre una bottega su TIENDAONLINE è autonomo titolare del trattamento per i dati dei propri clienti finali, mentre TIENDAONLINE agisce come responsabile del trattamento (art. 28 GDPR). Il negoziante è tenuto a fornire la propria informativa privacy ai clienti che acquistano nel suo store.
+            </p>
           </Section>
 
           <Section title="3. Finalità e base giuridica del trattamento" delay={0.1}>
@@ -139,13 +142,15 @@ export default function PrivacyPage() {
             </ul>
           </Section>
 
-          <Section title="5. Condivisione dei dati con terze parti" delay={0.1}>
-            <p>I dati non vengono venduti né ceduti a terzi per finalità commerciali. Potremmo condividerli con:</p>
+          <Section title="5. Condivisione dei dati con terze parti (responsabili del trattamento)" delay={0.1}>
+            <p>I dati non vengono venduti né ceduti a terzi per finalità commerciali. Condividiamo i dati strettamente necessari con i seguenti responsabili del trattamento, ciascuno nominato ai sensi dell&apos;art. 28 GDPR:</p>
             <ul className="space-y-4 my-4">
-              <Li><strong>Supabase Inc.</strong> (USA) – database e autenticazione. Trattamento basato su Clausole Contrattuali Standard UE.</Li>
-              <Li><strong>Coolify / Hetzner</strong> – infrastruttura di hosting con server localizzati in Europa (EU-West-2).</Li>
-              <Li><strong>PostHog Inc.</strong> – analisi del traffico in forma anonima e aggregata. I dati vengono anonimizzati prima dell&apos;invio. <br /><a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-500 hover:underline">Privacy Policy PostHog ↗</a></Li>
-              <Li><strong>Sentry (Functional Software Inc.)</strong> – monitoraggio degli errori tecnici. Non raccoglie dati personali degli utenti finali. <br /><a href="https://sentry.io/privacy/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-500 hover:underline">Privacy Policy Sentry ↗</a></Li>
+              <Li><strong>Supabase Inc.</strong> (USA) – database, autenticazione e storage immagini. Trattamento basato su Clausole Contrattuali Standard UE (Decisione 2021/914). <br /><a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-500 hover:underline">Privacy Policy Supabase ↗</a></Li>
+              <Li><strong>Stripe Payments Europe Ltd.</strong> (Irlanda) – elaborazione pagamenti per gli abbonamenti alla piattaforma (B2B) e, se attivato dal negoziante, per le vendite ai clienti finali tramite Stripe Connect. Stripe è certificato PCI-DSS Level 1 e opera come titolare autonomo del trattamento per i dati di pagamento. <br /><a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-500 hover:underline">Privacy Policy Stripe ↗</a></Li>
+              <Li><strong>Hetzner Online GmbH</strong> (Germania) con orchestrazione Coolify – infrastruttura di hosting su server localizzati in Europa.</Li>
+              <Li><strong>Cloudflare Inc.</strong> (USA) – CDN, protezione DDoS, DNS. Trattamento basato su Clausole Contrattuali Standard UE.</Li>
+              <Li><strong>PostHog Inc.</strong> (USA) – analisi del traffico. Attivato solo previo consenso dell&apos;utente; configurato con IP anonimizzato e senza cross-site tracking. <br /><a href="https://posthog.com/privacy" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-500 hover:underline">Privacy Policy PostHog ↗</a></Li>
+              <Li><strong>Sentry (Functional Software Inc.)</strong> (USA) – monitoraggio degli errori tecnici. Configurato per minimizzare la raccolta di dati personali (PII scrubbing, nessuna registrazione di corpi di richiesta sensibili); può comunque ricevere IP e URL visitati al momento dell&apos;errore. <br /><a href="https://sentry.io/privacy/" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-500 hover:underline">Privacy Policy Sentry ↗</a></Li>
               <Li>Autorità competenti (Garante Privacy, Autorità giudiziaria), ove richiesto dalla legge.</Li>
             </ul>
           </Section>

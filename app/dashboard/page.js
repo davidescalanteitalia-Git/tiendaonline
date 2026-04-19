@@ -324,8 +324,8 @@ export default function DashboardPage() {
                   <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full"></div>
                   <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
                      <div>
-                        <h4 className="text-lg font-black tracking-tight mb-1">¡Impulsa tus Ventas! 🚀</h4>
-                        <p className="text-blue-100 text-sm opacity-80 max-w-sm font-medium">Conecta tu catálogo con Instagram y WhatsApp para automatizar tus pedidos al 100%.</p>
+                        <h4 className="text-lg font-black tracking-tight mb-1">Conecta Instagram y WhatsApp</h4>
+                        <p className="text-blue-100 text-sm opacity-80 max-w-sm font-medium">Añade los links a tu bottega para que los clientes te escriban y reciban el catálogo en un toque.</p>
                      </div>
                      <button className="px-8 py-4 bg-white text-blue-700 rounded-2xl font-black text-sm hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blue-900/20">
                         Tutorial Pro

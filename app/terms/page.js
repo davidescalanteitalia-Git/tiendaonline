@@ -8,17 +8,17 @@ import { ShieldCheck, ChevronRight } from 'lucide-react'
 const PAGE_T = {
   it: {
     title: 'Termini di servizio',
-    subtitle: 'Ultimo aggiornamento: 8 aprile 2026 · Legge applicabile: diritto italiano (D.Lgs. 206/2005)',
+    subtitle: 'Ultimo aggiornamento: 19 aprile 2026 · Legge applicabile: diritto italiano (D.Lgs. 206/2005)',
     langNote: null,
   },
   es: {
     title: 'Términos de servicio',
-    subtitle: 'Última actualización: 8 de abril de 2026 · Ley aplicable: derecho italiano',
+    subtitle: 'Última actualización: 19 de abril de 2026 · Ley aplicable: derecho italiano',
     langNote: '📋 Este documento legal está disponible en italiano. El contenido jurídico es vinculante en su versión italiana.',
   },
   en: {
     title: 'Terms of Service',
-    subtitle: 'Last updated: 8 April 2026 · Applicable law: Italian law',
+    subtitle: 'Last updated: 19 April 2026 · Applicable law: Italian law',
     langNote: '📋 This legal document is available in Italian. The Italian version is the legally binding one.',
   },
 }
@@ -91,7 +91,7 @@ export default function TermsPage() {
           </AnimatedSection>
 
           <Section title="1. Descrizione del servizio" delay={0.1}>
-            <p><strong>TIENDAONLINE</strong> è una piattaforma SaaS che consente ai commercianti di creare una vetrina online e ricevere ordini tramite WhatsApp. Il servizio è disponibile in modalità gratuita e, in futuro, in modalità avanzata a pagamento.</p>
+            <p><strong>TIENDAONLINE</strong> è una piattaforma SaaS che consente ai commercianti di creare una vetrina online, gestire inventario, incassare da cassa (POS) e ricevere ordini tramite WhatsApp. Il servizio è disponibile in un piano Gratuito e in tre piani a pagamento: <strong>Base</strong> (€15/mese o €12/mese annuale), <strong>Pro</strong> (€25/mese o €20/mese annuale) e <strong>Grow</strong> (€40/mese o €32/mese annuale). TIENDAONLINE si riserva il diritto di modificare i prezzi e le funzionalità dei piani a pagamento con preavviso di 30 giorni tramite email agli utenti registrati.</p>
           </Section>
 
           <Section title="2. Accettazione dei termini" delay={0.1}>
@@ -121,7 +121,22 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="5. Contenuti dell'utente" delay={0.1}>
+          <Section title="5. Piani a pagamento, fatturazione e pagamenti" delay={0.1}>
+            <p><strong>Piani disponibili:</strong> Base (€15/mese o €144/anno), Pro (€25/mese o €240/anno), Grow (€40/mese o €384/anno). Tutti i prezzi sono IVA esclusa salvo diversa indicazione.</p>
+            <p><strong>Periodo di prova:</strong> i nuovi utenti ricevono 30 giorni di prova gratuita sui piani a pagamento. Al termine del periodo, l&apos;abbonamento si rinnova automaticamente al prezzo indicato al momento della sottoscrizione.</p>
+            <p><strong>Rinnovo e cancellazione:</strong> gli abbonamenti mensili si rinnovano mese per mese, quelli annuali anno per anno. L&apos;utente può cancellare in qualsiasi momento dalle impostazioni; la cancellazione impedisce il rinnovo successivo ma non dà diritto al rimborso del periodo già fatturato (salvo quanto previsto dal diritto di recesso per consumatori di cui al D.Lgs. 206/2005, art. 52-59).</p>
+            <p><strong>Processor di pagamento — Stripe:</strong> i pagamenti dell&apos;abbonamento TIENDAONLINE sono gestiti da <a href="https://stripe.com" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-bold hover:text-emerald-500 underline underline-offset-2">Stripe, Inc.</a> (con sede legale in 354 Oyster Point Blvd, South San Francisco, CA 94080, USA, e Stripe Technology Europe Ltd per l&apos;area SEPA). TIENDAONLINE non archivia i dati della carta di credito: sono gestiti interamente da Stripe secondo gli standard PCI-DSS Livello 1.</p>
+            <p><strong>Pagamenti dei clienti della tua vetrina (pagamenti online opzionali):</strong> nei piani a pagamento l&apos;utente può collegare il proprio account Stripe per accettare pagamenti con carta dai propri clienti. In questo caso:</p>
+            <ul className="space-y-3 my-4">
+              <Li>Il denaro delle vendite va direttamente sul conto bancario collegato al tuo account Stripe, senza transitare da TIENDAONLINE.</Li>
+              <Li>TIENDAONLINE <strong>non prende alcuna commissione</strong> sulle tue vendite in nessun piano.</Li>
+              <Li>Si applicano le tariffe standard di Stripe (al momento della redazione di questi Termini: 1,5% + €0,25 per le carte europee, soggette ad aggiornamenti da parte di Stripe — consulta sempre <a href="https://stripe.com/it/pricing" target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-bold hover:text-emerald-500 underline underline-offset-2">stripe.com/it/pricing</a> per le tariffe aggiornate).</Li>
+              <Li>Il rapporto commerciale tra l&apos;utente e Stripe è regolato direttamente dai Termini di Stripe Connect.</Li>
+            </ul>
+            <p><strong>Declassamento al piano Gratuito:</strong> se l&apos;utente cancella un piano a pagamento, torna automaticamente al piano Gratuito senza perdere dati o prodotti. Eventuali funzionalità riservate al piano a pagamento (es. immagini aggiuntive per prodotto, codici sconto, reportistica avanzata) saranno disattivate al termine del periodo fatturato.</p>
+          </Section>
+
+          <Section title="6. Contenuti dell'utente" delay={0.1}>
             <p>L&apos;utente è l&apos;unico responsabile dei contenuti pubblicati (prodotti, prezzi, immagini, descrizioni). È espressamente vietato pubblicare contenuti:</p>
             <ul className="space-y-3 my-4">
               <Li>Illegali, diffamatori o che violino diritti di terzi</Li>
@@ -131,7 +146,7 @@ export default function TermsPage() {
             <p>TIENDAONLINE si riserva il diritto di rimuovere contenuti non conformi senza preavviso.</p>
           </Section>
 
-          <Section title="6. Limitazioni di responsabilità" delay={0.1}>
+          <Section title="7. Limitazioni di responsabilità" delay={0.1}>
             <p>TIENDAONLINE non è responsabile per:</p>
             <ul className="space-y-3 my-4">
               <Li>Interruzioni temporanee del servizio per manutenzione o cause di forza maggiore</Li>
@@ -141,31 +156,31 @@ export default function TermsPage() {
             </ul>
           </Section>
 
-          <Section title="7. Proprietà intellettuale" delay={0.1}>
+          <Section title="8. Proprietà intellettuale" delay={0.1}>
             <p>Il marchio, il logo, il codice sorgente e tutti i contenuti originali di TIENDAONLINE sono di proprietà esclusiva del Titolare. È vietata qualsiasi riproduzione o utilizzo non autorizzato.</p>
             <p>I contenuti pubblicati dall&apos;utente (prodotti, immagini) rimangono di proprietà dell&apos;utente. L&apos;utente concede a TIENDAONLINE una licenza non esclusiva per visualizzare tali contenuti nell&apos;ambito del servizio.</p>
           </Section>
 
-          <Section title="8. Cancellazione dell'account" delay={0.1}>
+          <Section title="9. Cancellazione dell'account" delay={0.1}>
             <p>L&apos;utente può cancellare il proprio account e la propria vetrina in qualsiasi momento dalle impostazioni del pannello di controllo. La cancellazione è immediata e comporta la rimozione definitiva di tutti i dati associati entro 30 giorni.</p>
           </Section>
 
-          <Section title="9. Modifiche ai termini" delay={0.1}>
+          <Section title="10. Modifiche ai termini" delay={0.1}>
             <p>TIENDAONLINE si riserva il diritto di aggiornare i presenti Termini. Gli utenti registrati saranno informati via email con almeno 15 giorni di preavviso. Il continuato utilizzo del servizio dopo la modifica costituisce accettazione dei nuovi Termini.</p>
           </Section>
 
-          <Section title="10. Legge applicabile e foro competente" delay={0.1}>
+          <Section title="11. Legge applicabile e foro competente" delay={0.1}>
             <p>I presenti Termini sono regolati dalla legge italiana. Per qualsiasi controversia è competente il Tribunale di riferimento del luogo di residenza del Titolare del servizio. Per i consumatori si applica la normativa europea sulla risoluzione alternativa delle controversie (ODR).</p>
           </Section>
 
-          <Section title="11. Risoluzione alternativa delle controversie (ODR)" delay={0.1}>
+          <Section title="12. Risoluzione alternativa delle controversie (ODR)" delay={0.1}>
             <p>In conformità al Regolamento UE 524/2013, i consumatori residenti nell&apos;UE hanno il diritto di ricorrere alla piattaforma ODR della Commissione Europea per la risoluzione delle controversie online:</p>
             <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" className="inline-block mt-3 px-6 py-3 bg-slate-100 hover:bg-emerald-50 text-emerald-700 font-bold rounded-xl transition-colors border border-slate-200 hover:border-emerald-200">
               Visita piattaforma ODR ↗
             </a>
           </Section>
 
-          <Section title="12. Contatti" delay={0.1}>
+          <Section title="13. Contatti" delay={0.1}>
             <p className="mb-4">Per qualsiasi domanda sui presenti Termini:</p>
             <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 space-y-2">
               <div className="font-bold text-slate-800">TIENDAONLINE</div>

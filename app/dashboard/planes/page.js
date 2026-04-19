@@ -36,7 +36,7 @@ const PLAN_CONFIG = {
         items: [
           { label: 'POS táctil', desc: 'Cobra en persona desde tu celular o tablet, rápido y sin complicaciones.' },
           { label: 'Checkout por WhatsApp', desc: 'Tus clientes hacen el pedido online y te escriben directo. Tú coordinas el pago.' },
-          { label: '0% comisión por venta', desc: 'TIENDAONLINE no te cobra nada por cada venta que hagas.' },
+          { label: '0% comisión TIENDAONLINE', desc: 'No te cobramos nada por cada venta. Si luego activas pagos online (opcional), se aplican solo las tarifas de Stripe (1,5% + €0,25 SEPA).' },
         ]
       },
       {
@@ -81,7 +81,7 @@ const PLAN_CONFIG = {
         items: [
           { label: 'Pagos online con Stripe', desc: 'Tus clientes pagan con tarjeta directamente en tu tienda. El dinero va directo a tu cuenta bancaria — TIENDAONLINE no toca ni cobra nada del cobro. Solo pagas las tarifas estándar de Stripe a ellos directamente.' },
           { label: 'Checkout por WhatsApp', desc: 'Sigue disponible como opción alternativa.' },
-          { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
+          { label: '0% comisión TIENDAONLINE', desc: 'No cobramos porcentaje sobre tus ventas. Si activas pagos online, solo pagas la tarifa Stripe estándar (1,5% + €0,25 SEPA).' },
         ]
       },
       {
@@ -121,7 +121,7 @@ const PLAN_CONFIG = {
           { label: 'Pagos online con Stripe', desc: 'Igual que el plan Básico. Tu cuenta Stripe conectada directamente, el dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
           { label: 'Cupones de descuento ilimitados', desc: 'Crea códigos de descuento por porcentaje o valor fijo para tus campañas.' },
           { label: '🔜 Catálogo Instagram / Facebook', desc: 'Próximamente: conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
-          { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
+          { label: '0% comisión TIENDAONLINE', desc: 'No cobramos porcentaje sobre tus ventas. Si activas pagos online, solo pagas la tarifa Stripe estándar (1,5% + €0,25 SEPA).' },
         ]
       },
       {
@@ -167,7 +167,7 @@ const PLAN_CONFIG = {
           { label: 'Stripe propio — sin intermediarios', desc: 'Conectas tu propia cuenta Stripe. El dinero va directo a tu banco. TIENDAONLINE no interviene en ningún momento. Te guiamos paso a paso para activarlo la primera vez.' },
           { label: '🔜 Recuperación de carritos abandonados', desc: 'Próximamente: aviso automático a clientes que no completaron su compra.' },
           { label: '🔜 Programa de puntos y afiliados', desc: 'Próximamente: fideliza a tus clientes con puntos canjeables y recompensas.' },
-          { label: '0% comisión por venta', desc: 'TIENDAONLINE no cobra porcentaje sobre tus ventas.' },
+          { label: '0% comisión TIENDAONLINE', desc: 'No cobramos porcentaje sobre tus ventas. Si activas pagos online, solo pagas la tarifa Stripe estándar (1,5% + €0,25 SEPA).' },
         ]
       },
       {
@@ -355,7 +355,7 @@ export default function PlanesPage() {
           Planes y Servicios
         </h1>
         <p style={{ margin: 0, color: '#64748b', fontSize: '0.95rem' }}>
-          Sin comisión por venta en todos los planes. Cancela cuando quieras.
+          0% comisión TIENDAONLINE en todos los planes (sólo pagas Stripe cuando cobres online). Cancela cuando quieras.
         </p>
 
         {/* Toggle anual/mensual */}

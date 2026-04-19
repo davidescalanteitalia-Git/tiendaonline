@@ -72,55 +72,59 @@ const DEMO_TABS = [
   },
 ]
 
+// ── WEB_DETALLE_LANDING ───────────────────────────────────────────────────────
+// Reescrito 2026-04-19 (ver REVISION_MARCA.md §4.2): voz cercana y concreta,
+// sin clichés ("ispira fiducia", "código optimizado"). Cada beneficio aterrizado
+// en un resultado medible para el dueño del negocio.
 const WEB_DETALLE_LANDING = [
   {
     cat: { it: '🎨 Design & UX', es: '🎨 Diseño & UX', en: '🎨 Design & UX' },
     items: [
-      { l: { it: 'Design personalizzato', es: 'Diseño personalizado', en: 'Custom design' }, d: { it: 'Nessun template generico — identità visiva costruita su misura per il tuo brand.', es: 'Sin plantillas genéricas — identidad visual construida a medida para tu marca.', en: 'No generic templates — visual identity built specifically for your brand.' } },
-      { l: { it: 'UI moderna e professionale', es: 'UI moderna y profesional', en: 'Modern professional UI' }, d: { it: 'Stile pulito, contemporaneo, che ispira fiducia ai tuoi visitatori.', es: 'Estilo limpio y contemporáneo que inspira confianza a tus visitantes.', en: 'Clean, contemporary style that builds trust with your visitors.' } },
-      { l: { it: 'Responsive (mobile + tablet)', es: 'Responsive (móvil + tablet)', en: 'Responsive (mobile + tablet)' }, d: { it: 'Il sito si adatta perfettamente a qualsiasi schermo, dal telefono al desktop.', es: 'El sitio se adapta perfectamente a cualquier pantalla, del móvil al escritorio.', en: 'The site adapts perfectly to any screen, from mobile to desktop.' } },
+      { l: { it: 'Design su misura', es: 'Diseño a medida', en: 'Custom design' }, d: { it: 'Niente template riciclati. Il tuo sito non sembra quello di altri 10.000 negozi.', es: 'Nada de plantillas recicladas. Tu sitio no se parece al de otros 10.000 negocios.', en: 'No recycled templates. Your site doesn’t look like 10,000 other shops.' } },
+      { l: { it: 'Ti fanno scegliere, non scrollare', es: 'Hace que te elijan, no que te ignoren', en: 'Makes visitors choose you, not scroll past' }, d: { it: 'Un aspetto professionale che fa decidere al cliente di comprare da te invece che da un profilo Instagram anonimo.', es: 'Un aspecto profesional que hace que el cliente decida comprarte a ti y no a un perfil de Instagram anónimo.', en: 'A polished look that makes customers pick you over an anonymous Instagram profile.' } },
+      { l: { it: 'Si vede bene su cellulare', es: 'Se ve bien en el celular', en: 'Looks right on mobile' }, d: { it: 'L’80% dei tuoi clienti entra dal telefono. Il sito è pensato prima per loro.', es: 'El 80% de tus clientes entra desde el celular. El sitio está pensado primero para ellos.', en: '80% of your customers visit from a phone. The site is built for them first.' } },
     ],
   },
   {
     cat: { it: '📄 Struttura del sito', es: '📄 Estructura del sitio', en: '📄 Site structure' },
     items: [
-      { l: { it: '5 sezioni incluse', es: '5 secciones incluidas', en: '5 sections included' }, d: { it: 'Home, Chi siamo, Servizi, Contatti e Blog — tutto ciò che serve per presentarti.', es: 'Home, Sobre nosotros, Servicios, Contacto y Blog — todo lo que necesitas para presentarte.', en: 'Home, About, Services, Contact and Blog — everything you need to present yourself.' } },
+      { l: { it: '5 sezioni incluse', es: '5 secciones incluidas', en: '5 sections included' }, d: { it: 'Home, Chi siamo, Servizi, Contatti e Blog — tutto quello che serve per presentarti senza pagine vuote.', es: 'Home, Sobre nosotros, Servicios, Contacto y Blog — todo lo necesario para presentarte sin páginas vacías.', en: 'Home, About, Services, Contact and Blog — everything you need, no filler pages.' } },
     ],
   },
   {
-    cat: { it: '🔍 SEO & Prestazioni', es: '🔍 SEO & Rendimiento', en: '🔍 SEO & Performance' },
+    cat: { it: '🔍 SEO & velocità', es: '🔍 SEO & velocidad', en: '🔍 SEO & speed' },
     items: [
-      { l: { it: 'SEO di base configurato', es: 'SEO básico configurado', en: 'Basic SEO configured' }, d: { it: 'Meta tag, titoli, descrizioni e sitemap pronti per essere indicizzati da Google.', es: 'Meta tags, títulos, descripciones y sitemap listos para que Google te indexe.', en: 'Meta tags, titles, descriptions and sitemap ready for Google indexing.' } },
-      { l: { it: 'Ottimizzazione velocità', es: 'Optimización de velocidad', en: 'Speed optimization' }, d: { it: 'Immagini compresse, codice ottimizzato, caricamento veloce per ridurre i rimbalzi.', es: 'Imágenes comprimidas, código optimizado, carga rápida para reducir los rebotes.', en: 'Compressed images, optimized code, fast loading to reduce bounce rates.' } },
+      { l: { it: 'Ti trovano su Google', es: 'Te encuentran en Google', en: 'Google can find you' }, d: { it: 'Titoli, descrizioni e sitemap configurati per farti apparire quando qualcuno cerca il tuo negozio nella tua zona.', es: 'Títulos, descripciones y sitemap configurados para que aparezcas cuando alguien busca tu negocio en tu zona.', en: 'Titles, descriptions and sitemap configured so you show up when someone searches for your shop nearby.' } },
+      { l: { it: 'Carica in 2 secondi', es: 'Carga en 2 segundos', en: 'Loads in 2 seconds' }, d: { it: 'I clienti non aspettano. Un sito lento è un cliente perso.', es: 'Los clientes no esperan. Un sitio lento es un cliente perdido.', en: 'Customers don’t wait. A slow site is a lost sale.' } },
     ],
   },
   {
     cat: { it: '🔒 Sicurezza', es: '🔒 Seguridad', en: '🔒 Security' },
     items: [
-      { l: { it: 'Certificato SSL incluso', es: 'Certificado SSL incluido', en: 'SSL certificate included' }, d: { it: 'Connessione HTTPS garantita, il lucchetto verde che ispira fiducia.', es: 'Conexión HTTPS garantizada, el candado verde que inspira confianza.', en: 'HTTPS connection guaranteed, the green padlock that builds trust.' } },
-      { l: { it: 'Protezione base inclusa', es: 'Protección básica incluida', en: 'Basic protection included' }, d: { it: 'Configurazione standard per proteggerti da bot, spam e accessi non autorizzati.', es: 'Configuración estándar para protegerte de bots, spam y accesos no autorizados.', en: 'Standard configuration to protect you from bots, spam and unauthorized access.' } },
+      { l: { it: 'Certificato SSL incluso', es: 'Certificado SSL incluido', en: 'SSL certificate included' }, d: { it: 'Il lucchetto verde accanto al tuo dominio: i clienti vedono che è sicuro e completano l’ordine.', es: 'El candado verde junto a tu dominio: los clientes ven que es seguro y completan el pedido.', en: 'The green padlock next to your domain: customers see it’s safe and finish the order.' } },
+      { l: { it: 'Protezione base inclusa', es: 'Protección básica incluida', en: 'Basic protection included' }, d: { it: 'Bot, spam e tentativi di accesso bloccati senza che tu debba occupartene.', es: 'Bots, spam e intentos de acceso bloqueados sin que tengas que ocuparte tú.', en: 'Bots, spam and login attempts blocked so you don’t have to deal with them.' } },
     ],
   },
   {
     cat: { it: '🔗 Integrazioni', es: '🔗 Integraciones', en: '🔗 Integrations' },
     items: [
-      { l: { it: 'Collegamento social media', es: 'Enlace a redes sociales', en: 'Social media links' }, d: { it: 'Instagram, Facebook, TikTok — i tuoi profili social connessi al sito.', es: 'Instagram, Facebook, TikTok — tus perfiles sociales conectados a la web.', en: 'Instagram, Facebook, TikTok — your social profiles connected to the site.' } },
-      { l: { it: 'Pulsante WhatsApp integrato', es: 'Botón WhatsApp integrado', en: 'WhatsApp button integrated' }, d: { it: 'I visitatori ti contattano direttamente su WhatsApp con un clic.', es: 'Los visitantes te contactan directamente por WhatsApp con un clic.', en: 'Visitors contact you directly on WhatsApp with one click.' } },
-      { l: { it: 'Integrazione con il tuo negozio', es: 'Integración con tu tienda', en: 'Store integration' }, d: { it: 'Link diretto al tuo catalogo TIENDAONLINE per vendere anche online.', es: 'Enlace directo a tu catálogo TIENDAONLINE para vender también online.', en: 'Direct link to your TIENDAONLINE catalog to sell online too.' } },
+      { l: { it: 'Social media collegati', es: 'Redes sociales conectadas', en: 'Social media connected' }, d: { it: 'Instagram, Facebook, TikTok — un clic dal tuo sito al tuo profilo.', es: 'Instagram, Facebook, TikTok — un clic desde tu web a tu perfil.', en: 'Instagram, Facebook, TikTok — one click from your site to your profile.' } },
+      { l: { it: 'Pulsante WhatsApp pronto', es: 'Botón de WhatsApp listo', en: 'WhatsApp button ready' }, d: { it: 'Il visitatore tocca il bottone e ti scrive direttamente. Dove ti scrivono già oggi.', es: 'El visitante toca el botón y te escribe directo. Donde ya te escriben hoy.', en: 'Visitors tap the button and message you straight away — where they already chat with you.' } },
+      { l: { it: 'Collegato al tuo negozio TIENDAONLINE', es: 'Conectado a tu tienda TIENDAONLINE', en: 'Connected to your TIENDAONLINE store' }, d: { it: 'Dal sito corporate al catalogo con i prodotti in un clic. Due canali, una sola gestione.', es: 'De la web corporativa al catálogo con productos en un clic. Dos canales, una sola gestión.', en: 'From the corporate site to your product catalogue in one click. Two channels, one backend.' } },
     ],
   },
   {
     cat: { it: '⚙️ Pannello di amministrazione', es: '⚙️ Panel de administración', en: '⚙️ Admin panel' },
     items: [
-      { l: { it: 'CMS semplice per aggiornamenti', es: 'CMS sencillo para actualizaciones', en: 'Simple CMS for updates' }, d: { it: 'Aggiorna testi, immagini e prezzi senza toccare il codice.', es: 'Actualiza textos, imágenes y precios sin tocar el código.', en: 'Update texts, images and prices without touching the code.' } },
+      { l: { it: 'Aggiorna tu stesso', es: 'Actualiza tú mismo', en: 'Update it yourself' }, d: { it: 'Cambia testi, foto e prezzi dal tuo cellulare. Senza chiamare un tecnico, senza aspettare una settimana.', es: 'Cambia textos, fotos y precios desde el celular. Sin llamar a un técnico, sin esperar una semana.', en: 'Change text, photos and prices from your phone. No tech calls, no week-long waits.' } },
     ],
   },
   {
-    cat: { it: '🛠️ Supporto & Manutenzione', es: '🛠️ Soporte & Mantenimiento', en: '🛠️ Support & Maintenance' },
+    cat: { it: '🛠️ Supporto & manutenzione', es: '🛠️ Soporte & mantenimiento', en: '🛠️ Support & maintenance' },
     items: [
-      { l: { it: 'Aggiornamenti inclusi nel piano annuale', es: 'Actualizaciones incluidas en plan anual', en: 'Updates included in annual plan' }, d: { it: 'Teniamo il sito aggiornato, sicuro e ottimizzato tutto l\'anno.', es: 'Mantenemos el sitio actualizado, seguro y optimizado todo el año.', en: 'We keep the site updated, secure and optimized all year.' } },
-      { l: { it: 'Supporto prioritario via WhatsApp', es: 'Soporte prioritario vía WhatsApp', en: 'Priority WhatsApp support' }, d: { it: 'Assistenza diretta dal team ogni volta che hai bisogno.', es: 'Asistencia directa del equipo cada vez que lo necesites.', en: 'Direct team assistance whenever you need it.' } },
-      { l: { it: 'Backup automatici regolari', es: 'Backups automáticos regulares', en: 'Regular automatic backups' }, d: { it: 'I tuoi contenuti sempre al sicuro con copie di riserva automatiche.', es: 'Tu contenido siempre seguro con copias de respaldo automáticas.', en: 'Your content always safe with automatic backup copies.' } },
+      { l: { it: 'Lo teniamo aggiornato noi', es: 'Lo mantenemos actualizado nosotros', en: 'We keep it up to date' }, d: { it: 'Aggiornamenti di sicurezza e ottimizzazioni inclusi nel piano annuale. Tu vendi, noi ci occupiamo del resto.', es: 'Actualizaciones de seguridad y optimizaciones incluidas en el plan anual. Tú vendes, nosotros nos ocupamos del resto.', en: 'Security updates and optimisations included in the annual plan. You sell, we handle the rest.' } },
+      { l: { it: 'Supporto prioritario via WhatsApp', es: 'Soporte prioritario por WhatsApp', en: 'Priority WhatsApp support' }, d: { it: 'Assistenza diretta del team in orario lavorativo (lun–ven 9–18).', es: 'Asistencia directa del equipo en horario laboral (lun–vie 9–18).', en: 'Direct team assistance during working hours (Mon–Fri 9–18).' } },
+      { l: { it: 'Backup automatici', es: 'Backups automáticos', en: 'Automatic backups' }, d: { it: 'Se qualcosa va storto, i tuoi contenuti tornano al posto giusto in pochi minuti.', es: 'Si algo sale mal, tus contenidos vuelven a su sitio en minutos.', en: 'If something breaks, your content is back in minutes.' } },
     ],
   },
 ]
@@ -186,7 +190,7 @@ export default function Home() {
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
           { l: 'POS ' + (lang === 'it' ? 'tattile' : 'táctil'), d: lang === 'it' ? 'Incassa in negozio dal tuo cellulare o tablet.' : 'Cobra en persona desde tu celular o tablet, rápido y sin complicaciones.' },
           { l: 'Checkout WhatsApp', d: lang === 'it' ? 'I clienti ordinano online e ti scrivono su WhatsApp. Coordini tu il pagamento.' : 'Tus clientes hacen el pedido online y te escriben directo. Tú coordinas el pago.' },
-          { l: lang === 'it' ? '0% commissioni' : '0% comisión', d: lang === 'it' ? 'TIENDAONLINE non prende nulla sulle tue vendite.' : 'TIENDAONLINE no cobra nada sobre tus ventas.' },
+          { l: lang === 'it' ? '0% commissioni TIENDAONLINE' : '0% comisión TIENDAONLINE', d: lang === 'it' ? 'Non prendiamo nulla sulle tue vendite. Se in futuro attivi i pagamenti online, Stripe applica le sue tariffe standard (1,5% + €0,25 per carta europea, aggiornate da Stripe).' : 'No cobramos nada sobre tus ventas. Si más adelante activas pagos online, Stripe aplica sus tarifas estándar (1,5% + €0,25 por tarjeta europea, actualizadas por Stripe).' },
         ]},
         { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
           { l: lang === 'it' ? '50 prodotti' : '50 productos', d: lang === 'it' ? 'Ideale per un piccolo negozio o catalogo base.' : 'Suficiente para una tienda pequeña o catálogo básico.' },
@@ -224,7 +228,7 @@ export default function Home() {
       detalle: [
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
           { l: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe', d: lang === 'it' ? 'I tuoi clienti pagano con carta direttamente nel tuo negozio. Il denaro va direttamente sul tuo conto bancario — TIENDAONLINE non tocca nulla.' : 'Tus clientes pagan con tarjeta directamente en tu tienda. El dinero va directo a tu cuenta bancaria — TIENDAONLINE no interviene.' },
-          { l: lang === 'it' ? '0% commissioni' : '0% comisión', d: lang === 'it' ? 'Nessuna percentuale sulle vendite.' : 'Sin porcentaje sobre tus ventas.' },
+          { l: lang === 'it' ? '0% commissioni TIENDAONLINE' : '0% comisión TIENDAONLINE', d: lang === 'it' ? 'Nessuna percentuale sulle vendite da parte nostra. Le tariffe di Stripe per i pagamenti con carta sono separate e pagate direttamente a Stripe.' : 'Ningún porcentaje sobre tus ventas de nuestra parte. Las tarifas de Stripe para pagos con tarjeta son aparte y se pagan directamente a Stripe.' },
         ]},
         { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
           { l: lang === 'it' ? '500 prodotti' : '500 productos', d: lang === 'it' ? 'Per un negozio medio con catalogo variato.' : 'Para una tienda mediana con catálogo variado.' },
@@ -260,14 +264,14 @@ export default function Home() {
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
           { l: lang === 'it' ? 'Pagamenti online con Stripe' : 'Pagos online con Stripe', d: lang === 'it' ? 'Come il piano Base. Il tuo account Stripe collegato direttamente, i soldi arrivano sul tuo conto senza che TIENDAONLINE intervenga.' : 'Tu cuenta Stripe conectada directamente. El dinero llega a tu banco sin que TIENDAONLINE intervenga en ningún momento.' },
           { l: lang === 'it' ? 'Codici sconto illimitati' : 'Cupones de descuento ilimitados', d: lang === 'it' ? 'Crea codici sconto in percentuale o valore fisso.' : 'Crea códigos de descuento por porcentaje o valor fijo.' },
-          { l: (lang === 'it' ? '🔜 Catalogo Instagram / Facebook' : '🔜 Catálogo Instagram / Facebook'), d: lang === 'it' ? 'Prossimamente: collega il tuo negozio ai social e vendi direttamente da lì.' : 'Próximamente: conecta tu tienda con tus redes sociales y vende directamente desde ahí.' },
+          { l: (lang === 'it' ? '🔜 Catalogo Instagram / Facebook' : '🔜 Catálogo Instagram / Facebook'), d: lang === 'it' ? 'Prossimamente: condividi il tuo catalogo direttamente sulla tua pagina Facebook e Instagram in un solo clic.' : 'Próximamente: comparte tu catálogo directo en tu página de Facebook e Instagram en un solo clic.' },
         ]},
         { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
           { l: lang === 'it' ? '5.000 prodotti' : '5.000 productos', d: lang === 'it' ? 'Per cataloghi grandi con più categorie.' : 'Para catálogos grandes con múltiples categorías.' },
-          { l: lang === 'it' ? '4 foto per prodotto' : '4 imágenes por producto', d: lang === 'it' ? '5 GB di spazio per foto di alta qualità.' : '5 GB de almacenamiento para fotos detalladas de alta calidad.' },
+          { l: lang === 'it' ? '3 foto per prodotto' : '3 imágenes por producto', d: lang === 'it' ? '5 GB di spazio. Ricorda: le foto ad alta risoluzione occupano più spazio.' : '5 GB de almacenamiento. Recuerda: fotos de mayor resolución ocupan más espacio.' },
         ]},
         { cat: lang === 'it' ? '👥 Clienti' : '👥 Clientes', items: [
-          { l: lang === 'it' ? 'Fiati e conti correnti' : 'Fiados y cuentas corrientes', d: lang === 'it' ? 'Registra vendite a credito e gestisci i pagamenti parziali.' : 'Registra ventas a crédito y gestiona abonos parciales.' },
+          { l: lang === 'it' ? 'Conti in sospeso e credito cliente' : 'Fiados y cuentas corrientes', d: lang === 'it' ? 'Registra le vendite a credito e gestisci i pagamenti parziali.' : 'Registra ventas a crédito y gestiona abonos parciales.' },
           { l: lang === 'it' ? 'Portale clienti' : 'Portal del cliente', d: lang === 'it' ? 'I tuoi clienti vedono la cronologia degli ordini.' : 'Tus clientes pueden ver su historial de pedidos.' },
         ]},
         { cat: lang === 'it' ? '📊 Reporti' : '📊 Reportes', items: [
@@ -291,9 +295,8 @@ export default function Home() {
         lang === 'it' ? 'Prodotti illimitati' : 'Productos ilimitados',
         lang === 'it' ? '🔜 Recupero carrelli abbandonati' : '🔜 Recuperación carritos abandonados',
         lang === 'it' ? '🔜 Programma punti & Affiliati' : '🔜 Programa de puntos y Afiliados',
-        lang === 'it' ? '🔜 Fatturazione elettronica' : '🔜 Facturación electrónica',
         '20 GB ' + (lang === 'it' ? 'di spazio' : 'almacenamiento'),
-        lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',
+        lang === 'it' ? 'Assistenza prioritaria in orario lavorativo' : 'Asesoría prioritaria en horario de oficina',
       ],
       detalle: [
         { cat: lang === 'it' ? '🛍️ Vendite' : '🛍️ Ventas', items: [
@@ -303,15 +306,14 @@ export default function Home() {
         ]},
         { cat: lang === 'it' ? '📦 Inventario' : '📦 Inventario', items: [
           { l: lang === 'it' ? 'Prodotti illimitati' : 'Productos ilimitados', d: lang === 'it' ? 'Nessun limite. Fai crescere il catalogo quanto vuoi.' : 'Sin techo. Crece tu catálogo todo lo que necesites.' },
-          { l: lang === 'it' ? '4 foto per prodotto' : '4 imágenes por producto', d: lang === 'it' ? '20 GB di spazio totale.' : '20 GB de almacenamiento total.' },
-          { l: (lang === 'it' ? '🔜 Fatturazione elettronica' : '🔜 Facturación electrónica'), d: lang === 'it' ? 'Prossimamente: fatture automatiche conformi alla normativa italiana.' : 'Próximamente: facturas automáticas compatibles con la normativa italiana.' },
+          { l: lang === 'it' ? '3 foto per prodotto' : '3 imágenes por producto', d: lang === 'it' ? '20 GB di spazio totale. Ricorda: le foto ad alta risoluzione occupano più spazio.' : '20 GB de almacenamiento. Recuerda: fotos de mayor resolución ocupan más espacio.' },
         ]},
         { cat: lang === 'it' ? '🔧 Operazioni' : '🔧 Operaciones', items: [
-          { l: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado', d: lang === 'it' ? 'Uno specialista TIENDAONLINE assegnato al tuo account.' : 'Un especialista de TIENDAONLINE asignado a tu cuenta.' },
+          { l: lang === 'it' ? 'Assistenza prioritaria in orario lavorativo' : 'Asesoría prioritaria en horario de oficina', d: lang === 'it' ? 'Risposta garantita in orario lavorativo (lun–ven 9–18) per domande sul tuo negozio e sulla piattaforma.' : 'Respuesta garantizada en horario de oficina (lun–vie 9–18) para dudas sobre tu negocio y la plataforma.' },
           { l: lang === 'it' ? 'Backup giornaliero' : 'Backup diario', d: lang === 'it' ? 'Copia di sicurezza automatica ogni 24 ore.' : 'Copia de seguridad automática de todos tus datos cada 24 horas.' },
         ]},
         { cat: lang === 'it' ? '💬 Supporto' : '💬 Soporte', items: [
-          { l: lang === 'it' ? 'Supporto dedicato' : 'Soporte dedicado', d: lang === 'it' ? 'Accesso diretto al tuo consulente. Senza tempi di attesa.' : 'Acceso directo a tu consultor. Sin tiempos de espera.' },
+          { l: lang === 'it' ? 'Supporto tecnico prioritario' : 'Soporte técnico prioritario', d: lang === 'it' ? 'I problemi tecnici del tuo piano vengono risolti prima di qualsiasi altro. In orario lavorativo.' : 'Los problemas técnicos de tu plan se resuelven antes que cualquier otro. En horario de oficina.' },
         ]},
       ],
     },
@@ -331,7 +333,7 @@ export default function Home() {
     { label: lang === 'it' ? 'Codici sconto' : 'Códigos descuento',                     vals: [false, false, true, true] },
     { label: (lang === 'it' ? '🔜 Carrelli abbandonati' : '🔜 Carritos abandonados'),   vals: [false, false, false, '🔜'] },
     { label: (lang === 'it' ? '🔜 Programma punti' : '🔜 Programa de puntos'),          vals: [false, false, false, '🔜'] },
-    { label: lang === 'it' ? 'Consulente dedicato' : 'Consultor dedicado',               vals: [false, false, false, true] },
+    { label: lang === 'it' ? 'Assistenza prioritaria (orario lavorativo)' : 'Asesoría prioritaria (horario de oficina)', vals: [false, false, false, true] },
     { label: 'Backup',                                                                   vals: [lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Giornaliero' : 'Diario', lang === 'it' ? 'Giornaliero' : 'Diario'] },
     { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: [lang === 'it' ? 'FAQ + email' : 'FAQ + email', lang === 'it' ? 'Email + WhatsApp' : 'Email + WhatsApp', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
   ]
@@ -923,13 +925,31 @@ export default function Home() {
 
           {/* Comparison Table */}
           <AnimatedSection>
-            {/* Scroll Hint (Mobile only) */}
-            <div className="md:hidden flex items-center justify-center gap-3 text-xs font-bold text-slate-400 mb-4 animate-pulse">
-              <span className="text-lg">←</span> {lang === 'it' ? 'Scorri per vedere i piani' : 'Desliza para ver más planes'} <span className="text-lg">→</span>
+            {/* Scroll Hint + Nav Buttons (Mobile only) */}
+            <div className="md:hidden flex items-center justify-center gap-4 mb-4">
+              <button
+                onClick={() => {
+                  const el = document.getElementById('comparison-scroll')
+                  if (el) el.scrollBy({ left: -220, behavior: 'smooth' })
+                }}
+                className="w-10 h-10 rounded-full bg-slate-200 hover:bg-emerald-100 flex items-center justify-center text-slate-600 font-black text-lg transition-all"
+                aria-label="Anterior"
+              >←</button>
+              <span className="text-xs font-bold text-slate-400">
+                {lang === 'it' ? 'Scorri per vedere i piani' : 'Desliza para ver más planes'}
+              </span>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('comparison-scroll')
+                  if (el) el.scrollBy({ left: 220, behavior: 'smooth' })
+                }}
+                className="w-10 h-10 rounded-full bg-slate-200 hover:bg-emerald-100 flex items-center justify-center text-slate-600 font-black text-lg transition-all"
+                aria-label="Siguiente"
+              >→</button>
             </div>
 
             <div className="rounded-[32px] overflow-hidden border border-slate-200 shadow-sm relative z-0">
-              <div className="overflow-x-auto custom-scrollbar w-full">
+              <div id="comparison-scroll" className="overflow-x-auto custom-scrollbar w-full">
                 <div className="min-w-[800px]">
                   {/* Table Header Row */}
                   <div className="grid bg-slate-900 text-white" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr' }}>
@@ -983,13 +1003,18 @@ export default function Home() {
                       }`}>
                         <a
                           href={p.key === 'grow' ? '/contatti' : '/register'}
-                          className={`block w-full py-3 rounded-xl font-black text-center text-xs transition-all ${
+                          className={`block w-full py-2 px-2 rounded-xl font-black text-center text-[10px] leading-tight transition-all ${
                             p.popular
                               ? 'bg-white text-emerald-700'
                               : 'bg-emerald-600 text-white hover:bg-emerald-500'
                           }`}
                         >
-                          {p.cta}
+                          {p.key === 'gratis'
+                            ? (lang === 'it' ? <span>Inizia<br/>gratis</span> : <span>Empezar<br/>gratis</span>)
+                            : p.key === 'grow'
+                              ? (lang === 'it' ? <span>Contattaci</span> : <span>Contactar</span>)
+                              : (lang === 'it' ? <span>Inizia<br/>ora</span> : <span>Empezar<br/>ahora</span>)
+                          }
                         </a>
                       </div>
                     ))}
@@ -1040,7 +1065,7 @@ export default function Home() {
                       lang === 'it' ? '✓ SEO ottimizzato' : '✓ SEO optimizado',
                       lang === 'it' ? '✓ Hosting & dominio' : '✓ Hosting & dominio',
                       lang === 'it' ? '✓ Pannello di controllo' : '✓ Panel de control',
-                      lang === 'it' ? '✓ Integrazione negozio' : '✓ Integración con tu tienda',
+                      lang === 'it' ? '✓ Creazione del tuo negozio' : '✓ Creación de tu tienda',
                     ].map((f, i) => (
                       <span key={i} className="text-sm text-slate-300 font-semibold bg-slate-800 px-4 py-2 rounded-full">
                         {f}
@@ -1087,14 +1112,14 @@ export default function Home() {
 
                 {/* Right: Price card */}
                 <div className="flex-shrink-0 w-full lg:w-auto">
-                  <div className="bg-slate-900 border border-slate-700 rounded-[32px] p-8 min-w-[280px]">
+                  <div className="bg-slate-900 border border-slate-700 rounded-[32px] p-8 min-w-[280px] text-center">
 
                     {/* One-time payment */}
                     <div className="mb-6 pb-6 border-b border-slate-700">
                       <div className="text-slate-400 text-xs font-black uppercase tracking-widest mb-3">
                         {lang === 'it' ? 'Investimento iniziale' : 'Inversión inicial'}
                       </div>
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex items-baseline gap-2 justify-center">
                         <span className="text-6xl font-black text-white tracking-tighter">€980</span>
                       </div>
                       <div className="text-slate-500 text-sm font-semibold mt-1">
@@ -1107,7 +1132,7 @@ export default function Home() {
                       <div className="text-slate-400 text-xs font-black uppercase tracking-widest mb-3">
                         + {lang === 'it' ? 'Mantenimento annuale' : 'Mantenimiento anual'}
                       </div>
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex items-baseline gap-2 justify-center">
                         <span className="text-3xl font-black text-emerald-400 tracking-tight">€190</span>
                         <span className="text-slate-500 text-sm font-bold">{lang === 'it' ? '/ anno' : '/ año'}</span>
                       </div>
@@ -1185,7 +1210,7 @@ export default function Home() {
               {t('ctaFinalTitle')}
             </h2>
             <p className="text-xl text-emerald-100 font-medium mb-12 max-w-2xl mx-auto opacity-90 leading-relaxed">
-              {t('ctaFinalSubtitle')}
+              {t('ctaFinalSubtitle').replace('{n}', storeCount)}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <a href="/register" className="glow-btn bg-white text-emerald-900 px-12 py-6 rounded-2xl text-xl font-black shadow-3xl w-full sm:w-auto">

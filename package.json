@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:i18n": "node lib/validate-i18n.js",
+    "lint:i18n:ci": "node lib/validate-i18n.js --ci",
+    "hooks:install": "git config core.hooksPath .githooks && echo \"✅ Pre-commit hook instalado. Se ejecutará lint:i18n:ci antes de cada commit.\""
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
