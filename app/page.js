@@ -335,7 +335,7 @@ export default function Home() {
     { label: (lang === 'it' ? '🔜 Programma punti' : '🔜 Programa de puntos'),          vals: [false, false, false, '🔜'] },
     { label: lang === 'it' ? 'Assistenza prioritaria (orario lavorativo)' : 'Asesoría prioritaria (horario de oficina)', vals: [false, false, false, true] },
     { label: 'Backup',                                                                   vals: [lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Settimanale' : 'Semanal', lang === 'it' ? 'Giornaliero' : 'Diario', lang === 'it' ? 'Giornaliero' : 'Diario'] },
-    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: [lang === 'it' ? 'FAQ + email' : 'FAQ + email', lang === 'it' ? 'Email + WhatsApp' : 'Email + WhatsApp', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Dedicato' : 'Dedicado'] },
+    { label: lang === 'it' ? 'Supporto' : 'Soporte',                                    vals: [lang === 'it' ? 'FAQ + email' : 'FAQ + email', lang === 'it' ? 'Email + WhatsApp' : 'Email + WhatsApp', lang === 'it' ? 'Prioritario' : 'Prioritario', lang === 'it' ? 'Tecnico Prioritario' : 'Técnico Prioritario'] },
   ]
 
 
@@ -1040,7 +1040,7 @@ export default function Home() {
                 <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-blue-500/10 blur-[80px]" />
               </div>
 
-              <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-12">
+              <div className="relative z-10 flex flex-col lg:flex-row items-center lg:items-center justify-between gap-12">
 
                 {/* Left: Text */}
                 <div className="flex-1">
